@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -92,6 +94,7 @@ fun WordGameScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(theme.gradientBrush)
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         // Top Header
@@ -160,15 +163,13 @@ fun WordGameScreen(
 
         // Word Game Card
         PuffyCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
+            modifier = Modifier.fillMaxWidth(),
             cornerRadius = 28.dp,
             elevation = 8.dp
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -313,7 +314,7 @@ fun WordGameScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     PuffyButton(
                         onClick = {
@@ -321,7 +322,7 @@ fun WordGameScreen(
                                 activeStageIndex++
                             }
                         },
-                        text = if (activeStageIndex < stages.size - 1) "مرحله بعد" else "آفرین زهرای قهرمان! بازی تکمیل شد!",
+                        text = if (activeStageIndex < stages.size - 1) "مرحله بعد" else "آفرین قهرمان! بازی تکمیل شد!",
                         emoji = "👑",
                         height = 52.dp,
                         modifier = Modifier.fillMaxWidth(),
