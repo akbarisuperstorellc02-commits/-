@@ -421,10 +421,12 @@ class UserProgressManager(context: Context) {
         prefs.edit().putInt("daily_goal_minutes", safeMinutes).apply()
     }
 
-    fun spendGoldCoin(): Boolean {
+    fun spendGoldCoin(amount: Int = 1): Boolean {
+        val cost = amount.coerceAtLeast(1)
         val current = _goldCoins.value
-        if (current < 1) return false
-        val updated = current - 1
+        // Never deduct partially: the full hint price must be available.
+        if (current < cost) return false
+        val updated = current - cost
         _goldCoins.value = updated
         prefs.edit().putInt("gold_coins", updated).apply()
         return true
