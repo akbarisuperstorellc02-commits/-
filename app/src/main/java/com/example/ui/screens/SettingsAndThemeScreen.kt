@@ -290,11 +290,13 @@ fun SettingsAndThemeScreen(
                                                 text = style.titleFa,
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.Bold,
+                                                fontFamily = style.fontFamily,
                                                 color = Color.White
                                             )
                                             Text(
                                                 text = style.sampleText,
                                                 fontSize = 11.sp,
+                                                fontFamily = style.fontFamily,
                                                 color = theme.primaryColor
                                             )
                                         }
