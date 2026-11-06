@@ -98,7 +98,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // STEP 1: Mandatory App Check configuration with launch intent before any UI or Firebase operations
-        com.example.util.configureAppCheck(this, intent)
+        com.example.util.configureAppCheck(this)
 
         enableEdgeToEdge()
         ttsHelper = TextToSpeechHelper(this)
