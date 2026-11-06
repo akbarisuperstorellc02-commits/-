@@ -407,6 +407,9 @@ fun HomeScreen(
                         onClick = onNavigateToCalendar
                     )
 
+                }
+
+                Row(modifier = Modifier.fillMaxWidth()) {
                     HomeFeatureCard(
                         title = "زنگ یادآور",
                         subtitle = "تنظیم زنگ روزانه",
