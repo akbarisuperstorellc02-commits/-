@@ -78,7 +78,7 @@ fun SettingsAndThemeScreen(
                     tint = theme.primaryColor
                 )
             }
-            PuffyBadge(text = "تنظیمات اختصاصی خودسازی زهرا", emoji = "👑")
+            PuffyBadge(text = "تنظیمات اختصاصی خودسازی BH", emoji = "👑")
             Spacer(modifier = Modifier.width(36.dp))
         }
 
@@ -103,7 +103,7 @@ fun SettingsAndThemeScreen(
                             Icon(imageVector = Icons.Default.Timer, contentDescription = null, tint = theme.primaryColor)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "هدف روزانه مطالعه زهرا:",
+                                text = "هدف روزانه مطالعه:",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -303,7 +303,7 @@ fun SettingsAndThemeScreen(
                             Icon(imageVector = Icons.Default.Face, contentDescription = null, tint = theme.primaryColor)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "آواتار اختصاصی زهرا:",
+                                text = "آواتار دخترانه اختصاصی:",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
