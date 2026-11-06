@@ -80,6 +80,8 @@ fun MasterGohariChatScreen(
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
 
     var isAiGenerating by remember { mutableStateOf(false) }
+    var isModelInitializing by remember { mutableStateOf(true) }
+    var isModelReady by remember { mutableStateOf(false) }
     var aiErrorMessage by remember { mutableStateOf<String?>(null) }
     var inputText by remember { mutableStateOf("") }
     var speakingPracticeSentence by remember { mutableStateOf<Pair<String, String>?>(null) }
@@ -89,8 +91,11 @@ fun MasterGohariChatScreen(
     }
 
     LaunchedEffect(offlineAiService) {
+        isModelInitializing = true
         isAiGenerating = true
         aiErrorMessage = offlineAiService.initialize()
+        isModelReady = aiErrorMessage == null
+        isModelInitializing = false
         isAiGenerating = false
     }
 
@@ -256,7 +261,7 @@ fun MasterGohariChatScreen(
                         Text(text = "✨", fontSize = 20.sp)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "استاد گوهری در حال تولید پاسخ روی گوشی است... 🌸",
+                            text = if (isModelInitializing) "مدل هوش مصنوعی در حال آماده‌سازی اولیه است؛ لطفاً صبر کنید... 🌸" else "استاد گوهری در حال تولید پاسخ روی گوشی است... 🌸",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = theme.primaryColor
