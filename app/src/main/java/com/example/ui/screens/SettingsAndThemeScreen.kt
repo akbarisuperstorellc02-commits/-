@@ -169,38 +169,58 @@ fun SettingsAndThemeScreen(
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             ZahraThemeMode.values().forEach { mode ->
                                 val isSelected = currentThemeMode == mode
-                                Box(
+                                PuffyCard(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clip(RoundedCornerShape(18.dp))
-                                        .background(if (isSelected) Color(0xFF241F10) else Color(0xFF181820))
-                                        .border(
-                                            1.5.dp,
-                                            if (isSelected) mode.primaryColor else Color(0xFF2C2C36),
-                                            RoundedCornerShape(18.dp)
-                                        )
-                                        .clickable { userProgressManager.setTheme(mode) }
-                                        .padding(12.dp)
+                                        .clickable { userProgressManager.setTheme(mode) },
+                                    backgroundColor = if (isSelected) mode.primaryColor.copy(alpha = 0.13f) else mode.cardBackground,
+                                    cornerRadius = 24.dp,
+                                    elevation = if (isSelected) 9.dp else 5.dp,
+                                    borderWidth = if (isSelected) 2.dp else 1.dp,
+                                    borderColor = if (isSelected) mode.primaryColor else mode.buttonBevel.copy(alpha = 0.35f)
                                 ) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.fillMaxWidth()
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 14.dp, vertical = 13.dp)
                                     ) {
-                                        Text(text = mode.iconEmoji, fontSize = 22.sp)
-                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Box(
+                                            modifier = Modifier
+                                                .size(42.dp)
+                                                .clip(CircleShape)
+                                                .background(mode.primaryColor.copy(alpha = 0.18f))
+                                                .border(1.5.dp, mode.primaryColor.copy(alpha = 0.55f), CircleShape),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(text = mode.iconEmoji, fontSize = 22.sp)
+                                        }
+                                        Spacer(modifier = Modifier.width(12.dp))
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
                                                 text = mode.titleFa,
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.Bold,
-                                                color = Color.White
+                                                color = if (mode == ZahraThemeMode.OBSIDIAN_BLACK_GOLD) Color.White else Color(0xFF302630)
+                                            )
+                                            Text(
+                                                text = if (isSelected) "تم فعال" else "برای انتخاب لمس کنید",
+                                                fontSize = 10.sp,
+                                                color = mode.primaryColor
                                             )
                                         }
 
                                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                            Box(modifier = Modifier.size(18.dp).clip(CircleShape).background(mode.primaryColor))
-                                            Box(modifier = Modifier.size(18.dp).clip(CircleShape).background(mode.secondaryColor))
-                                            Box(modifier = Modifier.size(18.dp).clip(CircleShape).background(mode.buttonBevel))
+                                            listOf(mode.primaryColor, mode.secondaryColor, mode.buttonBevel).forEach { swatch ->
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(19.dp)
+                                                        .shadow(3.dp, CircleShape)
+                                                        .clip(CircleShape)
+                                                        .background(swatch)
+                                                        .border(1.dp, Color.White.copy(alpha = 0.8f), CircleShape)
+                                                )
+                                            }
                                         }
 
                                         if (isSelected) {
