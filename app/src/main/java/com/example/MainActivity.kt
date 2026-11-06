@@ -14,6 +14,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -354,6 +355,7 @@ fun PuffyBottomNavBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             NavBarItem(
+                modifier = Modifier.weight(1f),
                 label = "خانه",
                 icon = Icons.Default.Home,
                 isSelected = currentScreen == AppScreen.HOME,
@@ -394,6 +396,7 @@ fun PuffyBottomNavBar(
 
 @Composable
 fun NavBarItem(
+    modifier: Modifier = Modifier,
     label: String,
     icon: ImageVector,
     isSelected: Boolean,
@@ -403,7 +406,7 @@ fun NavBarItem(
     val theme = LocalZahraTheme.current.currentTheme
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .testTag(testTag)
             .clip(RoundedCornerShape(16.dp))
             .background(if (isSelected) theme.primaryColor else Color.Transparent)
@@ -411,9 +414,9 @@ fun NavBarItem(
             .padding(horizontal = 8.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Icon(
                 imageVector = icon,
@@ -421,15 +424,16 @@ fun NavBarItem(
                 tint = if (isSelected) Color.White else Color.Gray,
                 modifier = Modifier.size(19.dp)
             )
-            if (isSelected) {
-                Text(
-                    text = label,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
-            }
+            Text(
+                text = label,
+                fontSize = 9.sp,
+                lineHeight = 11.sp,
+                maxLines = 2,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                color = if (isSelected) Color.White else Color.Gray,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(top = 2.dp)
+            )
         }
     }
 }
