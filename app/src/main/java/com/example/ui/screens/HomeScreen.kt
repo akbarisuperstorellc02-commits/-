@@ -239,7 +239,7 @@ fun HomeScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "آکادمی اختصاصی BH",
+                            text = "مسیر یادگیری $learnerName در آکادمی BH",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Black,
                             color = theme.buttonBevel
@@ -257,7 +257,7 @@ fun HomeScreen(
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             PuffyButton(
                                 onClick = onNavigateToLevels,
-                                text = "شروع آموزش‌ها",
+                                text = "آموزش‌های $learnerName",
                                 emoji = "🌸",
                                 height = 44.dp,
                                 fontSize = 12,
@@ -476,7 +476,7 @@ fun HomeScreen(
                             Text(text = "👑", fontSize = 18.sp)
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "پیام انگیزشی اختصاصی زهرا:",
+                                text = "پیام انگیزشی اختصاصی $learnerName:",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = theme.buttonBevel
