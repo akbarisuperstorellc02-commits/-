@@ -76,7 +76,7 @@ fun PuffyProfileScreen(
     var editedBioText by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(learnerBio) }
 
     val completedLevelsCount = levels.count { it.isMastered }
-    val currentActiveLevel = levels.firstOrNull { it.isUnlocked && !it.isMastered } ?: levels.first()
+    val currentActiveLevel = levels.firstOrNull { it.isUnlocked && !it.isMastered } ?: levels.firstOrNull()
     val (rankTitle, rankDesc) = userProgressManager.getLearnerRank(totalScore)
 
     if (showEditNameDialog) {
@@ -189,20 +189,46 @@ fun PuffyProfileScreen(
             item {
                 PuffyCard(
                     modifier = Modifier.fillMaxWidth(),
-                    cornerRadius = 28.dp,
-                    elevation = 8.dp
+                    backgroundColor = Color(0xFF171923),
+                    cornerRadius = 30.dp,
+                    elevation = 12.dp,
+                    borderColor = theme.accentGold.copy(alpha = 0.55f)
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(20.dp),
+                            .background(
+                                Brush.linearGradient(
+                                    listOf(Color(0xFF24283A), Color(0xFF171923), Color(0xFF30243A))
+                                )
+                            )
+                            .padding(horizontal = 18.dp, vertical = 22.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // 3D Puffy Avatar with glowing pink marshmallow border
+                        Text(
+                            text = "BH EXCLUSIVE ACADEMY",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            letterSpacing = 2.sp,
+                            color = theme.accentGold
+                        )
+                        Spacer(modifier = Modifier.height(5.dp))
+                        Text(
+                            text = "پروفایل اختصاصی من",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        // Premium avatar portrait with a theme-aware glowing ring
                         Box(
                             modifier = Modifier
-                                .size(130.dp)
-                                .shadow(12.dp, CircleShape, ambientColor = theme.primaryColor.copy(alpha = 0.4f))
+                                .size(124.dp)
+                                .shadow(16.dp, CircleShape, ambientColor = theme.accentGold.copy(alpha = 0.35f))
+                                .background(
+                                    Brush.linearGradient(listOf(theme.primaryColor, theme.secondaryColor, theme.accentGold)),
+                                    CircleShape
+                                )
                                 .clip(CircleShape)
                                 .border(
                                     3.5.dp,
@@ -221,36 +247,40 @@ fun PuffyProfileScreen(
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text("نوع پروفایل را انتخاب کن", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = theme.buttonBevel)
+                        Text("نوع پروفایل را انتخاب کن", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE8E8EF))
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
                             listOf("female" to "دخترانه 👸🏻", "male" to "پسرانه 🧑🏻‍🎓").forEach { (gender, label) ->
-                                Box(modifier = Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(if (learnerGender == gender) theme.primaryColor else theme.cardBackground).border(1.5.dp, if (learnerGender == gender) theme.primaryColor else theme.secondaryColor, RoundedCornerShape(16.dp)).clickable { userProgressManager.setLearnerGender(gender) }.padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
-                                    Text(text = label, color = if (learnerGender == gender) Color.White else theme.buttonBevel, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp))
+                                Box(modifier = Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(if (learnerGender == gender) theme.primaryColor else Color(0xFF292D3B)).border(1.5.dp, if (learnerGender == gender) theme.accentGold else Color(0xFF45495A), RoundedCornerShape(16.dp)).clickable { userProgressManager.setLearnerGender(gender) }.padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
+                                    Text(text = label, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp))
                                 }
                             }
                         }
                         Spacer(modifier = Modifier.height(10.dp))
-                        Text("آواتار دلخواهت را انتخاب کن", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = theme.buttonBevel)
+                        Text("آواتار دلخواهت را انتخاب کن", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE8E8EF))
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             items(avatarChoices) { avatar ->
-                                Box(modifier = Modifier.size(48.dp).clip(CircleShape).background(if (learnerAvatar == avatar) theme.primaryColor else theme.backgroundColor).border(2.dp, if (learnerAvatar == avatar) theme.accentGold else theme.secondaryColor, CircleShape).clickable { userProgressManager.setAvatar(avatar) }, contentAlignment = Alignment.Center) {
+                                Box(modifier = Modifier.size(48.dp).clip(CircleShape).background(if (learnerAvatar == avatar) theme.primaryColor else Color(0xFF292D3B)).border(2.dp, if (learnerAvatar == avatar) theme.accentGold else Color(0xFF45495A), CircleShape).clickable { userProgressManager.setAvatar(avatar) }, contentAlignment = Alignment.Center) {
                                     Text(avatar, fontSize = 25.sp)
                                 }
                             }
                         }
-                        Text(learnerBio, fontSize = 12.sp, color = theme.buttonBevel, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 6.dp))
+                        Text(learnerBio, fontSize = 12.sp, color = Color(0xFFD6D8E2), textAlign = TextAlign.Center, lineHeight = 18.sp, modifier = Modifier.fillMaxWidth().padding(top = 10.dp, horizontal = 8.dp))
                         Spacer(modifier = Modifier.height(14.dp))
 
                         // Editable Learner Name Row
                         Row(
+                            modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = learnerName,
+                                text = learnerName.ifBlank { "کاربر جدید" },
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.ExtraBold,
-                                color = theme.buttonBevel
+                                color = Color.White,
+                                textAlign = TextAlign.Center,
+                                maxLines = 2,
+                                modifier = Modifier.weight(1f)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             PuffyIconButton(
@@ -271,8 +301,8 @@ fun PuffyProfileScreen(
                             text = rankTitle,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = theme.primaryColor,
-                            modifier = Modifier.padding(top = 2.dp)
+                            color = theme.accentGold,
+                            modifier = Modifier.padding(top = 4.dp)
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -285,14 +315,14 @@ fun PuffyProfileScreen(
                             PuffyBadge(
                                 text = "سطح فعلی: ${currentActiveLevel.levelCode}",
                                 emoji = "🏆",
-                                backgroundColor = theme.backgroundColor,
-                                textColor = theme.primaryColor
+                                backgroundColor = Color(0xFF292D3B),
+                                textColor = Color.White
                             )
                             PuffyBadge(
                                 text = "$completedLevelsCount سطح مسلط شده",
                                 emoji = "✨",
-                                backgroundColor = Color(0xFFFFF9C4),
-                                textColor = Color(0xFFF57F17)
+                                backgroundColor = Color(0xFF3A3020),
+                                textColor = theme.accentGold
                             )
                         }
                     }
@@ -351,14 +381,21 @@ fun PuffyProfileScreen(
                             color = Color.DarkGray
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            PuffyBadge(text = "آزمون: ۱۰۰+ XP", backgroundColor = Color(0xFFE8F5E9), textColor = Color(0xFF2E7D32))
-                            PuffyBadge(text = "گویش: ۴۰+ XP", backgroundColor = Color(0xFFE1F5FE), textColor = Color(0xFF0277BD))
-                            PuffyBadge(text = "بازی: ۳۰+ XP", backgroundColor = Color(0xFFFFF3E0), textColor = Color(0xFFEF6C00))
-                            PuffyBadge(text = "هوش مصنوعی: ۱۰+ XP", backgroundColor = Color(0xFFFCE4EC), textColor = Color(0xFFC2185B))
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(
+                                listOf(
+                                    "آزمون: ۱۰۰+ XP" to Color(0xFF2E7D32),
+                                    "گویش: ۴۰+ XP" to Color(0xFF0277BD),
+                                    "بازی: ۳۰+ XP" to Color(0xFFEF6C00),
+                                    "هوش مصنوعی: ۱۰+ XP" to Color(0xFFC2185B)
+                                )
+                            ) { reward ->
+                                PuffyBadge(
+                                    text = reward.first,
+                                    backgroundColor = reward.second.copy(alpha = 0.12f),
+                                    textColor = reward.second
+                                )
+                            }
                         }
                     }
                 }
@@ -543,13 +580,21 @@ fun ProfileStatCard(
         ) {
             Text(text = emoji, fontSize = 26.sp)
             Spacer(modifier = Modifier.width(10.dp))
-            Column {
-                Text(text = title, fontSize = 11.sp, color = Color.Gray)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    fontSize = 11.sp,
+                    color = Color.Gray,
+                    maxLines = 2,
+                    lineHeight = 14.sp
+                )
                 Text(
                     text = value,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = color
+                    color = color,
+                    maxLines = 2,
+                    lineHeight = 17.sp
                 )
             }
         }
