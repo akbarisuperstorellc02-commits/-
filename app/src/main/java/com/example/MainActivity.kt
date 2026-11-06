@@ -329,7 +329,7 @@ fun PuffyBottomNavBar(
                 testTag = "nav_chat"
             )
             NavBarItem(
-                label = "بازی ۳۰ مرحله",
+                label = "بازی ۶۰ مرحله",
                 icon = Icons.Default.Gamepad,
                 isSelected = currentScreen == AppScreen.GAME,
                 onClick = { onTabSelected(AppScreen.GAME) },
