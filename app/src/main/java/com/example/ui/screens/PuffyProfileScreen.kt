@@ -313,7 +313,7 @@ fun PuffyProfileScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             PuffyBadge(
-                                text = "سطح فعلی: ${currentActiveLevel.levelCode}",
+                                text = "سطح فعلی: ${currentActiveLevel?.levelCode ?: "A1"}",
                                 emoji = "🏆",
                                 backgroundColor = Color(0xFF292D3B),
                                 textColor = Color.White
