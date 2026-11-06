@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "425076864047",
+    "project_id": "zahra-self-learning",
+    "storage_bucket": "zahra-self-learning.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:425076864047:android:f954d2f129de78381182da",
+        "android_client_info": {
+          "package_name": "com.aistudio.girlyenglish.qpkxmt"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDymGVdldqf76KnM_Vq2lDiXBvaDj42Z2c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
