@@ -5,7 +5,7 @@ import java.util.UUID
 
 object MasterGohariAI {
 
-    // In-memory tracked weak points for Zahra
+    // In-memory tracked weak points for the active learner
     private val recordedWeakPoints = mutableSetOf<String>()
 
     data class TutorResponse(
