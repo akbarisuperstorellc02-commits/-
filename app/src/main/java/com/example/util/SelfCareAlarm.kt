@@ -83,7 +83,11 @@ object SelfCareAlarm {
 
 class SelfCareAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
-        SelfCareAlarm.showNotification(context)
-        SelfCareAlarm.schedule(context)
+        if (intent?.action == Intent.ACTION_BOOT_COMPLETED) {
+            SelfCareAlarm.schedule(context)
+        } else {
+            SelfCareAlarm.showNotification(context)
+            SelfCareAlarm.schedule(context)
+        }
     }
 }
