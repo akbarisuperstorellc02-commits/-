@@ -55,9 +55,10 @@ fun SettingsAndThemeScreen(
     val currentThemeMode by userProgressManager.currentTheme.collectAsState()
     val currentFontStyle by userProgressManager.fontStyle.collectAsState()
     val learnerAvatar by userProgressManager.learnerAvatar.collectAsState()
+    val learnerGender by userProgressManager.learnerGender.collectAsState()
     val dailyGoalMinutes by userProgressManager.dailyGoalMinutes.collectAsState()
 
-    val availableAvatars = listOf("👑", "👸🏻", "💎", "🥇", "🌟", "🏆", "📖", "✨")
+    val availableAvatars = if (learnerGender == "male") listOf("🧑🏻‍🎓", "👨🏻‍🎓", "🧑🏻‍🚀", "🦸🏻‍♂️", "🥷🏻", "🧑🏻‍💻", "⚽", "🏆") else listOf("👸🏻", "👩🏻‍🎓", "🧚🏻‍♀️", "🦸🏻‍♀️", "👩🏻‍🚀", "👩🏻‍💻", "🌸", "👑")
 
     Column(
         modifier = Modifier
@@ -303,7 +304,7 @@ fun SettingsAndThemeScreen(
                             Icon(imageVector = Icons.Default.Face, contentDescription = null, tint = theme.primaryColor)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "آواتار دخترانه اختصاصی:",
+                                text = if (learnerGender == "male") "آواتار پسرانه اختصاصی:" else "آواتار دخترانه اختصاصی:",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
