@@ -1,8 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:width="66dp"
-        android:height="66dp"
-        android:drawable="@drawable/zahra_gold_logo_1793948682133"
-        android:gravity="center" />
-</layer-list>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Puffy golden sparkle -->
+    <path android:fillColor="#FFFFD76A" android:pathData="M54,12 C57,25 61,29 74,32 C61,35 57,39 54,52 C51,39 47,35 34,32 C47,29 51,25 54,12 Z"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M24,27 C26,34 28,36 35,38 C28,40 26,42 24,49 C22,42 20,40 13,38 C20,36 22,34 24,27 Z"/>
+    <path android:fillColor="#FFFFE9A6" android:pathData="M84,24 C86,31 88,33 95,35 C88,37 86,39 84,46 C82,39 80,37 73,35 C80,33 82,31 84,24 Z"/>
+    <!-- Puffy book lower extrusion -->
+    <path android:fillColor="#FF9B5A16" android:pathData="M13,59 C28,52 42,55 54,65 C66,55 80,52 95,59 L95,87 C79,80 66,82 54,92 C42,82 29,80 13,87 Z"/>
+    <!-- Left and right raised pages -->
+    <path android:fillColor="#FFFFF4D5" android:pathData="M14,56 C29,49 43,53 54,63 L54,86 C42,77 28,75 14,82 Z"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M94,56 C79,49 65,53 54,63 L54,86 C66,77 80,75 94,82 Z"/>
+    <!-- Page bevels -->
+    <path android:fillColor="#FFFFC85A" android:pathData="M14,56 C29,49 43,53 54,63 L54,69 C42,59 28,57 14,64 Z"/>
+    <path android:fillColor="#FFFFD978" android:pathData="M94,56 C79,49 65,53 54,63 L54,69 C66,59 80,57 94,64 Z"/>
+    <!-- Center spine -->
+    <path android:fillColor="#FFFFB52E" android:pathData="M51,62 Q54,59 57,62 L57,88 Q54,85 51,88 Z"/>
+    <!-- Growth arrow rising from book -->
+    <path android:fillColor="#FFFFB52E" android:pathData="M48,60 L48,47 L41,47 L54,32 L67,47 L60,47 L60,60 Z"/>
+    <path android:fillColor="#FFFFE58A" android:pathData="M53,58 L53,43 L48,43 L54,36 L60,43 L55,43 L55,58 Z"/>
+    <!-- Small pink puffy heart -->
+    <path android:fillColor="#FFFF6F9B" android:pathData="M20,18 C14,11 4,19 20,31 C36,19 26,11 20,18 Z"/>
+</vector>
