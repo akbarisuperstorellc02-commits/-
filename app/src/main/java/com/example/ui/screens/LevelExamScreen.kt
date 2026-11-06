@@ -64,6 +64,7 @@ fun LevelExamScreen(
     onBack: () -> Unit
 ) {
     val theme = LocalZahraTheme.current.currentTheme
+    val learnerName = LocalZahraTheme.current.learnerName
     val questions = level.examQuestions
 
     var currentQuestionIndex by remember { mutableIntStateOf(0) }
@@ -172,7 +173,7 @@ fun LevelExamScreen(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = if (isPassed) "🎉 جشن تسلط بر سطح ${level.levelCode}!" else "🌸 تلاش ارزشمند زهرا!",
+                            text = if (isPassed) "🎉 جشن تسلط بر سطح ${level.levelCode}!" else "🌸 تلاش ارزشمند $learnerName!",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.ExtraBold,
                             color = if (isPassed) theme.buttonBevel else Color.DarkGray,
@@ -223,7 +224,7 @@ fun LevelExamScreen(
                         ) {
                             Text(
                                 text = if (isPassed)
-                                    "پیام معلم خصوصی هوش مصنوعی: تبریک زهرای عزیزم! با یادگیری واقعی و تسلط کامل، سطح بعدی برای شما گشوده شد و پاداش طلایی دریافت کردی 🥇👑"
+                                    "پیام معلم خصوصی هوش مصنوعی: تبریک $learnerName عزیز! با یادگیری واقعی و تسلط کامل، سطح بعدی برای شما گشوده شد و پاداش طلایی دریافت کردی 🥇👑"
                                 else
                                     "پیام معلم خصوصی: یادگیری واقعی نیاز به شتاب ندارد. مباحث را دوباره با صبوری مرور می‌کنیم تا به نمره ۱۰۰ برسی 💖",
                                 fontSize = 12.sp,
@@ -326,7 +327,7 @@ fun LevelExamScreen(
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Text(
                                     text = if (speakingScoreForQuestion != null)
-                                        "نمره گفتار زهرا: ${speakingScoreForQuestion}% ${if (speakingScoreForQuestion!! >= 60) "✅" else "❌"}"
+                                        "نمره گفتار $learnerName: ${speakingScoreForQuestion}% ${if (speakingScoreForQuestion!! >= 60) "✅" else "❌"}"
                                     else
                                         "روی میکروفون بزنید و با صدای رسا بیان کنید 🎙️",
                                     fontSize = 13.sp,
