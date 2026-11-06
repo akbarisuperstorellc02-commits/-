@@ -43,7 +43,11 @@ object SelfCareAlarm {
             set(Calendar.HOUR_OF_DAY, hour); set(Calendar.MINUTE, minute); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
             if (timeInMillis <= System.currentTimeMillis()) add(Calendar.DAY_OF_YEAR, 1)
         }
-        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next.timeInMillis, pendingIntent(context))
+        try {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next.timeInMillis, pendingIntent(context))
+        } catch (_: SecurityException) {
+            // Exact-alarm access can be revoked between the permission check and scheduling.
+        }
     }
 
     fun cancel(context: Context) {
@@ -83,7 +87,7 @@ object SelfCareAlarm {
 
 class SelfCareAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
-        if (intent?.action == Intent.ACTION_BOOT_COMPLETED) {
+        if (intent?.action == Intent.ACTION_BOOT_COMPLETED || intent?.action == Intent.ACTION_MY_PACKAGE_REPLACED) {
             SelfCareAlarm.schedule(context)
         } else {
             SelfCareAlarm.showNotification(context)
