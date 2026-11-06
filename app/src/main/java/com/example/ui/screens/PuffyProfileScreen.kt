@@ -251,7 +251,7 @@ fun PuffyProfileScreen(
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
                             listOf("female" to "دخترانه 👸🏻", "male" to "پسرانه 🧑🏻‍🎓").forEach { (gender, label) ->
                                 Box(modifier = Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(if (learnerGender == gender) theme.primaryColor else Color(0xFF292D3B)).border(1.5.dp, if (learnerGender == gender) theme.accentGold else Color(0xFF45495A), RoundedCornerShape(16.dp)).clickable { userProgressManager.setLearnerGender(gender) }.padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
-                                    Text(text = label, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp))
+                                    Text(text = label, color = if (learnerGender == gender && theme == com.example.ui.theme.ZahraThemeMode.OBSIDIAN_BLACK_GOLD) Color(0xFF17130A) else Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp))
                                 }
                             }
                         }
