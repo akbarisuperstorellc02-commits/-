@@ -218,7 +218,7 @@ fun HomeScreen(
             }
         }
 
-        // Hero Card: Zahra Puffy Profile & Roadmap from A1 to Z9
+        // Hero Card: active learner profile and roadmap from A1 to Z9
         item {
             PuffyCard(
                 modifier = Modifier.fillMaxWidth(),
