@@ -62,6 +62,7 @@ fun HomeScreen(
     onNavigateToSpeakingDrill: () -> Unit,
     onNavigateToWordGame: () -> Unit,
     onNavigateToCalendar: () -> Unit,
+    onNavigateToAlarms: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onSelectClassroom: (ClassroomType) -> Unit
@@ -164,7 +165,7 @@ fun HomeScreen(
                         ) {
                             Image(
                                 painter = painterResource(id = R.drawable.zahra_puffy_avatar_1793952193188),
-                                contentDescription = "پروفایل پفکی زهرا",
+                                contentDescription = "پروفایل دخترانه اختصاصی",
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
@@ -238,7 +239,7 @@ fun HomeScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "آکادمی اختصاصی زبان زهرا",
+                            text = "آکادمی اختصاصی BH",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Black,
                             color = theme.buttonBevel
@@ -315,7 +316,7 @@ fun HomeScreen(
                             Text(text = "🎯", fontSize = 18.sp)
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "هدف روزانه مطالعه زهرا",
+                                text = "هدف روزانه مطالعه",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = theme.buttonBevel
@@ -405,6 +406,16 @@ fun HomeScreen(
                         modifier = Modifier.weight(1f),
                         onClick = onNavigateToCalendar
                     )
+
+                    HomeFeatureCard(
+                        title = "زنگ یادآور",
+                        subtitle = "تنظیم زنگ روزانه",
+                        emoji = "⏰",
+                        badge = "یادآوری واقعی",
+                        color = Color(0xFFE85D9E),
+                        modifier = Modifier.weight(1f),
+                        onClick = onNavigateToAlarms
+                    )
                 }
             }
         }
@@ -418,7 +429,7 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "کلاس‌های تخصصی آکادمی زهرا:",
+                        text = "کلاس‌های تخصصی آکادمی BH:",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = theme.buttonBevel
