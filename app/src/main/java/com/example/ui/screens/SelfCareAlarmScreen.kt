@@ -104,7 +104,7 @@ fun SelfCareAlarmScreen(onBack: () -> Unit) {
                 colors = ButtonDefaults.buttonColors(containerColor = theme.primaryColor)
             ) { Text("ذخیره تنظیمات زنگ") }
             Spacer(Modifier.height(10.dp))
-            Text("این یادآور هر روز در ساعت تعیین‌شده اعلان و صدای زنگ می‌فرستد. برای عملکرد دقیق، اجازهٔ زنگ و اعلان را فعال کن.", fontSize = 12.sp, color = Color.DarkGray)
+            Text("این یادآور هر روز در ساعت تعیین‌شده اعلان و صدای زنگ می‌فرستد. برای عملکرد دقیق، اجازهٔ زنگ و اعلان را فعال کن.", fontSize = 12.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
