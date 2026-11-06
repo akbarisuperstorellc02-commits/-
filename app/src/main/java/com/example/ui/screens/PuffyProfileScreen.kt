@@ -224,8 +224,7 @@ fun PuffyProfileScreen(
                         Text("نوع پروفایل را انتخاب کن", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = theme.buttonBevel)
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
                             listOf("female" to "دخترانه 👸🏻", "male" to "پسرانه 🧑🏻‍🎓").forEach { (gender, label) ->
-                                Box(modifier = Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(if (learnerGender == gender) theme.primaryColor else theme.cardBackground).border(1.5.dp, if (learnerGender == gender) theme.primaryColor else theme.secondaryColor, RoundedCornerShape(16.dp)).padding(vertical = 12.dp).then(Modifier), contentAlignment = Alignment.Center) {
-                                    androidx.compose.foundation.clickable { userProgressManager.setLearnerGender(gender) }.let { }
+                                Box(modifier = Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(if (learnerGender == gender) theme.primaryColor else theme.cardBackground).border(1.5.dp, if (learnerGender == gender) theme.primaryColor else theme.secondaryColor, RoundedCornerShape(16.dp)).clickable { userProgressManager.setLearnerGender(gender) }.padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
                                     Text(text = label, color = if (learnerGender == gender) Color.White else theme.buttonBevel, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp))
                                 }
                             }
