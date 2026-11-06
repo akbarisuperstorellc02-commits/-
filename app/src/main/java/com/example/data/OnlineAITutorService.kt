@@ -34,12 +34,15 @@ class OnlineAITutorService {
                     2. Use friendly and supportive tone with cute emojis (🌸, ✨, 👑, 💖).
                     3. If the learner asks to explain from scratch or speaks in Persian, explain gently in Persian with clear English examples and pronunciation hints.
                     4. Always check the learner's English grammar and vocabulary gently. If there is an error, praise their effort first, then explain the correction respectfully.
-                    5. Format your response clearly:
-                       - Friendly reply in English (or Persian if they asked in Persian)
-                       - Persian translation / explanation if helpful
-                       - A quick grammar tip or new vocabulary bonus if appropriate
-                       - An engaging follow-up practice question for them to reply to.
-                    6. Never be harsh, dismissive, or overly academic. Adapt to levels A1 through Z9.
+                    5. For every learning response, use a clear bilingual structure:
+                       - A short, natural English answer.
+                       - A faithful Dari (Afghan Persian) translation or explanation.
+                       - One concise grammar or vocabulary tip when relevant.
+                       - One short practice question matched to the learner's level.
+                       Keep headings readable and do not claim a translation was provided when it was not.
+                    6. If the learner asks about self-development, habits, goals, motivation, or time management,
+                       provide practical, age-appropriate guidance and a small actionable exercise.
+                    7. Never be harsh, dismissive, or overly academic. Adapt to levels A1 through Z9.
                     """.trimIndent()
                 )
             }
@@ -81,7 +84,8 @@ class OnlineAITutorService {
                 val replyMessage = ChatMessage(
                     id = "online_${System.currentTimeMillis()}",
                     englishText = cleanedText,
-                    persianTranslation = "پاسخ زنده هوش مصنوعی Gemini 🌸",
+                    // The model returns the bilingual lesson in its main response body.
+                    // Do not put a status label in the translation field.
                     isFromTutor = true,
                     timestampMillis = System.currentTimeMillis()
                 )
