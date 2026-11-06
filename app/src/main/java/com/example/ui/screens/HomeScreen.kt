@@ -76,6 +76,7 @@ fun HomeScreen(
     val levels by userProgressManager.levelsState.collectAsState()
     val totalScore by userProgressManager.totalScore.collectAsState()
     val learnerName by userProgressManager.learnerName.collectAsState()
+    val learnerAvatar by userProgressManager.learnerAvatar.collectAsState()
     val recentReward by userProgressManager.recentReward.collectAsState()
 
     val unlockedCount = levels.count { it.isUnlocked }
@@ -163,11 +164,12 @@ fun HomeScreen(
                                     CircleShape
                                 )
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.zahra_puffy_avatar_1793952193188),
-                                contentDescription = "پروفایل دخترانه اختصاصی",
-                                modifier = Modifier.fillMaxSize()
-                            )
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(text = learnerAvatar, fontSize = 30.sp)
+                            }
                         }
 
                         Spacer(modifier = Modifier.width(10.dp))
@@ -286,11 +288,12 @@ fun HomeScreen(
                             .border(3.dp, theme.primaryColor, CircleShape)
                             .clickable(onClick = onNavigateToProfile)
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.zahra_puffy_avatar_1793952193188),
-                            contentDescription = "Zahra Puffy Avatar",
-                            modifier = Modifier.fillMaxSize()
-                        )
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = learnerAvatar, fontSize = 54.sp)
+                        }
                     }
                 }
             }
