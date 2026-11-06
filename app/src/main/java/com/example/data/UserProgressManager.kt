@@ -70,7 +70,7 @@ class UserProgressManager(context: Context) {
     )
     val fontStyle: StateFlow<ZahraFontStyle> = _fontStyle.asStateFlow()
 
-    private val _learnerName = MutableStateFlow(prefs.getString("learner_name", "کاربر جدید") ?: "کاربر جدید")
+    private val _learnerName = MutableStateFlow(prefs.getString("learner_name", "زهرا") ?: "زهرا")
     val learnerName: StateFlow<String> = _learnerName.asStateFlow()
 
     private val _totalScore = MutableStateFlow(prefs.getInt("total_score_xp", 280))
@@ -183,7 +183,7 @@ class UserProgressManager(context: Context) {
 
     fun updateLearnerName(newName: String) {
         val previousName = _learnerName.value.trim()
-        val trimmed = newName.trim().take(40).ifBlank { "کاربر جدید" }
+        val trimmed = newName.trim().take(40).ifBlank { "زهرا" }
         _learnerName.value = trimmed
         prefs.edit().putString("learner_name", trimmed).apply()
 
