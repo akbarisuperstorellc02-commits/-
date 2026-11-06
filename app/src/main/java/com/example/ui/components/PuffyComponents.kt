@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.theme.LocalZahraTheme
+import com.example.ui.theme.ZahraThemeMode
 
 /**
  * Puffy 3D marshmallow tactile button with extrusion bevel and bouncy press animation.
@@ -64,6 +65,7 @@ fun PuffyButton(
     val theme = LocalZahraTheme.current.currentTheme
     val baseBg = backgroundColor ?: theme.primaryColor
     val baseBevel = bevelColor ?: theme.buttonBevel
+    val resolvedTextColor = if (theme == ZahraThemeMode.OBSIDIAN_BLACK_GOLD && textColor == Color.White) Color(0xFF17130A) else textColor
 
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -156,7 +158,7 @@ fun PuffyButton(
                 if (text.isNotBlank()) {
                     Text(
                         text = text,
-                        color = textColor,
+                        color = resolvedTextColor,
                         fontWeight = FontWeight.Bold,
                         fontSize = fontSize.sp,
                         textAlign = TextAlign.Center,
@@ -275,6 +277,7 @@ fun PuffyIconButton(
     val theme = LocalZahraTheme.current.currentTheme
     val bg = backgroundColor ?: theme.primaryColor
     val bevel = theme.buttonBevel
+    val resolvedTint = if (theme == ZahraThemeMode.OBSIDIAN_BLACK_GOLD && tint == Color.White && (backgroundColor == null || backgroundColor == theme.primaryColor)) Color(0xFF17130A) else tint
 
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -326,7 +329,7 @@ fun PuffyIconButton(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = tint,
+                    tint = resolvedTint,
                     modifier = Modifier.size(size * 0.52f)
                 )
             } else if (!emoji.isNullOrBlank()) {
