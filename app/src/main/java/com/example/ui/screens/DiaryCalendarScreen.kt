@@ -61,6 +61,7 @@ fun DiaryCalendarScreen(
     onBack: () -> Unit
 ) {
     val theme = LocalZahraTheme.current.currentTheme
+    val learnerName = LocalZahraTheme.current.learnerName
     val diaryNotes by userProgressManager.diaryNotes.collectAsState()
     val todayMinutes by userProgressManager.todayStudyMinutes.collectAsState()
     val totalHours by userProgressManager.totalStudyHours.collectAsState()
@@ -159,7 +160,7 @@ fun DiaryCalendarScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "👑 آبان‌ماه ۱۴۰۵ • تقویم خودسازی زهرا",
+                        text = "👑 آبان‌ماه ۱۴۰۵ • تقویم خودسازی $learnerName",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -242,7 +243,7 @@ fun DiaryCalendarScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "یادداشت‌ها و تجربیات یادگیری زهرا:",
+                text = "یادداشت‌ها و تجربیات یادگیری $learnerName:",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -390,7 +391,7 @@ fun AddDiaryNoteDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    PuffyBadge(text = "ثبت در تقویم خودسازی زهرا", emoji = "👑")
+                    PuffyBadge(text = "ثبت در تقویم خودسازی $learnerName", emoji = "👑")
                     IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
                         Icon(imageVector = Icons.Default.Close, contentDescription = "بستن", tint = Color.Gray)
                     }
@@ -448,7 +449,7 @@ fun AddDiaryNoteDialog(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Text(text = "حس و حال و وضعیت ذهنی زهرا:", fontSize = 12.sp, color = Color.Gray)
+                Text(text = "حس و حال و وضعیت ذهنی $learnerName:", fontSize = 12.sp, color = Color.Gray)
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.padding(vertical = 4.dp)
@@ -487,7 +488,7 @@ fun AddDiaryNoteDialog(
                                     dateDisplayFa = "$dayNumber آبان‌ماه",
                                     moodEmoji = selectedMood.first,
                                     moodTitleFa = selectedMood.second,
-                                    titleFa = title.ifBlank { "پیشرفت روزانه زهرا" },
+                                    titleFa = title.ifBlank { "پیشرفت روزانه $learnerName" },
                                     content = content.ifBlank { "امروز گامی محکم در یادگیری زبان و خودسازی برداشتم." },
                                     englishSentenceLearned = englishSentence,
                                     attachedStickers = attachedStickers.toList(),
