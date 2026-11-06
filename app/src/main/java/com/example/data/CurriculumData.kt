@@ -620,7 +620,7 @@ object CurriculumData {
     // Continuous Word Game: 30 Stages
     val wordGameStages: List<GameStage> = listOf(
         GameStage(1, "PINK", "رنگ زیبای مورد علاقه دخترها (صورتی)", "🌸", listOf('K', 'P', 'N', 'I')),
-        GameStage(2, "ZAHRA", "نام زیبای پرنسس خودسازی", "👑", listOf('A', 'Z', 'H', 'R', 'A')),
+        GameStage(2, "GROW", "رشد کردن و هر روز بهتر شدن", "🌱", listOf('W', 'G', 'R', 'O')),
         GameStage(3, "SMILE", "لبخند درخشان و پرانرژی", "😊", listOf('E', 'L', 'I', 'M', 'S')),
         GameStage(4, "SHINE", "درخشش و پرتوافشانی دائمی", "✨", listOf('E', 'S', 'N', 'I', 'H')),
         GameStage(5, "FLOWER", "شکوفه بهاری خوشبو", "🌷", listOf('R', 'E', 'W', 'O', 'L', 'F')),
