@@ -91,12 +91,12 @@ fun SplashScreen(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.zahra_gold_logo_1793948682133),
-                    contentDescription = "Zahra Self Development Logo",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape)
+                Text(
+                    text = "BH",
+                    fontSize = 46.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color(0xFFFFDF73),
+                    letterSpacing = 2.sp
                 )
             }
 
@@ -116,7 +116,7 @@ fun SplashScreen(
 
             // English Official Name
             Text(
-                text = "ZAHRA SELF DEVELOPMENT",
+                text = "BH SELF DEVELOPMENT",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFFD4AF37),
