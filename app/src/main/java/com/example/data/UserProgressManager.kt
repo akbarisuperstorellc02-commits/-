@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 data class ScoreReward(
     val points: Int,
@@ -90,6 +92,9 @@ class UserProgressManager(context: Context) {
     val medals: StateFlow<List<GoldenMedal>> = _medals.asStateFlow()
 
     init {
+        // Keep daily counters accurate across app restarts and calendar-day changes.
+        refreshDailyCounters()
+
         // Load level unlocks from preferences
         val currentLevels = _levelsState.value.mapIndexed { index, level ->
             val unlocked = prefs.getBoolean("level_${level.id}_unlocked", index == 0)
@@ -183,16 +188,79 @@ class UserProgressManager(context: Context) {
         addGoldCoins(10)
     }
 
+    /**
+     * Records study time without losing partial hours. The v2 minute counter is
+     * migrated lazily from the legacy hours value, so existing progress is kept.
+     */
     fun addStudyMinutes(minutes: Int) {
+        if (minutes <= 0) return
+        refreshDailyCounters()
+
         val newToday = _todayStudyMinutes.value + minutes
         _todayStudyMinutes.value = newToday
-        prefs.edit().putInt("today_study_minutes", newToday).apply()
 
-        val newTotalHours = _totalStudyHours.value + (minutes / 60)
-        if (minutes >= 60) {
-            _totalStudyHours.value = newTotalHours
-            prefs.edit().putInt("total_study_hours", newTotalHours).apply()
+        val legacyHours = _totalStudyHours.value
+        val previousTotalMinutes = prefs.getInt(
+            "total_study_minutes_v2",
+            legacyHours * 60
+        )
+        val newTotalMinutes = previousTotalMinutes + minutes
+        val newTotalHours = newTotalMinutes / 60
+        _totalStudyHours.value = newTotalHours
+
+        prefs.edit()
+            .putInt("today_study_minutes", newToday)
+            .putInt("total_study_minutes_v2", newTotalMinutes)
+            .putInt("total_study_hours", newTotalHours)
+            .apply()
+
+        updateStudyStreak()
+    }
+
+    private fun refreshDailyCounters() {
+        val today = LocalDate.now().toString()
+        val storedDate = prefs.getString("study_day", null)
+
+        if (storedDate == null) {
+            // First run after this update: preserve legacy counters and streak.
+            prefs.edit().putString("study_day", today).apply()
+            return
         }
+        if (storedDate == today) return
+
+        val previousDate = runCatching { LocalDate.parse(storedDate) }.getOrNull()
+        val daysBetween = previousDate?.let { ChronoUnit.DAYS.between(it, LocalDate.now()) }
+        val keepStreak = daysBetween == 1L
+        _todayStudyMinutes.value = 0
+        if (!keepStreak) _streakDays.value = 0
+
+        prefs.edit()
+            .putInt("today_study_minutes", 0)
+            .putInt("streak_days", _streakDays.value)
+            .putString("study_day", today)
+            .apply()
+    }
+
+    private fun updateStudyStreak() {
+        val today = LocalDate.now()
+        val todayKey = today.toString()
+        val lastActivity = prefs.getString("last_study_activity_day", null)
+        if (lastActivity == todayKey) return
+
+        val previous = lastActivity?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+        val nextStreak = if (previous != null && ChronoUnit.DAYS.between(previous, today) == 1L) {
+            _streakDays.value + 1
+        } else if (previous == null && prefs.getString("study_day", null) == todayKey) {
+            maxOf(1, _streakDays.value)
+        } else {
+            1
+        }
+
+        _streakDays.value = nextStreak
+        prefs.edit()
+            .putInt("streak_days", nextStreak)
+            .putString("last_study_activity_day", todayKey)
+            .apply()
     }
 
     fun setDailyGoal(minutes: Int) {
