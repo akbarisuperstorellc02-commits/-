@@ -310,10 +310,9 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(text = "🎯", fontSize = 18.sp)
@@ -333,6 +332,8 @@ fun HomeScreen(
                             } else {
                                 "${todaySeconds / 60} دقیقه و ${todaySeconds % 60} ثانیه از $dailyGoal دقیقه"
                             },
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.End,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = theme.primaryColor
