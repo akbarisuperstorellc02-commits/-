@@ -71,10 +71,30 @@ jobs:
           keytool -genkeypair -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
       - name: Build offline AI Android App Bundle
         run: gradle :app:bundleDebug --stacktrace
-      - name: Upload offline AI App Bundle
+      - name: Build sideloadable APK set with bundled AI model
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 \
+            https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar \
+            -o bundletool-all-1.18.3.jar
+          mkdir -p app/build/outputs/apkset
+          java -jar bundletool-all-1.18.3.jar build-apks \
+            --bundle=app/build/outputs/bundle/debug/app-debug.aab \
+            --output=app/build/outputs/apkset/zahra-offline-ai.apks \
+            --local-testing \
+            --ks=debug.keystore \
+            --ks-key-alias=androiddebugkey \
+            --ks-pass=pass:android \
+            --key-pass=pass:android
+
+      - name: Upload offline AI installation packages
         uses: actions/upload-artifact@v4
         with:
-          name: zahra-offline-ai-aab
-          path: app/build/outputs/bundle/debug/app-debug.aab
+          name: zahra-offline-ai-installers
+          path: |
+            app/build/outputs/bundle/debug/app-debug.aab
+            app/build/outputs/apkset/zahra-offline-ai.apks
+          compression-level: 0
           if-no-files-found: error
           retention-days: 7
