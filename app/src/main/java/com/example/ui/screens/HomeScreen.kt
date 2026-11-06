@@ -135,83 +135,75 @@ fun HomeScreen(
             }
         }
 
-        // Top Puffy App Bar Header
+        // Responsive Top App Bar Header
         item {
             PuffyCard(
                 modifier = Modifier.fillMaxWidth(),
                 cornerRadius = 24.dp,
                 elevation = 6.dp
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable(onClick = onNavigateToProfile)
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // 3D Puffy Profile Avatar Thumbnail
-                        Box(
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(CircleShape)
-                                .border(
-                                    2.dp,
-                                    Brush.linearGradient(listOf(Color.White, theme.primaryColor)),
-                                    CircleShape
-                                )
+                        Row(
+                            modifier = Modifier.weight(1f).clickable(onClick = onNavigateToProfile),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Box(
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier.size(50.dp).clip(CircleShape).border(
+                                    2.dp, Brush.linearGradient(listOf(Color.White, theme.primaryColor)), CircleShape
+                                ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(text = learnerAvatar, fontSize = 30.sp)
                             }
-                        }
-
-                        Spacer(modifier = Modifier.width(10.dp))
-
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = "خودسازی $learnerName",
-                                    fontSize = 16.sp,
+                                    fontSize = 15.sp,
                                     fontWeight = FontWeight.ExtraBold,
-                                    color = theme.buttonBevel
+                                    color = theme.buttonBevel,
+                                    maxLines = 2,
+                                    lineHeight = 18.sp
                                 )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(text = "👑", fontSize = 14.sp)
+                                Text(
+                                    text = rankTitle,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = theme.primaryColor,
+                                    maxLines = 1
+                                )
                             }
-                            Text(
-                                text = rankTitle,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = theme.primaryColor
-                            )
                         }
-                    }
-
-                    // Score XP, Gold Coins & Profile Button
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        PuffyBadge(
-                            text = "$totalScore XP ✨",
-                            backgroundColor = Color(0xFFF3E5F5),
-                            textColor = Color(0xFF8E24AA)
-                        )
-                        PuffyBadge(text = "$goldCoins 🥇", backgroundColor = Color(0xFFFFF9C4), textColor = Color(0xFFE65100))
-
+                        Spacer(modifier = Modifier.width(8.dp))
                         PuffyIconButton(
                             onClick = onNavigateToProfile,
                             icon = Icons.Default.AccountCircle,
                             size = 38.dp,
                             backgroundColor = theme.primaryColor,
                             testTag = "open_profile_button"
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        PuffyBadge(
+                            text = "$totalScore XP ✨",
+                            backgroundColor = Color(0xFFF3E5F5),
+                            textColor = Color(0xFF8E24AA)
+                        )
+                        PuffyBadge(
+                            text = "$goldCoins 🥇",
+                            backgroundColor = Color(0xFFFFF9C4),
+                            textColor = Color(0xFFE65100)
                         )
                     }
                 }
