@@ -72,6 +72,7 @@ fun HomeScreen(
     val stars by userProgressManager.totalStars.collectAsState()
     val streak by userProgressManager.streakDays.collectAsState()
     val todayMinutes by userProgressManager.todayStudyMinutes.collectAsState()
+    val todaySeconds by userProgressManager.todayStudySeconds.collectAsState()
     val dailyGoal by userProgressManager.dailyGoalMinutes.collectAsState()
     val levels by userProgressManager.levelsState.collectAsState()
     val totalScore by userProgressManager.totalScore.collectAsState()
@@ -326,7 +327,11 @@ fun HomeScreen(
                             )
                         }
                         Text(
-                            text = "$todayMinutes از $dailyGoal دقیقه",
+                            text = if (todaySeconds < 60) {
+                                "$todaySeconds ثانیه از $dailyGoal دقیقه"
+                            } else {
+                                "${todaySeconds / 60} دقیقه و ${todaySeconds % 60} ثانیه از $dailyGoal دقیقه"
+                            },
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = theme.primaryColor
@@ -335,7 +340,7 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    val progressRatio = (todayMinutes.toFloat() / dailyGoal.toFloat()).coerceIn(0f, 1f)
+                    val progressRatio = (todaySeconds.toFloat() / (dailyGoal * 60f)).coerceIn(0f, 1f)
                     LinearProgressIndicator(
                         progress = { progressRatio },
                         modifier = Modifier
@@ -349,7 +354,12 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "«از صفر شروع کن، تا تسلط کامل ادامه بده!»",
+                        text = if (todaySeconds >= dailyGoal * 60) {
+                            "آفرین! هدف مطالعه امروزت تکمیل شد 🎉"
+                        } else {
+                            val remainingSeconds = (dailyGoal * 60 - todaySeconds).coerceAtLeast(0)
+                            "برای تکمیل هدف امروز، ${remainingSeconds / 60} دقیقه و ${remainingSeconds % 60} ثانیه باقی مانده است."
+                        },
                         fontSize = 12.sp,
                         color = theme.buttonBevel,
                         fontWeight = FontWeight.SemiBold
