@@ -1,0 +1,6 @@
+{
+  "name": "خودسازی زهرا",
+  "description": "اپلیکیشن اختصاصی خودسازی زهرا و آکادمی جامع زبان انگلیسی Zahra English Academy - از صفر شروع کن، تا تسلط کامل ادامه بده!",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
