@@ -76,6 +76,8 @@ fun WordGameScreen(
     var isStageSolved by remember(currentStage.stageNumber) {
         mutableStateOf(false)
     }
+    var hintCount by remember(currentStage.stageNumber) { mutableIntStateOf(0) }
+    var hintMessage by remember(currentStage.stageNumber) { mutableStateOf("") }
 
     fun checkWord() {
         val formed = selectedLetters.map { it.second }.joinToString("")
@@ -194,7 +196,47 @@ fun WordGameScreen(
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Paid, progressive letter hint: one coin reveals one next letter.
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    PuffyButton(
+                        onClick = {
+                            if (hintCount >= currentStage.targetWordEn.length) {
+                                hintMessage = "تمام حروف کلمه آشکار شده است."
+                            } else if (userProgressManager.spendGoldCoin()) {
+                                hintCount += 1
+                                hintMessage = "حرف راهنما: ${currentStage.targetWordEn[hintCount - 1]}  •  ۱ سکه مصرف شد"
+                            } else {
+                                hintMessage = "برای دریافت راهنمایی، دست‌کم ۱ سکه لازم داری."
+                            }
+                        },
+                        text = "راهنمایی  (۱ سکه)",
+                        emoji = "💡",
+                        height = 42.dp,
+                        fontSize = 13,
+                        backgroundColor = Color(0xFFB85C9E),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                if (hintCount > 0 || hintMessage.isNotBlank()) {
+                    Text(
+                        text = if (hintCount > 0) "راهنمای کلمه: " + currentStage.targetWordEn.take(hintCount) +
+                            "•".repeat((currentStage.targetWordEn.length - hintCount).coerceAtLeast(0)) +
+                            if (hintMessage.startsWith("برای") || hintMessage.startsWith("تمام")) "\n$hintMessage" else "" else hintMessage,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = theme.primaryColor,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Slots for Selected Letters
                 Row(
