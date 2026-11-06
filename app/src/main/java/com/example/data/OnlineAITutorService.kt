@@ -4,7 +4,7 @@ import android.util.Log
 import com.example.model.ChatMessage
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
-import com.google.firebase.ai.GenerativeBackend
+import com.google.firebase.ai.type.GenerativeBackend
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
@@ -22,7 +22,10 @@ class OnlineAITutorService {
 
     // Lazy initialization per Firebase AI Logic guidelines to avoid startup overhead
     private val generativeModel by lazy {
-        Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
+        Firebase.ai(
+            backend = GenerativeBackend.googleAI(),
+            useLimitedUseAppCheckTokens = true
+        ).generativeModel(
             modelName = "gemini-3.8-flash",
             systemInstruction = com.google.firebase.ai.type.content {
                 text(
