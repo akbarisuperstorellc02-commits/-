@@ -133,9 +133,9 @@ enum class ZahraThemeMode(
 }
 
 enum class ZahraFontStyle(val titleFa: String, val sampleText: String) {
-    FANTASY_ROUND(titleFa = "گرد و فانتزی پفکی", sampleText = "Self Development 🌸"),
-    PRINCESS_CUTE(titleFa = "پرنسسی کیوت", sampleText = "Start From Zero to Z9 👑"),
-    CHIC_ELEGANT(titleFa = "شیک و مدرن دخترانه", sampleText = "English Academy ✨")
+    FANTASY_ROUND(titleFa = "گرد و فانتزی", sampleText = "Self Development ✨"),
+    PRINCESS_CUTE(titleFa = "فانتزی و نمایشی", sampleText = "Start From Zero to Z9 👑"),
+    CHIC_ELEGANT(titleFa = "شیک و مدرن", sampleText = "English Academy ✨")
 }
 
 data class ZahraThemeState(
