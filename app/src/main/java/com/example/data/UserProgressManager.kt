@@ -281,6 +281,15 @@ class UserProgressManager(context: Context) {
         prefs.edit().putInt("daily_goal_minutes", minutes).apply()
     }
 
+    fun spendGoldCoin(): Boolean {
+        val current = _goldCoins.value
+        if (current < 1) return false
+        val updated = current - 1
+        _goldCoins.value = updated
+        prefs.edit().putInt("gold_coins", updated).apply()
+        return true
+    }
+
     fun addGoldCoins(amount: Int) {
         val newGold = _goldCoins.value + amount
         _goldCoins.value = newGold
