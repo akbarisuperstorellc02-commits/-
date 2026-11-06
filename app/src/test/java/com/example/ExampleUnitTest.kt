@@ -24,8 +24,9 @@ class ExampleUnitTest {
         assertEquals(60, CurriculumData.wordGameStages.last().stageNumber)
         CurriculumData.wordGameStages.forEachIndexed { index, stage ->
             assertEquals("Word game stages should be continuous", index + 1, stage.stageNumber)
-            assertTrue("Stage ${stage.stageNumber} should have a target word", stage.word.isNotBlank())
-            assertTrue("Stage ${stage.stageNumber} should have a hint", stage.hint.isNotBlank())
+            assertTrue("Stage ${stage.stageNumber} should have a target word", stage.targetWordEn.isNotBlank())
+            assertTrue("Stage ${stage.stageNumber} should have a hint", stage.hintFa.isNotBlank())
+            assertEquals("Jumbled letters should match the target word", stage.targetWordEn.lowercase().toList().sorted(), stage.jumbledLetters.map { it.lowercaseChar() }.sorted())
         }
     }
 
