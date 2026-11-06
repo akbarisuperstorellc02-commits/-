@@ -74,7 +74,7 @@ fun WordGameScreen(
     }
 
     var isStageSolved by remember(currentStage.stageNumber) {
-        mutableStateOf(false)
+        mutableStateOf(currentStage.isCompleted)
     }
     var hintCount by remember(currentStage.stageNumber) { mutableIntStateOf(0) }
     var hintMessage by remember(currentStage.stageNumber) { mutableStateOf("") }
@@ -192,7 +192,7 @@ fun WordGameScreen(
                     text = currentStage.hintFa,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center
                 )
 
@@ -220,7 +220,9 @@ fun WordGameScreen(
                         height = 42.dp,
                         fontSize = 13,
                         backgroundColor = Color(0xFFB85C9E),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isStageSolved,
+                        textColor = if (theme == com.example.ui.theme.ZahraThemeMode.OBSIDIAN_BLACK_GOLD) Color(0xFF17130A) else Color.White
                     )
                 }
                 if (hintCount > 0 || hintMessage.isNotBlank()) {
