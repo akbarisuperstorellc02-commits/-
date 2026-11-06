@@ -61,6 +61,7 @@ fun PuffyProfileScreen(
     val stars by userProgressManager.totalStars.collectAsState()
     val streak by userProgressManager.streakDays.collectAsState()
     val totalHours by userProgressManager.totalStudyHours.collectAsState()
+    val todayMinutes by userProgressManager.todayStudyMinutes.collectAsState()
     val medals by userProgressManager.medals.collectAsState()
     val levels by userProgressManager.levelsState.collectAsState()
     val totalScore by userProgressManager.totalScore.collectAsState()
