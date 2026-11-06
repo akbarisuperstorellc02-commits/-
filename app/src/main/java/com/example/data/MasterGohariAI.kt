@@ -20,8 +20,8 @@ object MasterGohariAI {
         return personalizeMessage(ChatMessage(
             id = UUID.randomUUID().toString(),
             isFromTutor = true,
-            englishText = "Welcome to Zahra English Academy, dear Zahra! 👑 I am your dedicated private AI tutor. Our motto is: 'Start from zero, continue until absolute mastery!' I will walk with you patiently, step-by-step from zero to C2. Shall we start with Phonics and sounds or would you like to review your foundations?",
-            persianTranslation = "به آکادمی زبان انگلیسی زهرا خوش آمدی زهرای عزیزم! 👑 من معلم خصوصی هوش مصنوعی تو هستم. شعار ما این است: «از صفر شروع کن، تا تسلط کامل ادامه بده!» من با صبوری، احترام و گام‌به‌گام از صفر تا سطح C2 کنارت خواهم بود. دوست داری با حروف و فونیکس شروع کنیم یا مباحث پایه را با هم مرور کنیم؟",
+            englishText = "Welcome to BH Exclusive Academy, dear Zahra! 👑 I am your dedicated private AI tutor. Our motto is: 'Start from zero, continue until absolute mastery!' I will walk with you patiently, step-by-step from zero to C2. Shall we start with Phonics and sounds or would you like to review your foundations?",
+            persianTranslation = "به آکادمی اختصاصی BH خوش آمدی، زهرای عزیزم! 👑 من معلم خصوصی هوش مصنوعی تو هستم. شعار ما این است: «از صفر شروع کن، تا تسلط کامل ادامه بده!» من با صبوری، احترام و گام‌به‌گام از صفر تا سطح C2 کنارت خواهم بود. دوست داری با حروف و فونیکس شروع کنیم یا مباحث پایه را با هم مرور کنیم؟",
             grammarTipFa = "نکته استاد: یادگیری واقعی با تکرار مداوم و بدون ترس از اشتباه شکل می‌گیرد. من همیشه در کنارت هستم.",
             quickReplies = listOf(
                 "از صفر برام فونیکس رو بگو 🔤",
@@ -92,7 +92,7 @@ object MasterGohariAI {
                 TutorResponse(
                     english = "Our golden motto is: 'Start from zero, continue until absolute mastery!' Remember Zahra, masters were once beginners who never quit. I believe in your royal potential.",
                     persian = "شعار زرین آکادمی ما: «از صفر شروع کن، تا تسلط کامل ادامه بده!» یادت باشد زهرای من، بزرگ‌ترین اساتید جهان روزی از نقطه صفر شروع کرده‌اند. من به پتانسیل درخشان تو ایمان دارم.",
-                    grammarTip = "شعار آکادمی زهرا: Start from zero, continue until absolute mastery!",
+                    grammarTip = "شعار آکادمی BH: Start from zero, continue until absolute mastery!",
                     quickReplies = listOf("از صفر شروع کن، تا تسلط کامل ادامه بده! 🏆", "Let's study now! 📚")
                 )
             }
