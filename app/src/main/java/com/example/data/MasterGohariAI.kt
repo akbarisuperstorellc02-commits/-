@@ -128,7 +128,7 @@ object MasterGohariAI {
             }
         }
 
-        return ChatMessage(
+        return personalizeMessage(ChatMessage(
             id = UUID.randomUUID().toString(),
             isFromTutor = true,
             englishText = response.english,
