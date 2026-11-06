@@ -607,7 +607,8 @@ fun HomeFeatureCard(
                 text = subtitle,
                 fontSize = 11.sp,
                 color = Color.Gray,
-                maxLines = 1
+                maxLines = 2,
+                lineHeight = 15.sp
             )
         }
     }
