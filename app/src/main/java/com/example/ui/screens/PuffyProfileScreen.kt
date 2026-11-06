@@ -61,7 +61,6 @@ fun PuffyProfileScreen(
     val stars by userProgressManager.totalStars.collectAsState()
     val streak by userProgressManager.streakDays.collectAsState()
     val totalHours by userProgressManager.totalStudyHours.collectAsState()
-    val todayMinutes by userProgressManager.todayStudyMinutes.collectAsState()
     val medals by userProgressManager.medals.collectAsState()
     val levels by userProgressManager.levelsState.collectAsState()
     val totalScore by userProgressManager.totalScore.collectAsState()
@@ -308,22 +307,26 @@ fun PuffyProfileScreen(
                         Spacer(modifier = Modifier.height(10.dp))
 
                         // Current Level Badge & Stars
-                        Row(
+                        LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            contentPadding = PaddingValues(horizontal = 2.dp)
                         ) {
-                            PuffyBadge(
-                                text = "سطح فعلی: ${currentActiveLevel?.levelCode ?: "A1"}",
-                                emoji = "🏆",
-                                backgroundColor = Color(0xFF292D3B),
-                                textColor = Color.White
-                            )
-                            PuffyBadge(
-                                text = "$completedLevelsCount سطح مسلط شده",
-                                emoji = "✨",
-                                backgroundColor = Color(0xFF3A3020),
-                                textColor = theme.accentGold
-                            )
+                            item {
+                                PuffyBadge(
+                                    text = "سطح فعلی: ${currentActiveLevel?.levelCode ?: "A1"}",
+                                    emoji = "🏆",
+                                    backgroundColor = Color(0xFF292D3B),
+                                    textColor = Color.White
+                                )
+                            }
+                            item {
+                                PuffyBadge(
+                                    text = "$completedLevelsCount سطح مسلط شده",
+                                    emoji = "✨",
+                                    backgroundColor = Color(0xFF3A3020),
+                                    textColor = theme.accentGold
+                                )
+                            }
                         }
                     }
                 }
@@ -437,7 +440,7 @@ fun PuffyProfileScreen(
                         )
                         ProfileStatCard(
                             title = "کل زمان مطالعه",
-                            value = "$totalHours ساعت",
+                            value = "$totalHours ساعت • امروز $todayMinutes دقیقه",
                             emoji = "⏱️",
                             color = Color(0xFF7B2CBF),
                             modifier = Modifier.weight(1f)
