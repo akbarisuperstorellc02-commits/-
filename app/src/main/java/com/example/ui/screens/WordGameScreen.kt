@@ -107,7 +107,7 @@ fun WordGameScreen(
                     tint = theme.primaryColor
                 )
             }
-            PuffyBadge(text = "چالش واژگان طلایی زهرا", emoji = "👑")
+            PuffyBadge(text = "چالش واژگان آکادمی BH", emoji = "👑")
             Row(verticalAlignment = Alignment.CenterVertically) {
                 PuffyBadge(text = "$goldCoins 🥇", backgroundColor = Color(0xFF241F10), textColor = theme.primaryColor)
                 Spacer(modifier = Modifier.width(6.dp))
