@@ -107,7 +107,8 @@ dependencies {
   implementation(libs.androidx.room.runtime)
   // implementation(libs.coil.compose)
   implementation(libs.converter.moshi)
-  implementation(libs.firebase.ai)
+  // Gemini is called only by the trusted Cloud Functions backend; no API key ships in the APK.
+  implementation(libs.firebase.functions)
   // Uncomment to use Firestore:
   // implementation(libs.firebase.firestore)
 
