@@ -53,10 +53,11 @@ fun SpeakingPracticeScreen(
     onBack: () -> Unit
 ) {
     val theme = LocalZahraTheme.current.currentTheme
+    val learnerName by userProgressManager.learnerName.collectAsState()
 
     val drillList = listOf(
         SpeakingDrillItem("Start from zero, continue until absolute mastery!", "از صفر شروع کن، تا تسلط کامل ادامه بده!", "Motto", "👑"),
-        SpeakingDrillItem("I am Zahra, and I am learning English with passion.", "من زهرا هستم و با اشتیاق انگلیسی یاد می‌گیرم.", "A1", "✨"),
+        SpeakingDrillItem("I am $learnerName, and I am learning English with passion.", "من $learnerName هستم و با اشتیاق انگلیسی یاد می‌گیرم.", "A1", "✨"),
         SpeakingDrillItem("Could you please explain that from the beginning?", "می‌شود لطفاً آن را از ابتدا توضیح دهید؟", "A2", "🗣️"),
         SpeakingDrillItem("Think positive and shine like pure gold every day.", "مثبت فکر کن و هر روز مثل طلای ناب بدرخش.", "Phonics", "💡"),
         SpeakingDrillItem("If you persist with dedication, you will succeed.", "اگر با تعهد پایداری کنی، موفق خواهی شد.", "B1", "🏆"),
