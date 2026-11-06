@@ -358,6 +358,7 @@ fun AddDiaryNoteDialog(
     onSave: (DiaryNote) -> Unit
 ) {
     val theme = LocalZahraTheme.current.currentTheme
+    val learnerName = LocalZahraTheme.current.learnerName
 
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
