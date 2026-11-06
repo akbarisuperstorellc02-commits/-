@@ -358,7 +358,10 @@ fun LevelCardItem(
                             text = level.titleFa,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (level.isUnlocked) theme.buttonBevel else Color.Gray
+                            color = if (level.isUnlocked) theme.buttonBevel else Color.Gray,
+                            maxLines = 2,
+                            lineHeight = 18.sp,
+                            modifier = Modifier.weight(1f)
                         )
                         if (level.bestScore > 0) {
                             PuffyBadge(text = "${level.bestScore}%", emoji = "⭐")
@@ -370,7 +373,8 @@ fun LevelCardItem(
                         text = "${level.titleEn} • ${level.descriptionFa}",
                         fontSize = 11.sp,
                         color = Color.Gray,
-                        maxLines = 1
+                        maxLines = 3,
+                        lineHeight = 15.sp
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
