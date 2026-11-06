@@ -4,23 +4,21 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Puffy golden sparkle -->
-    <path android:fillColor="#FFFFD76A" android:pathData="M54,12 C57,25 61,29 74,32 C61,35 57,39 54,52 C51,39 47,35 34,32 C47,29 51,25 54,12 Z"/>
-    <path android:fillColor="#FFFFFFFF" android:pathData="M24,27 C26,34 28,36 35,38 C28,40 26,42 24,49 C22,42 20,40 13,38 C20,36 22,34 24,27 Z"/>
-    <path android:fillColor="#FFFFE9A6" android:pathData="M84,24 C86,31 88,33 95,35 C88,37 86,39 84,46 C82,39 80,37 73,35 C80,33 82,31 84,24 Z"/>
-    <!-- Puffy book lower extrusion -->
-    <path android:fillColor="#FF9B5A16" android:pathData="M13,59 C28,52 42,55 54,65 C66,55 80,52 95,59 L95,87 C79,80 66,82 54,92 C42,82 29,80 13,87 Z"/>
-    <!-- Left and right raised pages -->
-    <path android:fillColor="#FFFFF4D5" android:pathData="M14,56 C29,49 43,53 54,63 L54,86 C42,77 28,75 14,82 Z"/>
-    <path android:fillColor="#FFFFFFFF" android:pathData="M94,56 C79,49 65,53 54,63 L54,86 C66,77 80,75 94,82 Z"/>
-    <!-- Page bevels -->
-    <path android:fillColor="#FFFFC85A" android:pathData="M14,56 C29,49 43,53 54,63 L54,69 C42,59 28,57 14,64 Z"/>
-    <path android:fillColor="#FFFFD978" android:pathData="M94,56 C79,49 65,53 54,63 L54,69 C66,59 80,57 94,64 Z"/>
-    <!-- Center spine -->
-    <path android:fillColor="#FFFFB52E" android:pathData="M51,62 Q54,59 57,62 L57,88 Q54,85 51,88 Z"/>
-    <!-- Growth arrow rising from book -->
-    <path android:fillColor="#FFFFB52E" android:pathData="M48,60 L48,47 L41,47 L54,32 L67,47 L60,47 L60,60 Z"/>
-    <path android:fillColor="#FFFFE58A" android:pathData="M53,58 L53,43 L48,43 L54,36 L60,43 L55,43 L55,58 Z"/>
-    <!-- Small pink puffy heart -->
-    <path android:fillColor="#FFFF6F9B" android:pathData="M20,18 C14,11 4,19 20,31 C36,19 26,11 20,18 Z"/>
+    <!-- Refined gold open book -->
+    <path android:fillColor="#FF8D541A" android:pathData="M10,59 C25,50 42,53 54,64 C66,53 83,50 98,59 L98,88 C81,80 66,82 54,94 C42,82 27,80 10,88 Z"/>
+    <path android:fillColor="#FFFFE9B8" android:pathData="M12,56 C27,48 42,52 54,63 L54,85 C42,76 27,74 12,82 Z"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M96,56 C81,48 66,52 54,63 L54,85 C66,76 81,74 96,82 Z"/>
+    <path android:fillColor="#FFFFC85A" android:pathData="M12,56 C27,48 42,52 54,63 L54,68 C42,58 27,57 12,64 Z"/>
+    <path android:fillColor="#FFFFD979" android:pathData="M96,56 C81,48 66,52 54,63 L54,68 C66,58 81,57 96,64 Z"/>
+    <path android:fillColor="#FFB97827" android:pathData="M51,62 Q54,59 57,62 L57,89 Q54,86 51,89 Z"/>
+    <!-- Upward path / personal growth symbol -->
+    <path android:fillColor="#FFD99527" android:pathData="M47,65 C47,57 48,51 52,44 L45,44 L57,29 L69,44 L62,44 C62,53 59,60 57,67 Z"/>
+    <path android:fillColor="#FFFFE7A0" android:pathData="M53,60 C54,52 56,47 60,40 L55,40 L57,36 L63,43 L58,43 C58,50 56,56 53,60 Z"/>
+    <!-- Minimal graduation cap -->
+    <path android:fillColor="#FF15182B" android:pathData="M32,23 L54,14 L77,23 L54,32 Z"/>
+    <path android:fillColor="#FF252943" android:pathData="M38,27 L54,34 L70,27 L70,32 C61,39 47,39 38,32 Z"/>
+    <path android:fillColor="#FFFFC85A" android:pathData="M76,23 L79,24 L79,38 L76,40 Z"/>
+    <path android:fillColor="#FFFFD76A" android:pathData="M73,39 Q77,36 81,39 Q77,43 73,39 Z"/>
+    <!-- Star accent -->
+    <path android:fillColor="#FFFFE28A" android:pathData="M82,10 C84,18 86,20 94,22 C86,24 84,26 82,34 C80,26 78,24 70,22 C78,20 80,18 82,10 Z"/>
 </vector>
