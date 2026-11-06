@@ -77,7 +77,6 @@ fun MasterGohariChatScreen(
     val onlineAiService = remember { com.example.data.OnlineAITutorService() }
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
 
-    var isOnlineAiMode by remember { mutableStateOf(true) }
     var isAiGenerating by remember { mutableStateOf(false) }
     var aiErrorMessage by remember { mutableStateOf<String?>(null) }
     var inputText by remember { mutableStateOf("") }
@@ -90,7 +89,7 @@ fun MasterGohariChatScreen(
         if (trimmed.isBlank() || isAiGenerating) return
         inputText = ""
 
-        if (isOnlineAiMode) {
+        run {
             val userMsg = ChatMessage(
                 id = java.util.UUID.randomUUID().toString(),
                 isFromTutor = false,
@@ -116,15 +115,10 @@ fun MasterGohariChatScreen(
                         userProgressManager.addStudyMinutes(3)
                     }
                     is com.example.data.OnlineAiResult.Error -> {
-                        if (result.fallbackMessage != null) {
-                            userProgressManager.addCustomChatMessage(result.fallbackMessage)
-                        }
                         aiErrorMessage = result.errorMessage
                     }
                 }
             }
-        } else {
-            userProgressManager.sendUserMessage(trimmed)
         }
     }
 
@@ -193,34 +187,19 @@ fun MasterGohariChatScreen(
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = if (isOnlineAiMode) "هوش مصنوعی آنلاین Gemini" else "معلم خصوصی (آفلاین)",
+                            text = "هوش مصنوعی آنلاین Gemini",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
                     }
                     Text(
-                        text = if (isOnlineAiMode) "پاسخ زنده ابری، تصحیح پیشرفته و مکالمه" else "تمرین آفلاین بدون نیاز به اینترنت",
+                        text = "پاسخ زنده از مدل هوش مصنوعی آنلاین",
                         fontSize = 10.sp,
                         color = Color(0xFFAAAAAA)
                     )
                 }
 
-                // Mode Toggle Switch Button
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(if (isOnlineAiMode) Color(0xFF2E7D32) else Color(0xFF424242))
-                        .clickable { isOnlineAiMode = !isOnlineAiMode }
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        text = if (isOnlineAiMode) "⚡ آنلاین" else "🌸 آفلاین",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
             }
         }
 
@@ -272,6 +251,17 @@ fun MasterGohariChatScreen(
             }
         }
 
+        if (aiErrorMessage != null) {
+            Text(
+                text = "خطای اتصال هوش مصنوعی آنلاین: $aiErrorMessage",
+                color = Color(0xFFFF8A80),
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp, vertical = 6.dp)
+            )
+        }
+
         // Bottom Input Row
         Box(
             modifier = Modifier
@@ -306,7 +296,7 @@ fun MasterGohariChatScreen(
                     onValueChange = { inputText = it },
                     placeholder = {
                         Text(
-                            text = if (isOnlineAiMode) "پیام آنلاین برای Gemini بنویسید..." else "به انگلیسی یا فارسی بنویسید...",
+                            text = "پیام خود را برای استاد گوهری بنویسید..."
                             fontSize = 12.sp,
                             color = Color.Gray
                         )
