@@ -14,7 +14,7 @@ private const val TAG = "OnlineAITutorService"
 
 sealed interface OnlineAiResult {
     data class Success(val message: ChatMessage) : OnlineAiResult
-    data class Error(val errorMessage: String, val fallbackMessage: ChatMessage?) : OnlineAiResult
+    data class Error(val errorMessage: String) : OnlineAiResult
 }
 
 class OnlineAITutorService {
@@ -92,23 +92,20 @@ class OnlineAITutorService {
                 OnlineAiResult.Success(replyMessage)
             } else {
                 OnlineAiResult.Error(
-                    errorMessage = "پاسخ خالی از مدل هوش مصنوعی دریافت شد.",
-                    fallbackMessage = MasterGohariAI.generateReply(userMessage)
+                    errorMessage = "پاسخ خالی از مدل هوش مصنوعی دریافت شد؛ هیچ پاسخ آماده‌ای نمایش داده نشد."
                 )
             }
         } catch (e: TimeoutCancellationException) {
             Log.e(TAG, "Online AI generation timed out", e)
             OnlineAiResult.Error(
-                errorMessage = "زمان پاسخگویی هوش مصنوعی به پایان رسید (Timeout).",
-                fallbackMessage = MasterGohariAI.generateReply(userMessage)
+                errorMessage = "زمان پاسخگویی هوش مصنوعی آنلاین به پایان رسید. لطفاً دوباره تلاش کنید."
             )
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             Log.e(TAG, "Online AI generation error", e)
             OnlineAiResult.Error(
-                errorMessage = e.localizedMessage ?: "خطای ناشناخته در ارتباط با هوش مصنوعی آنلاین.",
-                fallbackMessage = MasterGohariAI.generateReply(userMessage)
+                errorMessage = e.localizedMessage ?: "ارتباط با هوش مصنوعی آنلاین برقرار نشد. لطفاً اتصال و تنظیمات Firebase را بررسی کنید."
             )
         }
     }
