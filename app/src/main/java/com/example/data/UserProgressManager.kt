@@ -70,7 +70,11 @@ class UserProgressManager(context: Context) {
     )
     val fontStyle: StateFlow<ZahraFontStyle> = _fontStyle.asStateFlow()
 
-    private val _learnerName = MutableStateFlow(prefs.getString("learner_name", "زهرا") ?: "زهرا")
+    private val _learnerName = MutableStateFlow(
+        prefs.getString("learner_name", "زهرا")
+            ?.takeIf { it.isNotBlank() && it != "کاربر جدید" }
+            ?: "زهرا"
+    )
     val learnerName: StateFlow<String> = _learnerName.asStateFlow()
 
     private val _totalScore = MutableStateFlow(prefs.getInt("total_score_xp", 280))
@@ -105,6 +109,9 @@ class UserProgressManager(context: Context) {
     val medals: StateFlow<List<GoldenMedal>> = _medals.asStateFlow()
 
     init {
+        // Migrate fresh installs and the former placeholder profile name to Zahra.
+        prefs.edit().putString("learner_name", _learnerName.value).apply()
+
         // Keep daily counters accurate across app restarts and calendar-day changes.
         refreshDailyCounters()
 
