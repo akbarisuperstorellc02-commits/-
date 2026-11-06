@@ -118,7 +118,7 @@ class MainActivity : ComponentActivity() {
             )
 
             CompositionLocalProvider(LocalZahraTheme provides zahraState) {
-                MyApplicationTheme(zahraTheme = currentTheme) {
+                MyApplicationTheme(zahraTheme = currentTheme, fontStyle = currentFontStyle) {
                     MainAppContent(
                         userProgressManager = userProgressManager,
                         ttsHelper = ttsHelper
