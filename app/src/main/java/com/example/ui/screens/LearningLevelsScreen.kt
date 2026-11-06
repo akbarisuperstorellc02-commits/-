@@ -64,6 +64,7 @@ fun LearningLevelsScreen(
     onBack: () -> Unit
 ) {
     val theme = LocalZahraTheme.current.currentTheme
+    val learnerName = LocalZahraTheme.current.learnerName
     val levels by userProgressManager.levelsState.collectAsState()
 
     var selectedLevelForDetail by remember { mutableStateOf<Level?>(null) }
@@ -120,7 +121,7 @@ fun LearningLevelsScreen(
 
                 Column {
                     Text(
-                        text = selectedLevelForDetail?.titleFa ?: "نقشه جامع سطوح A1 تا Z9 زهرا",
+                        text = selectedLevelForDetail?.titleFa ?: "نقشه جامع سطوح A1 تا Z9 $learnerName",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = theme.buttonBevel
@@ -251,7 +252,7 @@ fun LearningLevelsScreen(
                             }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = if (currentLevel.bestScore > 0) "بهترین نمره زهرا: ${currentLevel.bestScore}% ⭐" else "برای باز کردن سطح بعدی، در امتحان شرکت کنید",
+                                text = if (currentLevel.bestScore > 0) "بهترین نمره $learnerName: ${currentLevel.bestScore}% ⭐" else "برای باز کردن سطح بعدی، در امتحان شرکت کنید",
                                 fontSize = 11.sp,
                                 color = Color.DarkGray
                             )
