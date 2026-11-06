@@ -70,7 +70,7 @@ class UserProgressManager(context: Context) {
     )
     val fontStyle: StateFlow<ZahraFontStyle> = _fontStyle.asStateFlow()
 
-    private val _learnerName = MutableStateFlow(prefs.getString("learner_name", "زهرا") ?: "زهرا")
+    private val _learnerName = MutableStateFlow(prefs.getString("learner_name", "کاربر جدید") ?: "کاربر جدید")
     val learnerName: StateFlow<String> = _learnerName.asStateFlow()
 
     private val _totalScore = MutableStateFlow(prefs.getInt("total_score_xp", 280))
@@ -123,6 +123,8 @@ class UserProgressManager(context: Context) {
                 englishSentenceLearned = personalizeText(note.englishSentenceLearned, _learnerName.value)
             )
         }
+        _chatMessages.value = _chatMessages.value.map { personalizeChatMessage(it, _learnerName.value) }
+        saveMessages(_chatMessages.value)
 
         // Load level unlocks from preferences
         val currentLevels = _levelsState.value.mapIndexed { index, level ->
@@ -180,6 +182,7 @@ class UserProgressManager(context: Context) {
     }
 
     fun updateLearnerName(newName: String) {
+        val previousName = _learnerName.value.trim()
         val trimmed = newName.trim().take(40).ifBlank { "کاربر جدید" }
         _learnerName.value = trimmed
         prefs.edit().putString("learner_name", trimmed).apply()
@@ -207,22 +210,43 @@ class UserProgressManager(context: Context) {
         }
         _diaryNotes.value = _diaryNotes.value.map { note ->
             note.copy(
-                titleFa = personalizeText(note.titleFa, trimmed),
-                content = personalizeText(note.content, trimmed),
-                englishSentenceLearned = personalizeText(note.englishSentenceLearned, trimmed)
+                titleFa = personalizeText(note.titleFa, trimmed, previousName),
+                content = personalizeText(note.content, trimmed, previousName),
+                englishSentenceLearned = personalizeText(note.englishSentenceLearned, trimmed, previousName)
             )
         }
         saveDiaryNotes(_diaryNotes.value)
+
+        // Refresh existing tutor history too, so a renamed learner never sees the old name.
+        _chatMessages.value = _chatMessages.value.map { message ->
+            if (message.isFromTutor) personalizeChatMessage(message, trimmed, previousName) else message
+        }
+        saveMessages(_chatMessages.value)
     }
 
-    private fun personalizeText(source: String, name: String): String {
-        return source
+    private fun personalizeText(source: String, name: String, previousName: String? = null): String {
+        var result = source
+        if (!previousName.isNullOrBlank() && !previousName.equals(name, ignoreCase = true)) {
+            result = result.replace(previousName, name, ignoreCase = true)
+        }
+        return result
             .replace("Zahra", name, ignoreCase = true)
             .replace("زهرای عزیزم", "$name عزیزم")
             .replace("زهرای عزیز", "$name عزیز")
             .replace("زهرای من", "$name عزیز")
             .replace("زهرای", name)
             .replace("زهرا", name)
+            .replace("زهره", name)
+    }
+
+    private fun personalizeChatMessage(message: ChatMessage, name: String, previousName: String? = null): ChatMessage {
+        return message.copy(
+            englishText = personalizeText(message.englishText, name, previousName),
+            persianTranslation = message.persianTranslation?.let { personalizeText(it, name, previousName) },
+            grammarTipFa = message.grammarTipFa?.let { personalizeText(it, name, previousName) },
+            weaknessFlagged = message.weaknessFlagged?.let { personalizeText(it, name, previousName) },
+            quickReplies = message.quickReplies.map { personalizeText(it, name, previousName) }
+        )
     }
 
     private fun personalizeLevel(level: Level, name: String): Level {
