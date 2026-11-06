@@ -79,6 +79,12 @@ class UserProgressManager(context: Context) {
     private val _learnerAvatar = MutableStateFlow(prefs.getString("learner_avatar", "👑") ?: "👑")
     val learnerAvatar: StateFlow<String> = _learnerAvatar.asStateFlow()
 
+    private val _learnerGender = MutableStateFlow(prefs.getString("learner_gender", "female") ?: "female")
+    val learnerGender: StateFlow<String> = _learnerGender.asStateFlow()
+
+    private val _learnerBio = MutableStateFlow(prefs.getString("learner_bio", "در مسیر یادگیری و رشد هر روز بهتر می‌شوم ✨") ?: "در مسیر یادگیری و رشد هر روز بهتر می‌شوم ✨")
+    val learnerBio: StateFlow<String> = _learnerBio.asStateFlow()
+
     private val _chatMessages = MutableStateFlow<List<ChatMessage>>(loadSavedMessages())
     val chatMessages: StateFlow<List<ChatMessage>> = _chatMessages.asStateFlow()
 
@@ -158,6 +164,25 @@ class UserProgressManager(context: Context) {
         val trimmed = newName.trim().ifBlank { "زهرا" }
         _learnerName.value = trimmed
         prefs.edit().putString("learner_name", trimmed).apply()
+    }
+
+    fun setLearnerGender(gender: String) {
+        val normalized = if (gender == "male") "male" else "female"
+        _learnerGender.value = normalized
+        val defaultAvatar = if (normalized == "male") "🧑🏻‍🎓" else "👸🏻"
+        _learnerAvatar.value = defaultAvatar
+        prefs.edit().putString("learner_gender", normalized).putString("learner_avatar", defaultAvatar).apply()
+    }
+
+    fun setAvatar(avatar: String) {
+        _learnerAvatar.value = avatar
+        prefs.edit().putString("learner_avatar", avatar).apply()
+    }
+
+    fun updateLearnerBio(bio: String) {
+        val trimmed = bio.trim().take(120)
+        _learnerBio.value = trimmed
+        prefs.edit().putString("learner_bio", trimmed).apply()
     }
 
     fun addScore(points: Int, reason: String) {
