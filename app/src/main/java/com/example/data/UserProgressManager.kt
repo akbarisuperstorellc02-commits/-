@@ -40,7 +40,10 @@ class UserProgressManager(context: Context) {
     private val _streakDays = MutableStateFlow(prefs.getInt("streak_days", 7))
     val streakDays: StateFlow<Int> = _streakDays.asStateFlow()
 
-    private val _todayStudyMinutes = MutableStateFlow(prefs.getInt("today_study_minutes", 25))
+    private val _todayStudySeconds = MutableStateFlow(prefs.getInt("today_study_seconds", 0))
+    val todayStudySeconds: StateFlow<Int> = _todayStudySeconds.asStateFlow()
+
+    private val _todayStudyMinutes = MutableStateFlow(_todayStudySeconds.value / 60)
     val todayStudyMinutes: StateFlow<Int> = _todayStudyMinutes.asStateFlow()
 
     private val _dailyGoalMinutes = MutableStateFlow(prefs.getInt("daily_goal_minutes", 30))
@@ -167,7 +170,7 @@ class UserProgressManager(context: Context) {
             val bonusGold = stars * 30
             addGoldCoins(bonusGold)
             addStars(stars)
-            addStudyMinutes(15)
+
             val xpEarned = 70 + (stars * 20)
             addScore(xpEarned, "قبولی در آزمون سطح $levelId")
         }
@@ -298,32 +301,34 @@ class UserProgressManager(context: Context) {
             else -> 10
         }
         addScore(points, "تمرین گویش صوتی ($scorePercent%)")
-        addStudyMinutes(3)
+
         addGoldCoins(10)
     }
 
     /**
-     * Records study time without losing partial hours. The v2 minute counter is
-     * migrated lazily from the legacy hours value, so existing progress is kept.
+     * Adds only measured foreground learning time supplied by the monotonic session timer.
      */
-    fun addStudyMinutes(minutes: Int) {
-        if (minutes <= 0) return
+    fun recordStudySeconds(seconds: Int) {
+        if (seconds <= 0) return
         refreshDailyCounters()
 
-        val newToday = _todayStudyMinutes.value + minutes
-        _todayStudyMinutes.value = newToday
+        val newTodaySeconds = _todayStudySeconds.value + seconds
+        _todayStudySeconds.value = newTodaySeconds
+        _todayStudyMinutes.value = newTodaySeconds / 60
 
-        val legacyHours = _totalStudyHours.value
-        val previousTotalMinutes = prefs.getInt(
-            "total_study_minutes_v2",
-            legacyHours * 60
+        val previousTotalSeconds = prefs.getInt(
+            "total_study_seconds_v2",
+            prefs.getInt("total_study_minutes_v2", _totalStudyHours.value * 60) * 60
         )
-        val newTotalMinutes = previousTotalMinutes + minutes
+        val newTotalSeconds = previousTotalSeconds + seconds
+        val newTotalMinutes = newTotalSeconds / 60
         val newTotalHours = newTotalMinutes / 60
         _totalStudyHours.value = newTotalHours
 
         prefs.edit()
-            .putInt("today_study_minutes", newToday)
+            .putInt("today_study_seconds", newTodaySeconds)
+            .putInt("today_study_minutes", _todayStudyMinutes.value)
+            .putInt("total_study_seconds_v2", newTotalSeconds)
             .putInt("total_study_minutes_v2", newTotalMinutes)
             .putInt("total_study_hours", newTotalHours)
             .apply()
@@ -339,18 +344,38 @@ class UserProgressManager(context: Context) {
         }
         val storedDate = prefs.getString("study_day", null)
 
+        // Remove the former demo/default daily value once; all future progress is timed.
+        if (!prefs.getBoolean("real_study_tracking_v1", false)) {
+            _todayStudySeconds.value = 0
+            _todayStudyMinutes.value = 0
+            prefs.edit()
+                .putInt("today_study_seconds", 0)
+                .putInt("today_study_minutes", 0)
+                .putString("study_day", today)
+                .putBoolean("real_study_tracking_v1", true)
+                .apply()
+            return
+        }
+
         if (storedDate == null) {
-            // First run after this update: preserve legacy counters and streak.
-            prefs.edit().putString("study_day", today).apply()
+            _todayStudySeconds.value = 0
+            _todayStudyMinutes.value = 0
+            prefs.edit()
+                .putInt("today_study_seconds", 0)
+                .putInt("today_study_minutes", 0)
+                .putString("study_day", today)
+                .apply()
             return
         }
         if (storedDate == today) return
 
         val keepStreak = storedDate == dateKey(yesterdayCalendar)
+        _todayStudySeconds.value = 0
         _todayStudyMinutes.value = 0
         if (!keepStreak) _streakDays.value = 0
 
         prefs.edit()
+            .putInt("today_study_seconds", 0)
             .putInt("today_study_minutes", 0)
             .putInt("streak_days", _streakDays.value)
             .putString("study_day", today)
@@ -391,8 +416,9 @@ class UserProgressManager(context: Context) {
     }
 
     fun setDailyGoal(minutes: Int) {
-        _dailyGoalMinutes.value = minutes
-        prefs.edit().putInt("daily_goal_minutes", minutes).apply()
+        val safeMinutes = minutes.coerceIn(5, 600)
+        _dailyGoalMinutes.value = safeMinutes
+        prefs.edit().putInt("daily_goal_minutes", safeMinutes).apply()
     }
 
     fun spendGoldCoin(): Boolean {
@@ -461,7 +487,7 @@ class UserProgressManager(context: Context) {
         _diaryNotes.value = updated
         saveDiaryNotes(updated)
         addGoldCoins(10)
-        addStudyMinutes(5)
+
         addScore(20, "ثبت خاطره در تقویم روزانه")
     }
 
@@ -477,7 +503,7 @@ class UserProgressManager(context: Context) {
 
         addGoldCoins(25)
         addStars(1)
-        addStudyMinutes(5)
+
         addScore(30, "فتح مرحله بازی کلمات")
     }
 
