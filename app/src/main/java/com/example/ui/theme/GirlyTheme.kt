@@ -116,6 +116,19 @@ enum class ZahraThemeMode(
         gradientBrush = Brush.verticalGradient(
             listOf(Color(0xFFEEF5F1), Color(0xFFDDEBE3), Color(0xFFF4F8F5))
         )
+    ),
+    OBSIDIAN_BLACK_GOLD(
+        titleFa = "مشکی و طلایی سلطنتی",
+        iconEmoji = "🖤",
+        primaryColor = Color(0xFFD4AF37),
+        secondaryColor = Color(0xFFF5D76E),
+        backgroundColor = Color(0xFF100E0A),
+        cardBackground = Color(0xFF1C1912),
+        buttonBevel = Color(0xFF8F6B16),
+        accentGold = Color(0xFFFFD700),
+        gradientBrush = Brush.verticalGradient(
+            listOf(Color(0xFF0A0907), Color(0xFF19150C), Color(0xFF272012))
+        )
     )
 }
 
