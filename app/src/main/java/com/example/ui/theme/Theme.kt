@@ -46,9 +46,28 @@ fun MyApplicationTheme(
         )
     }
 
+    val baseTypography = MaterialTypography()
+    val selectedTypography = MaterialTypography(
+        displayLarge = baseTypography.displayLarge.copy(fontFamily = fontStyle.fontFamily),
+        displayMedium = baseTypography.displayMedium.copy(fontFamily = fontStyle.fontFamily),
+        displaySmall = baseTypography.displaySmall.copy(fontFamily = fontStyle.fontFamily),
+        headlineLarge = baseTypography.headlineLarge.copy(fontFamily = fontStyle.fontFamily),
+        headlineMedium = baseTypography.headlineMedium.copy(fontFamily = fontStyle.fontFamily),
+        headlineSmall = baseTypography.headlineSmall.copy(fontFamily = fontStyle.fontFamily),
+        titleLarge = baseTypography.titleLarge.copy(fontFamily = fontStyle.fontFamily),
+        titleMedium = baseTypography.titleMedium.copy(fontFamily = fontStyle.fontFamily),
+        titleSmall = baseTypography.titleSmall.copy(fontFamily = fontStyle.fontFamily),
+        bodyLarge = baseTypography.bodyLarge.copy(fontFamily = fontStyle.fontFamily),
+        bodyMedium = baseTypography.bodyMedium.copy(fontFamily = fontStyle.fontFamily),
+        bodySmall = baseTypography.bodySmall.copy(fontFamily = fontStyle.fontFamily),
+        labelLarge = baseTypography.labelLarge.copy(fontFamily = fontStyle.fontFamily),
+        labelMedium = baseTypography.labelMedium.copy(fontFamily = fontStyle.fontFamily),
+        labelSmall = baseTypography.labelSmall.copy(fontFamily = fontStyle.fontFamily)
+    )
+
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = MaterialTypography(fontFamily = fontStyle.fontFamily),
+        typography = selectedTypography,
         content = content
     )
 }
