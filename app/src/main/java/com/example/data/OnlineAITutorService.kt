@@ -104,10 +104,33 @@ class OnlineAITutorService {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Log.e(TAG, "Online AI generation error", e)
-            OnlineAiResult.Error(
-                errorMessage = e.localizedMessage ?: "ارتباط با هوش مصنوعی آنلاین برقرار نشد. لطفاً اتصال و تنظیمات Firebase را بررسی کنید."
-            )
+            val diagnosticDetails = generateSequence(e as Throwable?) { it.cause }
+                .mapNotNull { it.message }
+                .distinct()
+                .joinToString(" | ")
+            Log.e(TAG, "Online AI generation error: $diagnosticDetails", e)
+
+            val normalized = diagnosticDetails.lowercase()
+            val userFacingError = when {
+                "app check" in normalized || "permission_denied" in normalized ||
+                    "403" in normalized || "attestation" in normalized ->
+                    "دسترسی Firebase AI Logic رد شد (403). در Firebase Console بخش AI Logic را فعال کنید و توکن App Check مخصوص نسخهٔ Debug را از Logcat در App Check ثبت کنید. اگر App Check اجباری است، توکن Debug ثبت‌نشده باعث همین خطا می‌شود."
+                "429" in normalized || "resource_exhausted" in normalized ||
+                    "quota" in normalized || "rate limit" in normalized ->
+                    "سهمیه یا محدودیت درخواست‌های Gemini پر شده است (429). وضعیت سهمیه و فعال بودن پرداخت/محدودیت‌های پروژه Firebase را بررسی کنید."
+                "404" in normalized || "not_found" in normalized ||
+                    "model" in normalized && "not" in normalized ->
+                    "مدل یا سرویس Gemini در پروژه در دسترس نیست (404). فعال بودن Firebase AI Logic و نام مدل انتخاب‌شده را بررسی کنید."
+                "api key" in normalized || "api_key" in normalized ||
+                    "unauthenticated" in normalized || "401" in normalized ->
+                    "احراز هویت درخواست Gemini موفق نشد (401). تنظیمات کلید API مربوط به Firebase و محدودیت‌های آن را بررسی کنید؛ کلید را داخل چت یا مخزن عمومی منتشر نکنید."
+                "unable to resolve host" in normalized || "unknownhost" in normalized ||
+                    "sockettimeout" in normalized || "network" in normalized ->
+                    "اتصال اینترنت برقرار نیست یا دسترسی به سرویس Gemini مسدود شده است. اینترنت و دسترسی شبکه را بررسی کنید."
+                else ->
+                    "پاسخ آنلاین دریافت نشد. جزئیات فنی: ${diagnosticDetails.ifBlank { e.localizedMessage ?: e.javaClass.simpleName }.take(350)}"
+            }
+            OnlineAiResult.Error(errorMessage = userFacingError)
         }
     }
 }
