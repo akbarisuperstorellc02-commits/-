@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -79,7 +80,7 @@ fun PuffyButton(
 
     Box(
         modifier = modifier
-            .height(height + 5.dp)
+            .heightIn(min = height + 5.dp)
             .fillMaxWidth()
             .testTag(testTag)
             .scale(scale)
@@ -105,7 +106,7 @@ fun PuffyButton(
             modifier = Modifier
                 .offset(y = offsetY)
                 .fillMaxWidth()
-                .height(height)
+                .heightIn(min = height)
                 .clip(shape)
                 .background(
                     Brush.verticalGradient(
@@ -126,7 +127,7 @@ fun PuffyButton(
                     ),
                     shape = shape
                 )
-                .padding(horizontal = 10.dp),
+                .padding(horizontal = 10.dp, vertical = 8.dp),
             contentAlignment = Alignment.Center
         ) {
             Row(
@@ -158,8 +159,9 @@ fun PuffyButton(
                         fontWeight = FontWeight.Bold,
                         fontSize = fontSize.sp,
                         textAlign = TextAlign.Center,
-                        maxLines = 2,
+                        maxLines = 3,
                         softWrap = true,
+                        lineHeight = (fontSize + 4).sp,
                         modifier = Modifier.weight(1f)
                     )
                 }
