@@ -104,7 +104,7 @@ fun SplashScreen(
 
             // Main App Name in Persian
             Text(
-                text = "خودسازی زهرا",
+                text = "خودسازی",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Black,
                 color = Color(0xFFFFDF73),
@@ -128,7 +128,7 @@ fun SplashScreen(
 
             // Academy Badge
             PuffyBadge(
-                text = "Zahra English Academy",
+                text = "BH Exclusive Academy",
                 emoji = "👑",
                 backgroundColor = Color(0xFF242014),
                 textColor = Color(0xFFFFDF73)
@@ -149,7 +149,7 @@ fun SplashScreen(
 
             PuffyButton(
                 onClick = onEnterApp,
-                text = "ورود به آکادمی تخصصی",
+                text = "ورود به آکادمی اختصاصی BH",
                 emoji = "✨",
                 height = 50.dp,
                 modifier = Modifier.padding(horizontal = 24.dp)
