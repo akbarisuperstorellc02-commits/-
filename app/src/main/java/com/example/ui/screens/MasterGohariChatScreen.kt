@@ -296,7 +296,7 @@ fun MasterGohariChatScreen(
                     onValueChange = { inputText = it },
                     placeholder = {
                         Text(
-                            text = "پیام خود را برای استاد گوهری بنویسید..."
+                            text = "پیام خود را برای معلم آنلاین بنویسید...",
                             fontSize = 12.sp,
                             color = Color.Gray
                         )
