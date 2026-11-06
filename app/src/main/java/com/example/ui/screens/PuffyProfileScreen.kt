@@ -1,8 +1,8 @@
 package com.example.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,12 +39,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.R
 import com.example.data.UserProgressManager
 import com.example.ui.components.PuffyBadge
 import com.example.ui.components.PuffyButton
@@ -68,9 +66,14 @@ fun PuffyProfileScreen(
     val levels by userProgressManager.levelsState.collectAsState()
     val totalScore by userProgressManager.totalScore.collectAsState()
     val learnerName by userProgressManager.learnerName.collectAsState()
+    val learnerAvatar by userProgressManager.learnerAvatar.collectAsState()
+    val learnerGender by userProgressManager.learnerGender.collectAsState()
+    val learnerBio by userProgressManager.learnerBio.collectAsState()
+    val avatarChoices = if (learnerGender == "male") listOf("🧑🏻‍🎓", "👨🏻‍🎓", "🧑🏻‍🚀", "🦸🏻‍♂️", "🥷🏻", "🧑🏻‍💻", "⚽", "🏆") else listOf("👸🏻", "👩🏻‍🎓", "🧚🏻‍♀️", "🦸🏻‍♀️", "👩🏻‍🚀", "👩🏻‍💻", "🌸", "👑")
 
     var showEditNameDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     var editedNameText by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(learnerName) }
+    var editedBioText by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(learnerBio) }
 
     val completedLevelsCount = levels.count { it.isMastered }
     val currentActiveLevel = levels.firstOrNull { it.isUnlocked && !it.isMastered } ?: levels.first()
@@ -90,14 +93,14 @@ fun PuffyProfileScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "ویرایش نام شما 🌸",
+                        text = "ویرایش پروفایل ✨",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = theme.buttonBevel
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "نام خود را برای پروفایل آکادمی اختصاصی BH وارد کنید:",
+                        text = "نام و معرفی کوتاه پروفایل خود را ویرایش کنید:",
                         fontSize = 11.sp,
                         color = Color.Gray,
                         textAlign = TextAlign.Center
@@ -108,7 +111,16 @@ fun PuffyProfileScreen(
                         onValueChange = { editedNameText = it },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("مثال: زهرا") }
+                        placeholder = { Text("نام نمایشی") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    androidx.compose.material3.OutlinedTextField(
+                        value = editedBioText,
+                        onValueChange = { editedBioText = it.take(120) },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 2,
+                        maxLines = 3,
+                        placeholder = { Text("معرفی کوتاه من...") }
                     )
                     Spacer(modifier = Modifier.height(18.dp))
                     Row(
@@ -118,6 +130,7 @@ fun PuffyProfileScreen(
                         PuffyButton(
                             onClick = {
                                 userProgressManager.updateLearnerName(editedNameText)
+                                userProgressManager.updateLearnerBio(editedBioText)
                                 showEditNameDialog = false
                             },
                             text = "ذخیره نام ✨",
@@ -156,7 +169,7 @@ fun PuffyProfileScreen(
                     tint = theme.buttonBevel
                 )
             }
-            PuffyBadge(text = "پروفایل دخترانه $learnerName", emoji = "👑")
+            PuffyBadge(text = "پروفایل ${if (learnerGender == "male") "پسرانه" else "دخترانه"}", emoji = if (learnerGender == "male") "🛡️" else "👑")
             PuffyIconButton(
                 onClick = onNavigateToSettings,
                 icon = Icons.Default.Palette,
@@ -204,13 +217,29 @@ fun PuffyProfileScreen(
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.zahra_puffy_avatar_1793952193188),
-                                contentDescription = "Zahra 3D Puffy Profile",
-                                modifier = Modifier.fillMaxSize()
-                            )
+                            Text(text = learnerAvatar, fontSize = 66.sp)
                         }
 
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text("نوع پروفایل را انتخاب کن", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = theme.buttonBevel)
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                            listOf("female" to "دخترانه 👸🏻", "male" to "پسرانه 🧑🏻‍🎓").forEach { (gender, label) ->
+                                Box(modifier = Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(if (learnerGender == gender) theme.primaryColor else theme.cardBackground).border(1.5.dp, if (learnerGender == gender) theme.primaryColor else theme.secondaryColor, RoundedCornerShape(16.dp)).padding(vertical = 12.dp).then(Modifier), contentAlignment = Alignment.Center) {
+                                    androidx.compose.foundation.clickable { userProgressManager.setLearnerGender(gender) }.let { }
+                                    Text(text = label, color = if (learnerGender == gender) Color.White else theme.buttonBevel, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp))
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text("آواتار دلخواهت را انتخاب کن", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = theme.buttonBevel)
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(avatarChoices) { avatar ->
+                                Box(modifier = Modifier.size(48.dp).clip(CircleShape).background(if (learnerAvatar == avatar) theme.primaryColor else theme.backgroundColor).border(2.dp, if (learnerAvatar == avatar) theme.accentGold else theme.secondaryColor, CircleShape).clickable { userProgressManager.setAvatar(avatar) }, contentAlignment = Alignment.Center) {
+                                    Text(avatar, fontSize = 25.sp)
+                                }
+                            }
+                        }
+                        Text(learnerBio, fontSize = 12.sp, color = theme.buttonBevel, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 6.dp))
                         Spacer(modifier = Modifier.height(14.dp))
 
                         // Editable Learner Name Row
@@ -228,6 +257,7 @@ fun PuffyProfileScreen(
                             PuffyIconButton(
                                 onClick = {
                                     editedNameText = learnerName
+                                    editedBioText = learnerBio
                                     showEditNameDialog = true
                                 },
                                 icon = Icons.Default.Edit,
