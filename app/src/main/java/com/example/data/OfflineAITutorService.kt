@@ -37,6 +37,7 @@ class OfflineAITutorService(context: Context) {
     private val closed = AtomicBoolean(false)
     private var engine: Engine? = null
     private var conversation: Conversation? = null
+    private var historySeeded = false
 
     suspend fun initialize(): String? = withContext(dispatcher) {
         mutex.withLock {
@@ -81,12 +82,20 @@ class OfflineAITutorService(context: Context) {
 
         return withContext(dispatcher) {
             try {
+                val historyContext = if (!historySeeded) {
+                    conversationHistory.takeLast(12).joinToString("\n") { message ->
+                        val speaker = if (message.isFromTutor) "استاد گوهری" else learnerName
+                        "$speaker: ${message.englishText}" +
+                            (message.persianTranslation?.takeIf { it.isNotBlank() }?.let { " | $it" } ?: "")
+                    }.take(8_000)
+                } else ""
                 val prompt = """
                     نام زبان‌آموز: $learnerName
                     سطح فعلی انگلیسی: $currentLevelCode
+                    ${if (historyContext.isBlank()) "" else "خلاصهٔ گفت‌وگوی قبلی:\n$historyContext"}
                     پیام تازه زبان‌آموز:
                     $cleanMessage
-                    پاسخ را با توجه به گفت‌وگوی جاری و سطح زبان‌آموز تولید کن.
+                    پاسخ را با توجه به گفت‌وگوی جاری، تاریخچهٔ بالا و سطح زبان‌آموز تولید کن.
                 """.trimIndent()
                 val output = StringBuilder()
                 checkNotNull(conversation).sendMessageAsync(prompt).collect { chunk ->
@@ -96,6 +105,7 @@ class OfflineAITutorService(context: Context) {
                 if (generated.isBlank()) {
                     OfflineAiResult.Error("مدل آفلاین پاسخ متنی تولید نکرد. دوباره تلاش کنید.")
                 } else {
+                    historySeeded = true
                     OfflineAiResult.Success(parseTutorMessage(generated))
                 }
             } catch (cancelled: CancellationException) {
