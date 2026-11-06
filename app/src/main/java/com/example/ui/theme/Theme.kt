@@ -48,7 +48,7 @@ fun MyApplicationTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = MaterialTypography(fontFamily = fontStyle.fontFamily),
+        typography = MaterialTypography(defaultFontFamily = fontStyle.fontFamily),
         content = content
     )
 }
