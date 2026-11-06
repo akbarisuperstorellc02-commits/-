@@ -88,13 +88,94 @@ jobs:
             --ks-pass=pass:android \
             --key-pass=pass:android
 
-      - name: Upload offline AI installation packages
+      - name: Split phone-installable APK set into resumable parts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p app/build/outputs/apkset/phone-parts
+          APKSET="app/build/outputs/apkset/zahra-offline-ai.apks"
+          PART_DIR="app/build/outputs/apkset/phone-parts"
+          split -b 700M -d -a 2 "$APKSET" "$PART_DIR/zahra-apks.part"
+          sha256sum "$APKSET" > "$PART_DIR/SHA256SUMS.txt"
+          stat -c 'APKS_BYTES=%s' "$APKSET" > "$PART_DIR/INFO.txt"
+          ls -lh "$PART_DIR"
+      - name: Upload APKS part 01
+        if: hashFiles('app/build/outputs/apkset/phone-parts/zahra-apks.part00') != ''
         uses: actions/upload-artifact@v4
         with:
-          name: zahra-offline-ai-installers
-          path: |
-            app/build/outputs/bundle/debug/app-debug.aab
-            app/build/outputs/apkset/zahra-offline-ai.apks
+          name: zahra-apks-part-01
+          path: app/build/outputs/apkset/phone-parts/zahra-apks.part00
           compression-level: 0
-          if-no-files-found: error
+          retention-days: 7
+      - name: Upload APKS part 02
+        if: hashFiles('app/build/outputs/apkset/phone-parts/zahra-apks.part01') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: zahra-apks-part-02
+          path: app/build/outputs/apkset/phone-parts/zahra-apks.part01
+          compression-level: 0
+          retention-days: 7
+      - name: Upload APKS part 03
+        if: hashFiles('app/build/outputs/apkset/phone-parts/zahra-apks.part02') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: zahra-apks-part-03
+          path: app/build/outputs/apkset/phone-parts/zahra-apks.part02
+          compression-level: 0
+          retention-days: 7
+      - name: Upload APKS part 04
+        if: hashFiles('app/build/outputs/apkset/phone-parts/zahra-apks.part03') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: zahra-apks-part-04
+          path: app/build/outputs/apkset/phone-parts/zahra-apks.part03
+          compression-level: 0
+          retention-days: 7
+      - name: Upload APKS part 05
+        if: hashFiles('app/build/outputs/apkset/phone-parts/zahra-apks.part04') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: zahra-apks-part-05
+          path: app/build/outputs/apkset/phone-parts/zahra-apks.part04
+          compression-level: 0
+          retention-days: 7
+      - name: Upload APKS part 06
+        if: hashFiles('app/build/outputs/apkset/phone-parts/zahra-apks.part05') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: zahra-apks-part-06
+          path: app/build/outputs/apkset/phone-parts/zahra-apks.part05
+          compression-level: 0
+          retention-days: 7
+      - name: Upload APKS part 07
+        if: hashFiles('app/build/outputs/apkset/phone-parts/zahra-apks.part06') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: zahra-apks-part-07
+          path: app/build/outputs/apkset/phone-parts/zahra-apks.part06
+          compression-level: 0
+          retention-days: 7
+      - name: Upload APKS part 08
+        if: hashFiles('app/build/outputs/apkset/phone-parts/zahra-apks.part07') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: zahra-apks-part-08
+          path: app/build/outputs/apkset/phone-parts/zahra-apks.part07
+          compression-level: 0
+          retention-days: 7
+      - name: Upload APKS reconstruction instructions
+        uses: actions/upload-artifact@v4
+        with:
+          name: zahra-apks-checksums-and-info
+          path: |
+            app/build/outputs/apkset/phone-parts/SHA256SUMS.txt
+            app/build/outputs/apkset/phone-parts/INFO.txt
+          compression-level: 0
+          retention-days: 7
+      - name: Upload Google Play App Bundle separately
+        uses: actions/upload-artifact@v4
+        with:
+          name: zahra-google-play-aab
+          path: app/build/outputs/bundle/debug/app-debug.aab
+          compression-level: 0
           retention-days: 7
