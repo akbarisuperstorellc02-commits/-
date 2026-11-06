@@ -85,7 +85,11 @@ class UserProgressManager(context: Context) {
     private val _diaryNotes = MutableStateFlow<List<DiaryNote>>(loadSavedDiaryNotes())
     val diaryNotes: StateFlow<List<DiaryNote>> = _diaryNotes.asStateFlow()
 
-    private val _wordStages = MutableStateFlow<List<GameStage>>(CurriculumData.wordGameStages)
+    private val _wordStages = MutableStateFlow<List<GameStage>>(
+        CurriculumData.wordGameStages.map { stage ->
+            stage.copy(isCompleted = prefs.getBoolean("word_stage_${stage.stageNumber}_completed", false))
+        }
+    )
     val wordStages: StateFlow<List<GameStage>> = _wordStages.asStateFlow()
 
     private val _medals = MutableStateFlow<List<GoldenMedal>>(CurriculumData.goldenMedals)
@@ -357,10 +361,15 @@ class UserProgressManager(context: Context) {
     }
 
     fun completeWordStage(stageNumber: Int) {
-        val updated = _wordStages.value.map {
+        val stage = _wordStages.value.firstOrNull { it.stageNumber == stageNumber } ?: return
+        // Award rewards only once; completed stages survive app restarts.
+        if (stage.isCompleted) return
+
+        _wordStages.value = _wordStages.value.map {
             if (it.stageNumber == stageNumber) it.copy(isCompleted = true) else it
         }
-        _wordStages.value = updated
+        prefs.edit().putBoolean("word_stage_${stageNumber}_completed", true).apply()
+
         addGoldCoins(25)
         addStars(1)
         addStudyMinutes(5)
