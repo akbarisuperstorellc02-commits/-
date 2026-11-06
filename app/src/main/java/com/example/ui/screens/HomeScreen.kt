@@ -71,7 +71,6 @@ fun HomeScreen(
     val goldCoins by userProgressManager.goldCoins.collectAsState()
     val stars by userProgressManager.totalStars.collectAsState()
     val streak by userProgressManager.streakDays.collectAsState()
-    val todayMinutes by userProgressManager.todayStudyMinutes.collectAsState()
     val todaySeconds by userProgressManager.todayStudySeconds.collectAsState()
     val dailyGoal by userProgressManager.dailyGoalMinutes.collectAsState()
     val levels by userProgressManager.levelsState.collectAsState()
@@ -327,7 +326,9 @@ fun HomeScreen(
                             )
                         }
                         Text(
-                            text = if (todaySeconds < 60) {
+                            text = if (todaySeconds == 0) {
+                                "0 از $dailyGoal دقیقه"
+                            } else if (todaySeconds < 60) {
                                 "$todaySeconds ثانیه از $dailyGoal دقیقه"
                             } else {
                                 "${todaySeconds / 60} دقیقه و ${todaySeconds % 60} ثانیه از $dailyGoal دقیقه"
