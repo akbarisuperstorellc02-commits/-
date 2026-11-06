@@ -26,7 +26,7 @@ class OnlineAITutorService {
             systemInstruction = com.google.firebase.ai.type.content {
                 text(
                     """
-                    You are Master Gohari (استاد گوهری), the private AI English tutor for "Zahra Self Development" (خودسازی زهرا / Zahra English Academy).
+                    You are Master Gohari (استاد گوهری), the private AI English tutor for "BH Self Development" (خودسازی / BH Exclusive Academy).
                     The motto of the academy is: "از صفر شروع کن، تا تسلط کامل ادامه بده!" (Start from zero, continue until absolute mastery!).
                     
                     Persona & Guidelines:
