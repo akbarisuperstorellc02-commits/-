@@ -46,7 +46,7 @@ class UserProgressManager(context: Context) {
     private val _todayStudyMinutes = MutableStateFlow(_todayStudySeconds.value / 60)
     val todayStudyMinutes: StateFlow<Int> = _todayStudyMinutes.asStateFlow()
 
-    private val _dailyGoalMinutes = MutableStateFlow(prefs.getInt("daily_goal_minutes", 30))
+    private val _dailyGoalMinutes = MutableStateFlow(prefs.getInt("daily_goal_minutes", 30).coerceIn(5, 600))
     val dailyGoalMinutes: StateFlow<Int> = _dailyGoalMinutes.asStateFlow()
 
     private val _totalStudyHours = MutableStateFlow(prefs.getInt("total_study_hours", 14))
