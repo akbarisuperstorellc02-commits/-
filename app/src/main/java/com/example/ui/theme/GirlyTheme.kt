@@ -90,6 +90,32 @@ enum class ZahraThemeMode(
         gradientBrush = Brush.verticalGradient(
             listOf(Color(0xFFFFF8FA), Color(0xFFFFE4EE), Color(0xFFFFF0F6))
         )
+    ),
+    OCEAN_BLUE_MASCULINE(
+        titleFa = "آبی اقیانوسی (پسرانه)",
+        iconEmoji = "🌊",
+        primaryColor = Color(0xFF168AAD),
+        secondaryColor = Color(0xFF52B6CF),
+        backgroundColor = Color(0xFFEAF6FA),
+        cardBackground = Color(0xFFFFFFFF),
+        buttonBevel = Color(0xFF126782),
+        accentGold = Color(0xFFFFC857),
+        gradientBrush = Brush.verticalGradient(
+            listOf(Color(0xFFEAF6FA), Color(0xFFD5EDF5), Color(0xFFF2FAFC))
+        )
+    ),
+    GRAPHITE_EMERALD_MASCULINE(
+        titleFa = "گرافیتی و زمردی (پسرانه)",
+        iconEmoji = "🛡️",
+        primaryColor = Color(0xFF20A477),
+        secondaryColor = Color(0xFF5BC99A),
+        backgroundColor = Color(0xFFEEF5F1),
+        cardBackground = Color(0xFFFFFFFF),
+        buttonBevel = Color(0xFF147653),
+        accentGold = Color(0xFFD6B36A),
+        gradientBrush = Brush.verticalGradient(
+            listOf(Color(0xFFEEF5F1), Color(0xFFDDEBE3), Color(0xFFF4F8F5))
+        )
     )
 }
 
