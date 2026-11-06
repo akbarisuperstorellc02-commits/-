@@ -242,12 +242,13 @@ fun WordGameScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Slots for Selected Letters
-                Row(
+                val targetLen = currentStage.targetWordEn.length
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val targetLen = currentStage.targetWordEn.length
-                    for (i in 0 until targetLen) {
+                    items(targetLen) { i ->
                         val item = selectedLetters.getOrNull(i)
                         Box(
                             modifier = Modifier
@@ -337,11 +338,12 @@ fun WordGameScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    Row(
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        availableLetters.forEach { letterPair ->
+                        items(availableLetters) { letterPair ->
                             PuffyButton(
                                 onClick = {
                                     availableLetters.remove(letterPair)
@@ -357,7 +359,7 @@ fun WordGameScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
