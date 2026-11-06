@@ -182,11 +182,24 @@ class UserProgressManager(context: Context) {
         prefs.edit().putString("learner_name", trimmed).apply()
 
         // Refresh every name-dependent lesson, example, quiz and level title immediately.
-        _levelsState.value = _levelsState.value.map { personalizeLevel(it, trimmed) }
-        _medals.value = _medals.value.map { medal ->
+        val savedProgress = _levelsState.value.associateBy { it.id }
+        _levelsState.value = CurriculumData.levels.map { baseLevel ->
+            val saved = savedProgress[baseLevel.id]
+            personalizeLevel(
+                baseLevel.copy(
+                    isUnlocked = saved?.isUnlocked ?: baseLevel.isUnlocked,
+                    bestScore = saved?.bestScore ?: baseLevel.bestScore,
+                    starsEarned = saved?.starsEarned ?: baseLevel.starsEarned,
+                    isMastered = saved?.isMastered ?: baseLevel.isMastered
+                ),
+                trimmed
+            )
+        }
+        _medals.value = CurriculumData.goldenMedals.map { medal ->
             medal.copy(
                 titleFa = personalizeText(medal.titleFa, trimmed),
-                descriptionFa = personalizeText(medal.descriptionFa, trimmed)
+                descriptionFa = personalizeText(medal.descriptionFa, trimmed),
+                isUnlocked = _medals.value.firstOrNull { it.id == medal.id }?.isUnlocked ?: medal.isUnlocked
             )
         }
         _diaryNotes.value = _diaryNotes.value.map { note ->
