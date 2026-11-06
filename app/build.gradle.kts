@@ -68,6 +68,7 @@ android {
     includeInApk = false
     includeInBundle = true
   }
+  assetPacks += listOf(":gemma_ai_pack_1", ":gemma_ai_pack_2", ":gemma_ai_pack_3")
 }
 
 // Configure the Secrets Gradle Plugin to use .env and .env.example files
@@ -84,7 +85,6 @@ googleServices { missingGoogleServicesStrategy = MissingGoogleServicesStrategy.W
 // This makes it easy to add them back in the future if needed.
 dependencies {
   implementation(platform(libs.androidx.compose.bom))
-  implementation(platform(libs.firebase.bom))
   // implementation(libs.accompanist.permissions)
   implementation(libs.androidx.activity.compose)
   // implementation(libs.androidx.camera.camera2)
@@ -107,8 +107,8 @@ dependencies {
   implementation(libs.androidx.room.runtime)
   // implementation(libs.coil.compose)
   implementation(libs.converter.moshi)
-  // Gemini is called only by the trusted Cloud Functions backend; no API key ships in the APK.
-  implementation(libs.firebase.functions)
+  // All tutor generation runs locally through LiteRT-LM.
+  implementation(libs.litertlm.android)
   // Uncomment to use Firestore:
   // implementation(libs.firebase.firestore)
 
@@ -118,8 +118,6 @@ dependencies {
   // implementation(libs.androidx.credentials)
   // implementation(libs.androidx.credentials.play.services)
   // implementation(libs.googleid)
-  implementation(libs.firebase.appcheck.playintegrity)
-  implementation(libs.firebase.appcheck.debug)
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.logging.interceptor)

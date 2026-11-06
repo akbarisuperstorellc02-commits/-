@@ -1,0 +1,5 @@
+plugins { id 'com.android.ai-pack' }
+aiPack {
+    packName = 'gemma_ai_pack_3'
+    dynamicDelivery { deliveryType = 'install-time' }
+}

@@ -34,6 +34,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -46,6 +47,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -73,14 +75,24 @@ fun MasterGohariChatScreen(
     val learnerName by userProgressManager.learnerName.collectAsState()
     val levels by userProgressManager.levelsState.collectAsState()
     val listState = rememberLazyListState()
-
-    val onlineAiService = remember { com.example.data.OnlineAITutorService() }
+    val context = LocalContext.current
+    val offlineAiService = remember(context) { com.example.data.OfflineAITutorService(context.applicationContext) }
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
 
     var isAiGenerating by remember { mutableStateOf(false) }
     var aiErrorMessage by remember { mutableStateOf<String?>(null) }
     var inputText by remember { mutableStateOf("") }
     var speakingPracticeSentence by remember { mutableStateOf<Pair<String, String>?>(null) }
+
+    DisposableEffect(offlineAiService) {
+        onDispose { offlineAiService.closeAsync() }
+    }
+
+    LaunchedEffect(offlineAiService) {
+        isAiGenerating = true
+        aiErrorMessage = offlineAiService.initialize()
+        isAiGenerating = false
+    }
 
     val currentActiveLevelCode = levels.firstOrNull { it.isUnlocked && !it.isMastered }?.levelCode ?: "A1"
 
@@ -101,7 +113,7 @@ fun MasterGohariChatScreen(
             aiErrorMessage = null
 
             coroutineScope.launch {
-                val result = onlineAiService.sendPracticeMessage(
+                val result = offlineAiService.sendPracticeMessage(
                     userMessage = trimmed,
                     learnerName = learnerName,
                     currentLevelCode = currentActiveLevelCode,
@@ -109,12 +121,12 @@ fun MasterGohariChatScreen(
                 )
                 isAiGenerating = false
                 when (result) {
-                    is com.example.data.OnlineAiResult.Success -> {
+                    is com.example.data.OfflineAiResult.Success -> {
                         userProgressManager.addCustomChatMessage(result.message)
-                        userProgressManager.addScore(15, "مکالمه با هوش مصنوعی آنلاین Gemini")
+                        userProgressManager.addScore(15, "مکالمه با استاد گوهری آفلاین")
 
                     }
-                    is com.example.data.OnlineAiResult.Error -> {
+                    is com.example.data.OfflineAiResult.Error -> {
                         aiErrorMessage = result.errorMessage
                         // Keep the learner's message in the input so it can be retried after fixing connectivity.
                         inputText = trimmed
@@ -189,14 +201,14 @@ fun MasterGohariChatScreen(
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "هوش مصنوعی آنلاین Gemini",
+                            text = "استاد گوهری · هوش مصنوعی آفلاین",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
                     }
                     Text(
-                        text = "پاسخ زنده از مدل هوش مصنوعی آنلاین",
+                        text = "مدل Gemma روی گوشی · بدون نیاز به اینترنت",
                         fontSize = 10.sp,
                         color = Color(0xFFAAAAAA)
                     )
@@ -244,7 +256,7 @@ fun MasterGohariChatScreen(
                         Text(text = "✨", fontSize = 20.sp)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "معلم آنلاین Gemini در حال تحلیل و پاسخ برای $learnerName است... 🌸",
+                            text = "استاد گوهری در حال تولید پاسخ روی گوشی است... 🌸",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = theme.primaryColor
@@ -256,7 +268,7 @@ fun MasterGohariChatScreen(
 
         if (aiErrorMessage != null) {
             Text(
-                text = "خطای اتصال هوش مصنوعی آنلاین: $aiErrorMessage",
+                text = "وضعیت هوش مصنوعی آفلاین: $aiErrorMessage",
                 color = Color(0xFFFF8A80),
                 fontSize = 12.sp,
                 lineHeight = 17.sp,
@@ -301,7 +313,7 @@ fun MasterGohariChatScreen(
                     onValueChange = { inputText = it },
                     placeholder = {
                         Text(
-                            text = "پیام خود را برای معلم آنلاین بنویسید...",
+                            text = "پیام خود را برای استاد گوهری بنویسید...",
                             fontSize = 12.sp,
                             color = Color.Gray
                         )

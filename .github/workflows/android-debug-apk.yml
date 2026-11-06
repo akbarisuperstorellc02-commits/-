@@ -1,4 +1,4 @@
-name: Build Zahra debug APK
+name: Build Zahra offline AI bundle
 
 on:
   workflow_dispatch:
@@ -7,71 +7,74 @@ on:
       - work/zahra-hybrid-foundation
     paths:
       - 'app/**'
+      - 'gemma_ai_pack_*/**'
       - 'gradle/**'
       - '*.gradle'
       - '*.gradle.kts'
       - 'gradle.properties'
+      - 'settings.gradle.kts'
       - '.github/workflows/android-debug-apk.yml'
 
 permissions:
   contents: read
 
 concurrency:
-  group: zahra-debug-apk-${{ github.ref }}
+  group: zahra-offline-ai-bundle-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 120
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
       - name: Configure Android SDK
         shell: bash
         run: |
           echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> "$GITHUB_ENV"
           echo "/usr/local/lib/android/sdk/platform-tools" >> "$GITHUB_PATH"
           SDKMANAGER="$(find /usr/local/lib/android/sdk/cmdline-tools -type f -name sdkmanager | head -n 1)"
-          if [ -z "$SDKMANAGER" ]; then
-            echo "sdkmanager was not found in the runner Android SDK"
-            exit 1
-          fi
+          if [ -z "$SDKMANAGER" ]; then echo "sdkmanager not found"; exit 1; fi
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
-
+      - name: Prepare bundled Gemma 4 E2B model
+        shell: bash
+        run: |
+          set -euo pipefail
+          MODEL_URL="https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm"
+          mkdir -p gemma_ai_pack_1/src/main/assets gemma_ai_pack_2/src/main/assets gemma_ai_pack_3/src/main/assets
+          curl --fail --location --retry 4 --retry-delay 3 "$MODEL_URL" -o /tmp/gemma-4-E2B-it.litertlm
+          MODEL_BYTES="$(stat -c%s /tmp/gemma-4-E2B-it.litertlm)"
+          MODEL_SHA="$(sha256sum /tmp/gemma-4-E2B-it.litertlm | cut -d ' ' -f1)"
+          printf '%s\n%s\n' "$MODEL_SHA" "$MODEL_BYTES" > gemma_ai_pack_1/src/main/assets/gemma4.manifest
+          split -b 900M -d -a 2 /tmp/gemma-4-E2B-it.litertlm /tmp/gemma4.part
+          test -s /tmp/gemma4.part00 && test -s /tmp/gemma4.part01 && test -s /tmp/gemma4.part02
+          cp /tmp/gemma4.part00 gemma_ai_pack_1/src/main/assets/gemma4.part00
+          cp /tmp/gemma4.part01 gemma_ai_pack_2/src/main/assets/gemma4.part01
+          cp /tmp/gemma4.part02 gemma_ai_pack_3/src/main/assets/gemma4.part02
+          echo "Bundled model bytes: $MODEL_BYTES"
+          echo "Bundled model SHA-256: $MODEL_SHA"
+          rm -f /tmp/gemma-4-E2B-it.litertlm /tmp/gemma4.part00 /tmp/gemma4.part01 /tmp/gemma4.part02
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.3.1'
-
       - name: Generate Android debug keystore
         shell: bash
         run: |
-          keytool -genkeypair -v \
-            -keystore debug.keystore \
-            -storepass android \
-            -alias androiddebugkey \
-            -keypass android \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -dname "CN=Android Debug,O=Android,C=US"
-
-      - name: Build debug APK
-        run: gradle :app:assembleDebug --stacktrace
-
-      - name: Upload debug APK
+          keytool -genkeypair -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+      - name: Build offline AI Android App Bundle
+        run: gradle :app:bundleDebug --stacktrace
+      - name: Upload offline AI App Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: zahra-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: zahra-offline-ai-aab
+          path: app/build/outputs/bundle/debug/app-debug.aab
           if-no-files-found: error
           retention-days: 7

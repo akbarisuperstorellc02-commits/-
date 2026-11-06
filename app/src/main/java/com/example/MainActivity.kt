@@ -97,9 +97,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // STEP 1: Mandatory App Check configuration with launch intent before any UI or Firebase operations
-        com.example.util.configureAppCheck(this)
-
         enableEdgeToEdge()
         ttsHelper = TextToSpeechHelper(this)
 
