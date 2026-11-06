@@ -208,14 +208,14 @@ fun WordGameScreen(
                         onClick = {
                             if (hintCount >= currentStage.targetWordEn.length) {
                                 hintMessage = "تمام حروف کلمه آشکار شده است."
-                            } else if (userProgressManager.spendGoldCoin()) {
+                            } else if (userProgressManager.spendGoldCoin(6)) {
                                 hintCount += 1
-                                hintMessage = "حرف راهنما: ${currentStage.targetWordEn[hintCount - 1]}  •  ۱ سکه مصرف شد"
+                                hintMessage = "حرف راهنما: ${currentStage.targetWordEn[hintCount - 1]}  •  ۶ سکه مصرف شد"
                             } else {
-                                hintMessage = "برای دریافت راهنمایی، دست‌کم ۱ سکه لازم داری."
+                                hintMessage = "برای دریافت راهنمایی، ۶ سکه لازم داری."
                             }
                         },
-                        text = "راهنمایی  (۱ سکه)",
+                        text = "راهنمایی  (۶ سکه)",
                         emoji = "💡",
                         height = 42.dp,
                         fontSize = 13,
