@@ -609,10 +609,10 @@ object CurriculumData {
             bestScore = 0,
             starsEarned = 0,
             items = listOf(
-                LessonItem("z9_1", "From zero to absolute mastery", "/frʌm ˈzɪroʊ tuː ˈæbsəluːt ˈmæstəri/", "از صفر تا تسلط مطلق و نهایی", "Start from zero, continue until absolute mastery!", "از صفر شروع کن، تا تسلط کامل ادامه بده!", "🏆", ClassroomType.CONVERSATION, "Z9", "شعار رسمی آکادمی خودسازی زهرا.")
+                LessonItem("z9_1", "From zero to absolute mastery", "/frʌm ˈzɪroʊ tuː ˈæbsəluːt ˈmæstəri/", "از صفر تا تسلط مطلق و نهایی", "Start from zero, continue until absolute mastery!", "از صفر شروع کن، تا تسلط کامل ادامه بده!", "🏆", ClassroomType.CONVERSATION, "Z9", "شعار رسمی آکادمی اختصاصی BH.")
             ),
             examQuestions = listOf(
-                QuizQuestion("q_z9_1", QuestionType.SPEAKING, "Recite our motto: 'Start from zero, continue until absolute mastery!'", "شعار پرشکوه آکادمی را بخوان:", listOf("Start from zero, continue until absolute mastery!", "Start from zero", "Continue until absolute mastery", "Zahra is queen"), 0, "شعار ماندگار آکادمی زهرا.", "Start from zero continue until absolute mastery")
+                QuizQuestion("q_z9_1", QuestionType.SPEAKING, "Recite our motto: 'Start from zero, continue until absolute mastery!'", "شعار پرشکوه آکادمی را بخوان:", listOf("Start from zero, continue until absolute mastery!", "Start from zero", "Continue until absolute mastery", "Zahra is queen"), 0, "شعار ماندگار آکادمی اختصاصی BH.", "Start from zero continue until absolute mastery")
             )
         )
     )
