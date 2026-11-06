@@ -105,6 +105,22 @@ class UserProgressManager(context: Context) {
         // Keep daily counters accurate across app restarts and calendar-day changes.
         refreshDailyCounters()
 
+        // Personalize the entire curriculum and achievement copy for the active learner.
+        _levelsState.value = CurriculumData.levels.map { personalizeLevel(it, _learnerName.value) }
+        _medals.value = CurriculumData.goldenMedals.map { medal ->
+            medal.copy(
+                titleFa = personalizeText(medal.titleFa, _learnerName.value),
+                descriptionFa = personalizeText(medal.descriptionFa, _learnerName.value)
+            )
+        }
+        _diaryNotes.value = _diaryNotes.value.map { note ->
+            note.copy(
+                titleFa = personalizeText(note.titleFa, _learnerName.value),
+                content = personalizeText(note.content, _learnerName.value),
+                englishSentenceLearned = personalizeText(note.englishSentenceLearned, _learnerName.value)
+            )
+        }
+
         // Load level unlocks from preferences
         val currentLevels = _levelsState.value.mapIndexed { index, level ->
             val unlocked = prefs.getBoolean("level_${level.id}_unlocked", index == 0)
@@ -161,9 +177,62 @@ class UserProgressManager(context: Context) {
     }
 
     fun updateLearnerName(newName: String) {
-        val trimmed = newName.trim().ifBlank { "زهرا" }
+        val trimmed = newName.trim().take(40).ifBlank { "کاربر جدید" }
         _learnerName.value = trimmed
         prefs.edit().putString("learner_name", trimmed).apply()
+
+        // Refresh every name-dependent lesson, example, quiz and level title immediately.
+        _levelsState.value = _levelsState.value.map { personalizeLevel(it, trimmed) }
+        _medals.value = _medals.value.map { medal ->
+            medal.copy(
+                titleFa = personalizeText(medal.titleFa, trimmed),
+                descriptionFa = personalizeText(medal.descriptionFa, trimmed)
+            )
+        }
+        _diaryNotes.value = _diaryNotes.value.map { note ->
+            note.copy(
+                titleFa = personalizeText(note.titleFa, trimmed),
+                content = personalizeText(note.content, trimmed),
+                englishSentenceLearned = personalizeText(note.englishSentenceLearned, trimmed)
+            )
+        }
+        saveDiaryNotes(_diaryNotes.value)
+    }
+
+    private fun personalizeText(source: String, name: String): String {
+        return source
+            .replace("Zahra", name, ignoreCase = true)
+            .replace("زهرای عزیزم", "$name عزیزم")
+            .replace("زهرای عزیز", "$name عزیز")
+            .replace("زهرای من", "$name عزیز")
+            .replace("زهرای", name)
+            .replace("زهرا", name)
+    }
+
+    private fun personalizeLevel(level: Level, name: String): Level {
+        return level.copy(
+            titleFa = personalizeText(level.titleFa, name),
+            titleEn = personalizeText(level.titleEn, name),
+            descriptionFa = personalizeText(level.descriptionFa, name),
+            items = level.items.map { item ->
+                item.copy(
+                    englishText = personalizeText(item.englishText, name),
+                    persianTranslation = personalizeText(item.persianTranslation, name),
+                    exampleSentenceEn = personalizeText(item.exampleSentenceEn, name),
+                    exampleSentenceFa = personalizeText(item.exampleSentenceFa, name),
+                    grammarRuleFa = item.grammarRuleFa?.let { personalizeText(it, name) }
+                )
+            },
+            examQuestions = level.examQuestions.map { question ->
+                question.copy(
+                    promptEn = personalizeText(question.promptEn, name),
+                    promptFa = personalizeText(question.promptFa, name),
+                    options = question.options.map { personalizeText(it, name) },
+                    explanationFa = personalizeText(question.explanationFa, name),
+                    targetSpeechText = question.targetSpeechText?.let { personalizeText(it, name) }
+                )
+            }
+        )
     }
 
     fun setLearnerGender(gender: String) {
@@ -198,11 +267,11 @@ class UserProgressManager(context: Context) {
 
     fun getLearnerRank(score: Int): Pair<String, String> {
         return when {
-            score >= 2500 -> "پرنسس افسانه‌ای Z9 👑" to "نهایت تسلط طلایی و دیپلماتیک"
-            score >= 1500 -> "استاد سخنوری دخترانه ✨" to "تسلط بر مکالمات پیشرفته"
+            score >= 2500 -> "استاد افسانه‌ای Z9 👑" to "نهایت تسلط و پیشرفت"
+            score >= 1500 -> "استاد سخنوری ✨" to "تسلط بر مکالمات پیشرفته"
             score >= 800 -> "ستاره درخشان زبان 🌟" to "گسترش دایره لغات و گرامر"
             score >= 400 -> "قهرمان خودسازی 🌸" to "پیشرفت چشمگیر در اصطلاحات"
-            else -> "پرنسس نوآموز 💖" to "شروع باانگیزه از صفر مطلق"
+            else -> "یادگیرنده پرتلاش 💖" to "شروع باانگیزه از پایه"
         }
     }
 
@@ -348,11 +417,6 @@ class UserProgressManager(context: Context) {
     fun setFontStyle(style: ZahraFontStyle) {
         _fontStyle.value = style
         prefs.edit().putString("font_style", style.name).apply()
-    }
-
-    fun setAvatar(avatar: String) {
-        _learnerAvatar.value = avatar
-        prefs.edit().putString("learner_avatar", avatar).apply()
     }
 
     fun addCustomChatMessage(message: ChatMessage) {
