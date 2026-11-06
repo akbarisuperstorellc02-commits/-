@@ -127,6 +127,7 @@ fun MasterGohariChatScreen(
                 isAiGenerating = false
                 when (result) {
                     is com.example.data.OfflineAiResult.Success -> {
+                        isModelReady = true
                         userProgressManager.addCustomChatMessage(result.message)
                         userProgressManager.addScore(15, "مکالمه با استاد گوهری آفلاین")
 
@@ -213,9 +214,13 @@ fun MasterGohariChatScreen(
                         )
                     }
                     Text(
-                        text = "مدل Gemma روی گوشی · بدون نیاز به اینترنت",
+                        text = when {
+                            isModelInitializing -> "در حال آماده‌سازی مدل Gemma روی گوشی..."
+                            isModelReady -> "مدل آماده است · کاملاً آفلاین"
+                            else -> "مدل محلی نیاز به بررسی دارد"
+                        },
                         fontSize = 10.sp,
-                        color = Color(0xFFAAAAAA)
+                        color = if (isModelReady) Color(0xFF81C784) else Color(0xFFAAAAAA)
                     )
                 }
 
