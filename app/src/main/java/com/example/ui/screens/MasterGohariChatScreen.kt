@@ -116,6 +116,8 @@ fun MasterGohariChatScreen(
                     }
                     is com.example.data.OnlineAiResult.Error -> {
                         aiErrorMessage = result.errorMessage
+                        // Keep the learner's message in the input so it can be retried after fixing connectivity.
+                        inputText = trimmed
                     }
                 }
             }
