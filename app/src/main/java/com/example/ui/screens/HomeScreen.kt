@@ -374,7 +374,7 @@ fun HomeScreen(
 
                     HomeFeatureCard(
                         title = "بازی لغات پفکی",
-                        subtitle = "۳۰ مرحله ادامه دار با پاداش",
+                        subtitle = "۶۰ مرحله ادامه‌دار با پاداش",
                         emoji = "🎮",
                         badge = "مرحله‌ای",
                         color = theme.accentGold,
