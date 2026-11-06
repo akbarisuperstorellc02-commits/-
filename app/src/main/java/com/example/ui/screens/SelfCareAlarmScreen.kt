@@ -64,7 +64,7 @@ fun SelfCareAlarmScreen(onBack: () -> Unit) {
         }
         Spacer(Modifier.height(24.dp))
         Column(
-            Modifier.fillMaxWidth().background(Color.White, RoundedCornerShape(28.dp)).padding(22.dp),
+            Modifier.fillMaxWidth().background(theme.cardBackground, RoundedCornerShape(28.dp)).padding(22.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(Icons.Default.Alarm, contentDescription = null, tint = theme.primaryColor)
