@@ -97,7 +97,7 @@ fun PuffyProfileScreen(
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "نام اختصاصی خود را برای آکادمی و معلم هوش مصنوعی وارد کنید:",
+                        text = "نام خود را برای پروفایل آکادمی اختصاصی BH وارد کنید:",
                         fontSize = 11.sp,
                         color = Color.Gray,
                         textAlign = TextAlign.Center
@@ -156,7 +156,7 @@ fun PuffyProfileScreen(
                     tint = theme.buttonBevel
                 )
             }
-            PuffyBadge(text = "پروفایل اختصاصی $learnerName", emoji = "👑")
+            PuffyBadge(text = "پروفایل دخترانه $learnerName", emoji = "👑")
             PuffyIconButton(
                 onClick = onNavigateToSettings,
                 icon = Icons.Default.Palette,
@@ -400,7 +400,7 @@ fun PuffyProfileScreen(
                                 Icon(imageVector = Icons.Default.EmojiEvents, contentDescription = null, tint = theme.primaryColor)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "ویترین مدال‌های پفکی زهرا:",
+                                    text = "ویترین دستاوردهای تو:",
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = theme.buttonBevel
@@ -466,7 +466,7 @@ fun PuffyProfileScreen(
                         Text(text = "👑", fontSize = 32.sp)
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "عهدنامه خودسازی زهرا",
+                            text = "عهدنامه خودسازی BH",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             color = theme.buttonBevel
