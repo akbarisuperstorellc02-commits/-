@@ -112,7 +112,7 @@ fun MasterGohariChatScreen(
                     is com.example.data.OnlineAiResult.Success -> {
                         userProgressManager.addCustomChatMessage(result.message)
                         userProgressManager.addScore(15, "مکالمه با هوش مصنوعی آنلاین Gemini")
-                        userProgressManager.addStudyMinutes(3)
+
                     }
                     is com.example.data.OnlineAiResult.Error -> {
                         aiErrorMessage = result.errorMessage
