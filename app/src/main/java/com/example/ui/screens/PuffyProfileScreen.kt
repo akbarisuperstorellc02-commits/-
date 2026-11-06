@@ -264,7 +264,7 @@ fun PuffyProfileScreen(
                                 }
                             }
                         }
-                        Text(learnerBio, fontSize = 12.sp, color = Color(0xFFD6D8E2), textAlign = TextAlign.Center, lineHeight = 18.sp, modifier = Modifier.fillMaxWidth().padding(top = 10.dp, horizontal = 8.dp))
+                        Text(learnerBio, fontSize = 12.sp, color = Color(0xFFD6D8E2), textAlign = TextAlign.Center, lineHeight = 18.sp, modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp).padding(top = 10.dp))
                         Spacer(modifier = Modifier.height(14.dp))
 
                         // Editable Learner Name Row
