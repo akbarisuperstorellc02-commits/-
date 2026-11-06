@@ -58,7 +58,8 @@ class OnlineAITutorService {
         try {
             val promptBuilder = StringBuilder()
             promptBuilder.append("Learner Name: $learnerName\n")
-            promptBuilder.append("Current Academy Level: $currentLevelCode\n\n")
+            promptBuilder.append("Current Academy Level: $currentLevelCode\n")
+            promptBuilder.append("Personalization rule: Address the learner by the exact name '$learnerName' naturally throughout the lesson, examples, exercises, encouragement and follow-up questions. Never call the learner Zahra or use another person's name. Keep the lesson continuous with this learner's current level and recent conversation.\n\n")
 
             // Append last 4 messages for context
             val recentHistory = conversationHistory.takeLast(4)
