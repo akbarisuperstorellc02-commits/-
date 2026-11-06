@@ -233,7 +233,12 @@ class UserProgressManager(context: Context) {
             .replace("زهرا", name)
             .replace("زهره", name)
         if (!previousName.isNullOrBlank() && !previousName.equals(name, ignoreCase = true)) {
-            result = result.replace(previousName, name, ignoreCase = true)
+            // Replace the old name as a whole token; never alter words such as "valid" when the name is "Ali".
+            val oldNameToken = Regex(
+                "(?<![\\p{L}\\p{N}_])${Regex.escape(previousName)}(?![\\p{L}\\p{N}_])",
+                RegexOption.IGNORE_CASE
+            )
+            result = oldNameToken.replace(result, name)
         }
         return result.replace("Zahra", name, ignoreCase = true)
     }
