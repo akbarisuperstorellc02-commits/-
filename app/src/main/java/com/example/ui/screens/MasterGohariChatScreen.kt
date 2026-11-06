@@ -216,6 +216,7 @@ fun MasterGohariChatScreen(
             items(messages, key = { it.id }) { msg ->
                 ChatBubbleItem(
                     message = msg,
+                    learnerName = learnerName,
                     onPlayAudio = { ttsHelper?.speak(msg.englishText) },
                     onPracticeSpeaking = {
                         speakingPracticeSentence = Pair(
@@ -256,6 +257,8 @@ fun MasterGohariChatScreen(
                 text = "خطای اتصال هوش مصنوعی آنلاین: $aiErrorMessage",
                 color = Color(0xFFFF8A80),
                 fontSize = 12.sp,
+                lineHeight = 17.sp,
+                maxLines = 5,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 18.dp, vertical = 6.dp)
@@ -335,6 +338,7 @@ fun MasterGohariChatScreen(
 @Composable
 fun ChatBubbleItem(
     message: ChatMessage,
+    learnerName: String,
     onPlayAudio: () -> Unit,
     onPracticeSpeaking: () -> Unit,
     onQuickReplyClick: (String) -> Unit
@@ -433,7 +437,7 @@ fun ChatBubbleItem(
                     if (!message.weaknessFlagged.isNullOrBlank()) {
                         Spacer(modifier = Modifier.height(6.dp))
                         PuffyBadge(
-                            text = "نکته مهم برای مرور زهرا: ${message.weaknessFlagged}",
+                            text = "نکته مهم برای مرور $learnerName: ${message.weaknessFlagged}",
                             emoji = "🎯",
                             backgroundColor = Color(0xFF332014),
                             textColor = Color(0xFFFF9E00)
