@@ -156,7 +156,7 @@ fun SettingsAndThemeScreen(
                             Icon(imageVector = Icons.Default.ColorLens, contentDescription = null, tint = theme.primaryColor)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "پالت و تم سلطنتی:",
+                                text = "انتخاب تم و رنگ‌بندی برنامه:",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
