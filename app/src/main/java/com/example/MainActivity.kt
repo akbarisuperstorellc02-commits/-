@@ -58,6 +58,7 @@ import com.example.ui.screens.LevelExamScreen
 import com.example.ui.screens.MasterGohariChatScreen
 import com.example.ui.screens.PuffyProfileScreen
 import com.example.ui.screens.SettingsAndThemeScreen
+import com.example.ui.screens.SelfCareAlarmScreen
 import com.example.ui.screens.SpeakingPracticeScreen
 import com.example.ui.screens.SplashScreen
 import com.example.ui.screens.WordGameScreen
@@ -76,7 +77,8 @@ enum class AppScreen {
     GAME,
     CALENDAR,
     SETTINGS,
-    PROFILE
+    PROFILE,
+    ALARM
 }
 
 class MainActivity : ComponentActivity() {
@@ -188,6 +190,7 @@ fun MainAppContent(
                             onNavigateToSpeakingDrill = { currentScreen = AppScreen.SPEAKING },
                             onNavigateToWordGame = { currentScreen = AppScreen.GAME },
                             onNavigateToCalendar = { currentScreen = AppScreen.CALENDAR },
+                            onNavigateToAlarms = { currentScreen = AppScreen.ALARM },
                             onNavigateToSettings = { currentScreen = AppScreen.SETTINGS },
                             onNavigateToProfile = { currentScreen = AppScreen.PROFILE },
                             onSelectClassroom = { classroom ->
@@ -195,6 +198,10 @@ fun MainAppContent(
                                 currentScreen = AppScreen.LEVELS
                             }
                         )
+                    }
+
+                    AppScreen.ALARM -> {
+                        SelfCareAlarmScreen(onBack = { currentScreen = AppScreen.HOME })
                     }
 
                     AppScreen.PROFILE -> {
