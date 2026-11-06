@@ -363,6 +363,7 @@ fun PuffyBottomNavBar(
                 testTag = "nav_home"
             )
             NavBarItem(
+                modifier = Modifier.weight(1f),
                 label = "سطوح A1-Z9",
                 icon = Icons.Default.School,
                 isSelected = currentScreen == AppScreen.LEVELS,
@@ -370,6 +371,7 @@ fun PuffyBottomNavBar(
                 testTag = "nav_levels"
             )
             NavBarItem(
+                modifier = Modifier.weight(1f),
                 label = "معلم هوشمند",
                 icon = Icons.Default.ChatBubble,
                 isSelected = currentScreen == AppScreen.CHAT,
@@ -377,6 +379,7 @@ fun PuffyBottomNavBar(
                 testTag = "nav_chat"
             )
             NavBarItem(
+                modifier = Modifier.weight(1f),
                 label = "بازی ۶۰ مرحله",
                 icon = Icons.Default.Gamepad,
                 isSelected = currentScreen == AppScreen.GAME,
@@ -384,6 +387,7 @@ fun PuffyBottomNavBar(
                 testTag = "nav_game"
             )
             NavBarItem(
+                modifier = Modifier.weight(1f),
                 label = "پروفایل",
                 icon = Icons.Default.AccountCircle,
                 isSelected = currentScreen == AppScreen.PROFILE,
@@ -411,7 +415,7 @@ fun NavBarItem(
             .clip(RoundedCornerShape(16.dp))
             .background(if (isSelected) theme.primaryColor else Color.Transparent)
             .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 6.dp),
+            .padding(horizontal = 2.dp, vertical = 5.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
