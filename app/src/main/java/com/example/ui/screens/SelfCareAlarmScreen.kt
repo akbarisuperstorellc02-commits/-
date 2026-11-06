@@ -87,7 +87,7 @@ fun SelfCareAlarmScreen(onBack: () -> Unit) {
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         val am = context.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
                         if (!am.canScheduleExactAlarms()) {
                             try { context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:" + context.packageName))) }
