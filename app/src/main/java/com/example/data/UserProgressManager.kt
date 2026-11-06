@@ -519,7 +519,7 @@ class UserProgressManager(context: Context) {
         val currentList = _chatMessages.value.toMutableList().apply { add(userMsg) }
         _chatMessages.value = currentList
 
-        // Online-only chat: persist the learner message; only OnlineAITutorService may add tutor replies.
+        // Offline AI chat: persist the learner message; only OfflineAITutorService may add generated tutor replies.
         _chatMessages.value = currentList.toList()
         saveMessages(currentList)
     }
