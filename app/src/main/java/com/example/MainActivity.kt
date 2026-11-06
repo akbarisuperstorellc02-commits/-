@@ -32,6 +32,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -45,6 +47,12 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import android.os.SystemClock
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -137,6 +145,44 @@ fun MainAppContent(
     var activeExamLevel by remember { mutableStateOf<Level?>(null) }
     var activeClassroomFilter by remember { mutableStateOf<ClassroomType?>(null) }
     val levels by userProgressManager.levelsState.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var appInForeground by remember {
+        mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED))
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START, Lifecycle.Event.ON_RESUME -> appInForeground = true
+                Lifecycle.Event.ON_STOP, Lifecycle.Event.ON_PAUSE -> appInForeground = false
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    val isLearningScreen = currentScreen in setOf(
+        AppScreen.LEVELS,
+        AppScreen.LEVEL_EXAM,
+        AppScreen.CHAT,
+        AppScreen.SPEAKING,
+        AppScreen.GAME
+    )
+    LaunchedEffect(isLearningScreen, appInForeground) {
+        if (isLearningScreen && appInForeground) {
+            var lastTick = SystemClock.elapsedRealtime()
+            while (isActive) {
+                delay(1000L)
+                val now = SystemClock.elapsedRealtime()
+                val elapsedSeconds = ((now - lastTick) / 1000L).toInt()
+                if (elapsedSeconds > 0) {
+                    userProgressManager.recordStudySeconds(elapsedSeconds)
+                    lastTick += elapsedSeconds * 1000L
+                }
+            }
+        }
+    }
 
     if (currentScreen != AppScreen.HOME && currentScreen != AppScreen.SPLASH) {
         BackHandler {
