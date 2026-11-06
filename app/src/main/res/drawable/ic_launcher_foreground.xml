@@ -4,6 +4,12 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Keep the complete mark inside Android adaptive-icon safe zone (66dp of 108dp). -->
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.62"
+        android:scaleY="0.62">
     <!-- Refined gold open book -->
     <path android:fillColor="#FF8D541A" android:pathData="M10,59 C25,50 42,53 54,64 C66,53 83,50 98,59 L98,88 C81,80 66,82 54,94 C42,82 27,80 10,88 Z"/>
     <path android:fillColor="#FFFFE9B8" android:pathData="M12,56 C27,48 42,52 54,63 L54,85 C42,76 27,74 12,82 Z"/>
@@ -21,4 +27,5 @@
     <path android:fillColor="#FFFFD76A" android:pathData="M73,39 Q77,36 81,39 Q77,43 73,39 Z"/>
     <!-- Star accent -->
     <path android:fillColor="#FFFFE28A" android:pathData="M82,10 C84,18 86,20 94,22 C86,24 84,26 82,34 C80,26 78,24 70,22 C78,20 80,18 82,10 Z"/>
+    </group>
 </vector>
