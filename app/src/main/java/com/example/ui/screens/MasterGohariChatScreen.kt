@@ -148,7 +148,7 @@ fun MasterGohariChatScreen(
             .background(theme.gradientBrush)
             .imePadding()
     ) {
-        // Top App Bar with Zahra AI Tutor profile
+        // Top App Bar with the academy AI tutor profile
         PuffyCard(
             modifier = Modifier
                 .fillMaxWidth()
@@ -179,7 +179,7 @@ fun MasterGohariChatScreen(
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.zahra_ai_tutor_1793948695153),
-                        contentDescription = "معلم خصوصی هوش مصنوعی زهرا",
+                        contentDescription = "معلم خصوصی هوش مصنوعی",
                         modifier = Modifier.fillMaxSize()
                     )
                 }
