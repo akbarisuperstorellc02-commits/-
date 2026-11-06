@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 @Composable
 fun MyApplicationTheme(
     zahraTheme: ZahraThemeMode = ZahraThemeMode.SWEET_SAKURA_PUFFY,
+    fontStyle: ZahraFontStyle = ZahraFontStyle.FANTASY_ROUND,
     content: @Composable () -> Unit
 ) {
     val isDarkPalette = zahraTheme == ZahraThemeMode.OBSIDIAN_BLACK_GOLD
@@ -46,7 +47,7 @@ fun MyApplicationTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = Typography(defaultFontFamily = fontStyle.fontFamily),
         content = content
     )
 }
