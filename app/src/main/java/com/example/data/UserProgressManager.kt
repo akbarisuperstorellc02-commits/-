@@ -37,7 +37,7 @@ class UserProgressManager(context: Context) {
     private val _totalStars = MutableStateFlow(prefs.getInt("total_stars", 8))
     val totalStars: StateFlow<Int> = _totalStars.asStateFlow()
 
-    private val _streakDays = MutableStateFlow(prefs.getInt("streak_days", 7))
+    private val _streakDays = MutableStateFlow(prefs.getInt("streak_days", 0))
     val streakDays: StateFlow<Int> = _streakDays.asStateFlow()
 
     private val _todayStudySeconds = MutableStateFlow(prefs.getInt("today_study_seconds", 0))
@@ -49,7 +49,7 @@ class UserProgressManager(context: Context) {
     private val _dailyGoalMinutes = MutableStateFlow(prefs.getInt("daily_goal_minutes", 30).coerceIn(5, 600))
     val dailyGoalMinutes: StateFlow<Int> = _dailyGoalMinutes.asStateFlow()
 
-    private val _totalStudyHours = MutableStateFlow(prefs.getInt("total_study_hours", 14))
+    private val _totalStudyHours = MutableStateFlow(prefs.getInt("total_study_hours", 0))
     val totalStudyHours: StateFlow<Int> = _totalStudyHours.asStateFlow()
 
     private val _currentTheme = MutableStateFlow(
@@ -344,10 +344,15 @@ class UserProgressManager(context: Context) {
         _todayStudySeconds.value = newTodaySeconds
         _todayStudyMinutes.value = newTodaySeconds / 60
 
-        val previousTotalSeconds = prefs.getInt(
-            "total_study_seconds_v2",
-            prefs.getInt("total_study_minutes_v2", _totalStudyHours.value * 60) * 60
-        )
+        val previousTotalSeconds = when {
+            prefs.contains("total_study_seconds_v2") ->
+                prefs.getInt("total_study_seconds_v2", 0)
+            prefs.contains("total_study_minutes_v2") ->
+                prefs.getInt("total_study_minutes_v2", 0) * 60
+            prefs.contains("total_study_hours") ->
+                prefs.getInt("total_study_hours", 0) * 3600
+            else -> 0
+        }
         val newTotalSeconds = previousTotalSeconds + seconds
         val newTotalMinutes = newTotalSeconds / 60
         val newTotalHours = newTotalMinutes / 60
