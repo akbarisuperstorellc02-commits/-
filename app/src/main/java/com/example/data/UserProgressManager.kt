@@ -226,17 +226,16 @@ class UserProgressManager(context: Context) {
 
     private fun personalizeText(source: String, name: String, previousName: String? = null): String {
         var result = source
-        if (!previousName.isNullOrBlank() && !previousName.equals(name, ignoreCase = true)) {
-            result = result.replace(previousName, name, ignoreCase = true)
-        }
-        return result
-            .replace("Zahra", name, ignoreCase = true)
             .replace("زهرای عزیزم", "$name عزیزم")
             .replace("زهرای عزیز", "$name عزیز")
             .replace("زهرای من", "$name عزیز")
             .replace("زهرای", name)
             .replace("زهرا", name)
             .replace("زهره", name)
+        if (!previousName.isNullOrBlank() && !previousName.equals(name, ignoreCase = true)) {
+            result = result.replace(previousName, name, ignoreCase = true)
+        }
+        return result.replace("Zahra", name, ignoreCase = true)
     }
 
     private fun personalizeChatMessage(message: ChatMessage, name: String, previousName: String? = null): ChatMessage {
