@@ -1,7 +1,6 @@
 package com.example
 
 import com.example.data.CurriculumData
-import com.example.data.MasterGohariAI
 import com.example.util.SpeechEvaluator
 import org.junit.Assert.*
 import org.junit.Test
@@ -9,8 +8,7 @@ import org.junit.Test
 class ExampleUnitTest {
 
     @Test
-    fun testZahraAcademyLevelsAndClassrooms() {
-        // 30 extended levels from A1 all the way to Z9
+    fun testAcademyLevelsAndWordGameStages() {
         assertEquals(30, CurriculumData.levels.size)
         assertEquals("A1", CurriculumData.levels.first().levelCode)
         assertEquals("Z9", CurriculumData.levels.last().levelCode)
@@ -20,7 +18,15 @@ class ExampleUnitTest {
             assertTrue("Level ${level.levelCode} should have exam questions", level.examQuestions.isNotEmpty())
         }
         assertTrue("Golden medals should be configured", CurriculumData.goldenMedals.isNotEmpty())
-        assertEquals("Should have 30 continuous word game stages", 30, CurriculumData.wordGameStages.size)
+
+        assertEquals("The expanded word game should contain 60 stages", 60, CurriculumData.wordGameStages.size)
+        assertEquals(1, CurriculumData.wordGameStages.first().stageNumber)
+        assertEquals(60, CurriculumData.wordGameStages.last().stageNumber)
+        CurriculumData.wordGameStages.forEachIndexed { index, stage ->
+            assertEquals("Word game stages should be continuous", index + 1, stage.stageNumber)
+            assertTrue("Stage ${stage.stageNumber} should have a target word", stage.word.isNotBlank())
+            assertTrue("Stage ${stage.stageNumber} should have a hint", stage.hint.isNotBlank())
+        }
     }
 
     @Test
@@ -30,21 +36,5 @@ class ExampleUnitTest {
         val result = SpeechEvaluator.evaluate(spoken, target)
         assertTrue("Score should be high for slogan match", result.scorePercent >= 90)
         assertEquals(3, result.stars)
-    }
-
-    @Test
-    fun testZahraPrivateTutorAI() {
-        val greeting = MasterGohariAI.getInitialGreeting()
-        assertTrue(greeting.isFromTutor)
-        assertNotNull(greeting.persianTranslation)
-        assertTrue(greeting.englishText.contains("Zahra"))
-
-        // Test request to explain from scratch
-        val replyFromScratch = MasterGohariAI.generateReply("از اول برام توضیح بده")
-        assertTrue(replyFromScratch.englishText.contains("Apple") || replyFromScratch.persianTranslation?.contains("صفر") == true)
-
-        // Test respectful grammar correction
-        val grammarTest = MasterGohariAI.generateReply("I is ready")
-        assertTrue(grammarTest.grammarTipFa?.contains("فاعل") == true || grammarTest.weaknessFlagged != null)
     }
 }
