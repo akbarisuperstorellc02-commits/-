@@ -3,6 +3,7 @@ package com.example.ui.theme
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 
 // Puffy Girly Pastel Palette Constants
 val PuffyPinkPrimary = Color(0xFFFF6584)
@@ -132,16 +133,16 @@ enum class ZahraThemeMode(
     )
 }
 
-enum class ZahraFontStyle(val titleFa: String, val sampleText: String) {
-    FANTASY_ROUND(titleFa = "گرد و فانتزی", sampleText = "Self Development ✨"),
-    PRINCESS_CUTE(titleFa = "فانتزی و نمایشی", sampleText = "Start From Zero to Z9 👑"),
-    CHIC_ELEGANT(titleFa = "شیک و مدرن", sampleText = "English Academy ✨")
+enum class ZahraFontStyle(val titleFa: String, val sampleText: String, val fontFamily: FontFamily) {
+    FANTASY_ROUND(titleFa = "گرد و خوانا", sampleText = "Self Development ✨", fontFamily = FontFamily.SansSerif),
+    PRINCESS_CUTE(titleFa = "فانتزی و دست‌نویس", sampleText = "Start From Zero to Z9 👑", fontFamily = FontFamily.Cursive),
+    CHIC_ELEGANT(titleFa = "کلاسیک و رسمی", sampleText = "English Academy ✨", fontFamily = FontFamily.Serif)
 }
 
 data class ZahraThemeState(
     val currentTheme: ZahraThemeMode = ZahraThemeMode.SWEET_SAKURA_PUFFY,
     val fontStyle: ZahraFontStyle = ZahraFontStyle.FANTASY_ROUND,
-    val learnerName: String = "کاربر جدید",
+    val learnerName: String = "زهرا",
     val learnerAvatar: String = "👑",
     val learnerBio: String = "پرنسس خودسازی و تسلط بر زبان انگلیسی 🌸",
     val dailyGoalMinutes: Int = 30
