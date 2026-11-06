@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -233,7 +234,8 @@ fun PuffyBadge(
             .clip(RoundedCornerShape(16.dp))
             .background(bg)
             .border(1.dp, fg.copy(alpha = 0.35f), RoundedCornerShape(16.dp))
-            .padding(horizontal = 10.dp, vertical = 4.dp),
+            .widthIn(max = 180.dp)
+            .padding(horizontal = 10.dp, vertical = 5.dp),
         contentAlignment = Alignment.Center
     ) {
         Row(
@@ -247,7 +249,10 @@ fun PuffyBadge(
                 text = text,
                 color = fg,
                 fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                softWrap = true,
+                textAlign = TextAlign.Center
             )
         }
     }
