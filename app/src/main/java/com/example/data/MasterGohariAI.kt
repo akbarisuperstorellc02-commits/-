@@ -16,8 +16,8 @@ object MasterGohariAI {
         val quickReplies: List<String> = emptyList()
     )
 
-    fun getInitialGreeting(): ChatMessage {
-        return ChatMessage(
+    fun getInitialGreeting(learnerName: String = "کاربر جدید"): ChatMessage {
+        return personalizeMessage(ChatMessage(
             id = UUID.randomUUID().toString(),
             isFromTutor = true,
             englishText = "Welcome to Zahra English Academy, dear Zahra! 👑 I am your dedicated private AI tutor. Our motto is: 'Start from zero, continue until absolute mastery!' I will walk with you patiently, step-by-step from zero to C2. Shall we start with Phonics and sounds or would you like to review your foundations?",
@@ -29,10 +29,14 @@ object MasterGohariAI {
                 "یک تمرین برای نقاط ضعف من بده 🎯",
                 "Let's practice conversation! 🎙️"
             )
-        )
+        ), learnerName)
     }
 
-    fun generateReply(userMessage: String, currentCefrLevel: Int = 0): ChatMessage {
+    fun generateReply(
+        userMessage: String,
+        currentCefrLevel: Int = 0,
+        learnerName: String = "کاربر جدید"
+    ): ChatMessage {
         val cleanInput = userMessage.trim().lowercase()
 
         val response = when {
@@ -132,6 +136,23 @@ object MasterGohariAI {
             grammarTipFa = response.grammarTip,
             weaknessFlagged = response.weaknessNoted,
             quickReplies = response.quickReplies
+        ), learnerName)
+    }
+
+    private fun personalizeMessage(message: ChatMessage, learnerName: String): ChatMessage {
+        fun replaceName(text: String): String = text
+            .replace("Zahra", learnerName, ignoreCase = true)
+            .replace("زهرای عزیزم", "$learnerName عزیزم")
+            .replace("زهرای عزیز", "$learnerName عزیز")
+            .replace("زهرای من", "$learnerName عزیز")
+            .replace("زهرای", learnerName)
+            .replace("زهرا", learnerName)
+        return message.copy(
+            englishText = replaceName(message.englishText),
+            persianTranslation = message.persianTranslation?.let(::replaceName),
+            grammarTipFa = message.grammarTipFa?.let(::replaceName),
+            weaknessFlagged = message.weaknessFlagged?.let(::replaceName),
+            quickReplies = message.quickReplies.map(::replaceName)
         )
     }
 }
