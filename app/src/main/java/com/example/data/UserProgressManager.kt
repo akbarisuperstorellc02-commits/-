@@ -15,8 +15,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
+import java.util.Calendar
+import java.util.Locale
 
 data class ScoreReward(
     val points: Int,
@@ -218,7 +218,11 @@ class UserProgressManager(context: Context) {
     }
 
     private fun refreshDailyCounters() {
-        val today = LocalDate.now().toString()
+        val todayCalendar = Calendar.getInstance()
+        val today = dateKey(todayCalendar)
+        val yesterdayCalendar = (todayCalendar.clone() as Calendar).apply {
+            add(Calendar.DAY_OF_YEAR, -1)
+        }
         val storedDate = prefs.getString("study_day", null)
 
         if (storedDate == null) {
@@ -228,9 +232,7 @@ class UserProgressManager(context: Context) {
         }
         if (storedDate == today) return
 
-        val previousDate = runCatching { LocalDate.parse(storedDate) }.getOrNull()
-        val daysBetween = previousDate?.let { ChronoUnit.DAYS.between(it, LocalDate.now()) }
-        val keepStreak = daysBetween == 1L
+        val keepStreak = storedDate == dateKey(yesterdayCalendar)
         _todayStudyMinutes.value = 0
         if (!keepStreak) _streakDays.value = 0
 
@@ -241,16 +243,27 @@ class UserProgressManager(context: Context) {
             .apply()
     }
 
+    private fun dateKey(calendar: Calendar): String =
+        String.format(
+            Locale.US,
+            "%04d-%02d-%02d",
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH) + 1,
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+
     private fun updateStudyStreak() {
-        val today = LocalDate.now()
-        val todayKey = today.toString()
+        val todayCalendar = Calendar.getInstance()
+        val todayKey = dateKey(todayCalendar)
+        val yesterdayCalendar = (todayCalendar.clone() as Calendar).apply {
+            add(Calendar.DAY_OF_YEAR, -1)
+        }
         val lastActivity = prefs.getString("last_study_activity_day", null)
         if (lastActivity == todayKey) return
 
-        val previous = lastActivity?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
-        val nextStreak = if (previous != null && ChronoUnit.DAYS.between(previous, today) == 1L) {
+        val nextStreak = if (lastActivity == dateKey(yesterdayCalendar)) {
             _streakDays.value + 1
-        } else if (previous == null && prefs.getString("study_day", null) == todayKey) {
+        } else if (lastActivity == null && prefs.getString("study_day", null) == todayKey) {
             maxOf(1, _streakDays.value)
         } else {
             1
