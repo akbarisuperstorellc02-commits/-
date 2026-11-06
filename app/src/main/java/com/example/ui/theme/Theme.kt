@@ -1,5 +1,6 @@
 package com.example.ui.theme
 
+import androidx.compose.material3.Typography as MaterialTypography
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -47,7 +48,7 @@ fun MyApplicationTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography(defaultFontFamily = fontStyle.fontFamily),
+        typography = MaterialTypography(defaultFontFamily = fontStyle.fontFamily),
         content = content
     )
 }
