@@ -333,13 +333,9 @@ class UserProgressManager(context: Context) {
         val currentList = _chatMessages.value.toMutableList().apply { add(userMsg) }
         _chatMessages.value = currentList
 
-        // Offline Private Tutor AI response
-        val tutorReply = MasterGohariAI.generateReply(englishOrFa)
-        currentList.add(tutorReply)
+        // Online-only chat: persist the learner message; only OnlineAITutorService may add tutor replies.
         _chatMessages.value = currentList.toList()
         saveMessages(currentList)
-        addStudyMinutes(3)
-        addScore(10, "مکالمه تمرینی با هوش مصنوعی")
     }
 
     fun addDiaryNote(note: DiaryNote) {
@@ -382,7 +378,7 @@ class UserProgressManager(context: Context) {
     private fun loadSavedMessages(): List<ChatMessage> {
         val jsonStr = prefs.getString("saved_chat_json", null)
         if (jsonStr.isNullOrBlank()) {
-            return listOf(MasterGohariAI.getInitialGreeting())
+            return emptyList()
         }
         return try {
             val arr = JSONArray(jsonStr)
@@ -400,9 +396,9 @@ class UserProgressManager(context: Context) {
                     )
                 )
             }
-            if (list.isEmpty()) listOf(MasterGohariAI.getInitialGreeting()) else list
+            list
         } catch (e: Exception) {
-            listOf(MasterGohariAI.getInitialGreeting())
+            emptyList()
         }
     }
 
@@ -436,8 +432,8 @@ class UserProgressManager(context: Context) {
                     dateDisplayFa = "۱۶ آبان - جمعه طلایی",
                     moodEmoji = "👑",
                     moodTitleFa = "باانگیزه و مصمم",
-                    titleFa = "آغاز رسمی مسیر خودسازی زهرا",
-                    content = "امروز رسماً آکادمی زبان انگلیسی زهرا (Zahra English Academy) را با شعار «از صفر شروع کن، تا تسلط کامل ادامه بده!» آغاز کردم.",
+                    titleFa = "آغاز رسمی مسیر خودسازی",
+                    content = "امروز رسماً آکادمی اختصاصی BH (BH Exclusive Academy) را با شعار «از صفر شروع کن، تا تسلط کامل ادامه بده!» آغاز کردم.",
                     englishSentenceLearned = "Start from zero, continue until absolute mastery! 👑",
                     attachedStickers = listOf("👑", "🥇", "✨"),
                     colorTagHex = 0xFFD4AF37
