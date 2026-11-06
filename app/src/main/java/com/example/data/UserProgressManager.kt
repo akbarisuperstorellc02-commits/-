@@ -230,6 +230,9 @@ class UserProgressManager(context: Context) {
             items = level.items.map { item ->
                 item.copy(
                     englishText = personalizeText(item.englishText, name),
+                    // The original phonetic transcription was specific to "Zahra";
+                    // keep the learner-name slot out of IPA rather than showing a false pronunciation.
+                    phonetic = if (item.id == "a1_1") "/həˈloʊ aɪ æm/" else item.phonetic,
                     persianTranslation = personalizeText(item.persianTranslation, name),
                     exampleSentenceEn = personalizeText(item.exampleSentenceEn, name),
                     exampleSentenceFa = personalizeText(item.exampleSentenceFa, name),
