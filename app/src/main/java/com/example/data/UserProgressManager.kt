@@ -2,7 +2,6 @@ package com.example.data
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.example.model.ChatMessage
 import com.example.model.DiaryNote
 import com.example.model.GameStage
 import com.example.model.GoldenMedal
@@ -14,7 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.UUID
 
 internal data class StudyTimeProgress(
     val totalHours: Int,
@@ -46,7 +44,7 @@ class UserProgressManager(context: Context) {
 
     private val prefs: SharedPreferences = context.getSharedPreferences("zahra_self_dev_prefs", Context.MODE_PRIVATE)
 
-    private val _levelsState = MutableStateFlow<List<Level>>(CurriculumData.levels)
+    private val _levelsState = MutableStateFlow<List<Level>>(expandLearningCurriculum(CurriculumData.levels))
     val levelsState: StateFlow<List<Level>> = _levelsState.asStateFlow()
 
     private val _goldCoins = MutableStateFlow(prefs.getInt("gold_coins", 180))
@@ -97,8 +95,6 @@ class UserProgressManager(context: Context) {
     private val _learnerAvatar = MutableStateFlow(prefs.getString("learner_avatar", "👑") ?: "👑")
     val learnerAvatar: StateFlow<String> = _learnerAvatar.asStateFlow()
 
-    private val _chatMessages = MutableStateFlow<List<ChatMessage>>(loadSavedMessages())
-    val chatMessages: StateFlow<List<ChatMessage>> = _chatMessages.asStateFlow()
 
     private val _diaryNotes = MutableStateFlow<List<DiaryNote>>(loadSavedDiaryNotes())
     val diaryNotes: StateFlow<List<DiaryNote>> = _diaryNotes.asStateFlow()
@@ -264,31 +260,6 @@ class UserProgressManager(context: Context) {
         prefs.edit().putString("learner_avatar", avatar).apply()
     }
 
-    fun addCustomChatMessage(message: ChatMessage) {
-        val currentList = _chatMessages.value.toMutableList().apply { add(message) }
-        _chatMessages.value = currentList.toList()
-        saveMessages(currentList)
-    }
-
-    fun sendUserMessage(englishOrFa: String) {
-        val userMsg = ChatMessage(
-            id = UUID.randomUUID().toString(),
-            isFromTutor = false,
-            englishText = englishOrFa,
-            persianTranslation = null
-        )
-        val currentList = _chatMessages.value.toMutableList().apply { add(userMsg) }
-        _chatMessages.value = currentList
-
-        // Offline Private Tutor AI response
-        val tutorReply = MasterGohariAI.generateReply(englishOrFa)
-        currentList.add(tutorReply)
-        _chatMessages.value = currentList.toList()
-        saveMessages(currentList)
-        addStudyMinutes(3)
-        addScore(10, "مکالمه تمرینی با هوش مصنوعی")
-    }
-
     fun addDiaryNote(note: DiaryNote) {
         val updated = _diaryNotes.value.toMutableList().apply { add(0, note) }
         _diaryNotes.value = updated
@@ -307,50 +278,6 @@ class UserProgressManager(context: Context) {
         addStars(1)
         addStudyMinutes(5)
         addScore(30, "فتح مرحله بازی کلمات")
-    }
-
-    private fun saveMessages(messages: List<ChatMessage>) {
-        val arr = JSONArray()
-        val trimmed = if (messages.size > 40) messages.takeLast(40) else messages
-        for (m in trimmed) {
-            val obj = JSONObject().apply {
-                put("id", m.id)
-                put("isTutor", m.isFromTutor)
-                put("en", m.englishText)
-                put("fa", m.persianTranslation ?: "")
-                put("tip", m.grammarTipFa ?: "")
-                put("weak", m.weaknessFlagged ?: "")
-            }
-            arr.put(obj)
-        }
-        prefs.edit().putString("saved_chat_json", arr.toString()).apply()
-    }
-
-    private fun loadSavedMessages(): List<ChatMessage> {
-        val jsonStr = prefs.getString("saved_chat_json", null)
-        if (jsonStr.isNullOrBlank()) {
-            return listOf(MasterGohariAI.getInitialGreeting())
-        }
-        return try {
-            val arr = JSONArray(jsonStr)
-            val list = mutableListOf<ChatMessage>()
-            for (i in 0 until arr.length()) {
-                val obj = arr.getJSONObject(i)
-                list.add(
-                    ChatMessage(
-                        id = obj.getString("id"),
-                        isFromTutor = obj.getBoolean("isTutor"),
-                        englishText = obj.getString("en"),
-                        persianTranslation = obj.optString("fa").ifEmpty { null },
-                        grammarTipFa = obj.optString("tip").ifEmpty { null },
-                        weaknessFlagged = obj.optString("weak").ifEmpty { null }
-                    )
-                )
-            }
-            if (list.isEmpty()) listOf(MasterGohariAI.getInitialGreeting()) else list
-        } catch (e: Exception) {
-            listOf(MasterGohariAI.getInitialGreeting())
-        }
     }
 
     private fun saveDiaryNotes(notes: List<DiaryNote>) {
