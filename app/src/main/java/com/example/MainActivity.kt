@@ -580,7 +580,7 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
         if (selected == null) {
             Text(tr(locale, "chooseLevel"))
             LearningBand.values().forEachIndexed { i, level ->
-                val unlocked = i == 0 || AcademyLessonCatalog.forBand(LearningBand.values()[i - 1]).all { it.id in completedLessonIds }
+                val unlocked = AcademyLessonCatalog.isBandUnlocked(level, completedLessonIds)
                 AcademyCard {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(names[i], style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
@@ -598,7 +598,7 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
             }
             lessons.forEachIndexed { index, lesson ->
                 val isCompleted = lesson.id in completedLessonIds
-                val lessonUnlocked = index == 0 || lessons.take(index).all { it.id in completedLessonIds }
+                val lessonUnlocked = AcademyLessonCatalog.isLessonUnlocked(selected, index, completedLessonIds)
                 var expanded by remember(lesson.id) { mutableStateOf(false) }
                 AcademyCard {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -761,6 +761,47 @@ private fun VocabularyPage(locale: AcademyLocale, profileId: String, dao: Academ
     }
 }
 
+private fun gameEmoji(style: GameStyle): String = when (style) {
+    GameStyle.MEANING -> "🧠"
+    GameStyle.SPELLING -> "✍️"
+    GameStyle.PICTURE -> "🖼️"
+    GameStyle.MISSING_WORD -> "🧩"
+    GameStyle.SENTENCE -> "📝"
+    GameStyle.ODD_ONE_OUT -> "🔍"
+    GameStyle.TRANSLATION -> "🌍"
+    GameStyle.WORD_ORDER -> "🔠"
+    GameStyle.MATCHING -> "🧩"
+    GameStyle.CLUE -> "🔎"
+    GameStyle.MEMORY -> "🧠"
+    GameStyle.SPEED -> "⚡"
+    GameStyle.CROSSWORD -> "🔤"
+    GameStyle.WORD_BUILD -> "🔡"
+    GameStyle.MISTAKE_REVIEW -> "🔁"
+    GameStyle.SPELLING_CHECK -> "✅"
+    GameStyle.VOCAB_RACE -> "🏁"
+    GameStyle.LISTENING -> "🎧"
+}
+
+@Composable
+private fun GameArtBadge(emoji: String, size: Int) {
+    Box(
+        modifier = Modifier
+            .size(size.dp)
+            .clip(RoundedCornerShape(26.dp))
+            .background(
+                Brush.linearGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        MaterialTheme.colorScheme.secondaryContainer
+                    )
+                )
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(emoji, fontSize = (size * 0.48f).sp)
+    }
+}
+
 @Composable
 private fun GamePage(locale: AcademyLocale, profileId: String, coins: Long, dao: AcademyDao) {
     val scope = rememberCoroutineScope()
@@ -825,34 +866,45 @@ private fun GamePage(locale: AcademyLocale, profileId: String, coins: Long, dao:
             )
             AcademyGameCatalog.modes.forEach { mode ->
                 AcademyCard {
-                    Text(mode.title.forLocale(locale), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Text(mode.description.forLocale(locale), fontSize = 13.sp)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            if (mode.timed) when (locale) {
-                                AcademyLocale.ENGLISH_US -> "Timed · 20 sec"
-                                AcademyLocale.DARI_AF -> "زمان‌دار · 20 ثانیه"
-                                AcademyLocale.PASHTO_AF -> "وخت لرونکی · 20 ثانیې"
-                                AcademyLocale.ARABIC -> "مؤقت · 20 ثانية"
-                            } else when (locale) {
-                                AcademyLocale.ENGLISH_US -> "5 questions"
-                                AcademyLocale.DARI_AF -> "5 پرسش"
-                                AcademyLocale.PASHTO_AF -> "5 پوښتنې"
-                                AcademyLocale.ARABIC -> "5 أسئلة"
-                            },
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Button(onClick = { selectedGameId = mode.id }) {
-                            Text(
-                                when (locale) {
-                                    AcademyLocale.ENGLISH_US -> "Play"
-                                    AcademyLocale.DARI_AF -> "بازی"
-                                    AcademyLocale.PASHTO_AF -> "لوبه"
-                                    AcademyLocale.ARABIC -> "ابدأ"
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        GameArtBadge(gameEmoji(mode.style), 76)
+                        Column(
+                            Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(mode.title.forLocale(locale), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text(mode.description.forLocale(locale), fontSize = 13.sp)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    if (mode.timed) when (locale) {
+                                        AcademyLocale.ENGLISH_US -> "Timed · 20 sec"
+                                        AcademyLocale.DARI_AF -> "زمان‌دار · 20 ثانیه"
+                                        AcademyLocale.PASHTO_AF -> "وخت لرونکی · 20 ثانیې"
+                                        AcademyLocale.ARABIC -> "مؤقت · 20 ثانية"
+                                    } else when (locale) {
+                                        AcademyLocale.ENGLISH_US -> "5 questions"
+                                        AcademyLocale.DARI_AF -> "5 پرسش"
+                                        AcademyLocale.PASHTO_AF -> "5 پوښتنې"
+                                        AcademyLocale.ARABIC -> "5 أسئلة"
+                                    },
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Button(onClick = { selectedGameId = mode.id }) {
+                                    Text(
+                                        when (locale) {
+                                            AcademyLocale.ENGLISH_US -> "Play"
+                                            AcademyLocale.DARI_AF -> "بازی"
+                                            AcademyLocale.PASHTO_AF -> "لوبه"
+                                            AcademyLocale.ARABIC -> "ابدأ"
+                                        }
+                                    )
                                 }
-                            )
+                            }
                         }
                     }
                 }
@@ -911,6 +963,7 @@ private fun GamePage(locale: AcademyLocale, profileId: String, coins: Long, dao:
                     progress = { (round + 1) / 5f },
                     modifier = Modifier.fillMaxWidth()
                 )
+                GameArtBadge(question.visualEmoji, 96)
                 Text(question.prompt.forLocale(locale), style = MaterialTheme.typography.titleMedium)
                 if (selectedMode.style == GameStyle.WORD_BUILD) {
                     val scrambled = question.hint.forLocale(locale)
