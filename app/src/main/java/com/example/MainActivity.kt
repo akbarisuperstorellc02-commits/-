@@ -1832,16 +1832,16 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
 }
 
 
-private data class SpeakingPrompt(val id: String, val text: String, val translation: String)
+private data class SpeakingPrompt(val id: String, val text: String, val dari: String, val pashto: String, val arabic: String)
 private val speakingPrompts = listOf(
-    SpeakingPrompt("hello", "Hello, how are you today?", "سلام، امروز چطور هستی؟"),
-    SpeakingPrompt("name", "My name is Zahra.", "نام من زهرا است."),
-    SpeakingPrompt("school", "I go to school every morning.", "من هر صبح به مکتب می‌روم."),
-    SpeakingPrompt("water", "I would like a glass of water, please.", "لطفاً یک گیلاس آب می‌خواهم."),
-    SpeakingPrompt("family", "My family is very important to me.", "خانواده‌ام برای من بسیار مهم است."),
-    SpeakingPrompt("reading", "I enjoy reading books in my free time.", "من در وقت آزاد از کتاب‌خواندن لذت می‌برم."),
-    SpeakingPrompt("practice", "Practice makes progress every day.", "تمرین هر روز باعث پیشرفت می‌شود."),
-    SpeakingPrompt("future", "I am going to improve my English this year.", "من امسال می‌خواهم انگلیسی خود را بهتر بسازم.")
+    SpeakingPrompt("hello", "Hello, how are you today?", "سلام، امروز چطور هستی؟", "سلام، نن څنګه یې؟", "مرحباً، كيف حالك اليوم؟"),
+    SpeakingPrompt("name", "My name is Zahra.", "نام من زهرا است.", "زما نوم زهرا دی.", "اسمي زهرا."),
+    SpeakingPrompt("school", "I go to school every morning.", "من هر صبح به مکتب می‌روم.", "زه هر سهار ښوونځي ته ځم.", "أذهب إلى المدرسة كل صباح."),
+    SpeakingPrompt("water", "I would like a glass of water, please.", "لطفاً یک گیلاس آب می‌خواهم.", "مهرباني وکړئ، یو ګیلاس اوبه غواړم.", "أريد كأساً من الماء من فضلك."),
+    SpeakingPrompt("family", "My family is very important to me.", "خانواده‌ام برای من بسیار مهم است.", "زما کورنۍ راته ډېره مهمه ده.", "عائلتي مهمة جداً بالنسبة لي."),
+    SpeakingPrompt("reading", "I enjoy reading books in my free time.", "من در وقت آزاد از کتاب‌خواندن لذت می‌برم.", "زه په خپل فارغ وخت کې د کتابونو لوستل خوښوم.", "أستمتع بقراءة الكتب في وقت فراغي."),
+    SpeakingPrompt("practice", "Practice makes progress every day.", "تمرین هر روز باعث پیشرفت می‌شود.", "تمرین هره ورځ پرمختګ رامنځته کوي.", "الممارسة تحقق التقدم كل يوم."),
+    SpeakingPrompt("future", "I am going to improve my English this year.", "من امسال می‌خواهم انگلیسی خود را بهتر بسازم.", "زه سږ کال غواړم خپله انګلیسي ښه کړم.", "سأحسن لغتي الإنجليزية هذا العام.")
 )
 
 private fun speechAccuracy(target: String, spoken: String): Int =
@@ -1919,12 +1919,27 @@ private fun SpeakingPage(locale: AcademyLocale, dao: AcademyDao) {
         onDispose { speechEngine.stop(); speechEngine.shutdown() }
     }
     Page {
-        Text("تمرین صحبت‌کردن / Speaking", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
+        Text(when (locale) {
+            AcademyLocale.ENGLISH_US -> "Speaking practice"
+            AcademyLocale.DARI_AF -> "تمرین صحبت‌کردن"
+            AcademyLocale.PASHTO_AF -> "د خبرو تمرین"
+            AcademyLocale.ARABIC -> "تدريب التحدث"
+        }, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
         AcademyCard {
-            Text("گوش کن، صحبت کن و امتیاز بگیر", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(when (locale) {
+                AcademyLocale.ENGLISH_US -> "Listen, speak and earn points"
+                AcademyLocale.DARI_AF -> "گوش کن، صحبت کن و امتیاز بگیر"
+                AcademyLocale.PASHTO_AF -> "واورئ، خبرې وکړئ او نمرې واخلئ"
+                AcademyLocale.ARABIC -> "استمع وتحدث واكسب النقاط"
+            }, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Text((promptIndex + 1).toString() + " / " + speakingPrompts.size, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
             Text(prompt.text, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            Text(prompt.translation, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(when (locale) {
+                AcademyLocale.ENGLISH_US -> "Read, listen, then say the sentence aloud."
+                AcademyLocale.DARI_AF -> prompt.dari
+                AcademyLocale.PASHTO_AF -> prompt.pashto
+                AcademyLocale.ARABIC -> prompt.arabic
+            }, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Button(
                 onClick = {
                     speechEngine.language = Locale.US
@@ -1933,7 +1948,12 @@ private fun SpeakingPage(locale: AcademyLocale, dao: AcademyDao) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(26.dp),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp)
-            ) { Icon(Icons.Default.VolumeUp, null); Spacer(Modifier.width(8.dp)); Text("شنیدن تلفظ / Listen") }
+            ) { Icon(Icons.Default.VolumeUp, null); Spacer(Modifier.width(8.dp)); Text(when (locale) {
+                    AcademyLocale.ENGLISH_US -> "Listen to pronunciation"
+                    AcademyLocale.DARI_AF -> "شنیدن تلفظ"
+                    AcademyLocale.PASHTO_AF -> "تلفظ واورئ"
+                    AcademyLocale.ARABIC -> "استمع إلى النطق"
+                }) }
             Button(
                 onClick = {
                     if (!permissionGranted) permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
@@ -1953,25 +1973,50 @@ private fun SpeakingPage(locale: AcademyLocale, dao: AcademyDao) {
                 enabled = !listening,
                 shape = RoundedCornerShape(26.dp),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp, pressedElevation = 2.dp)
-            ) { Icon(Icons.Default.Mic, null); Spacer(Modifier.width(8.dp)); Text(if (listening) "در حال شنیدن…" else "بزن و صحبت کن / Speak") }
+            ) { Icon(Icons.Default.Mic, null); Spacer(Modifier.width(8.dp)); Text(when (locale) {
+                    AcademyLocale.ENGLISH_US -> if (listening) "Listening…" else "Tap and speak"
+                    AcademyLocale.DARI_AF -> if (listening) "در حال شنیدن…" else "بزن و صحبت کن"
+                    AcademyLocale.PASHTO_AF -> if (listening) "اورېدل کېږي…" else "کلیک او خبرې وکړئ"
+                    AcademyLocale.ARABIC -> if (listening) "جارٍ الاستماع…" else "اضغط وتحدث"
+                }) }
             if (transcript.isNotBlank()) {
-                Text("چیزی که دستگاه شنید:", fontWeight = FontWeight.Bold)
+                Text(when (locale) {
+                    AcademyLocale.ENGLISH_US -> "What the device heard:"
+                    AcademyLocale.DARI_AF -> "چیزی که دستگاه شنید:"
+                    AcademyLocale.PASHTO_AF -> "وسیله چې څه واورېدل:"
+                    AcademyLocale.ARABIC -> "ما سمعه الجهاز:"
+                }, fontWeight = FontWeight.Bold)
                 Text(transcript)
                 if (score >= 0) {
                     Text(score.toString() + " / 100", style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.ExtraBold)
-                    Text(if (score >= 90) "عالی!" else if (score >= 70) "آفرین! 10 XP و 2 سکه" else "دوباره تمرین کن")
+                    Text(when (locale) {
+                        AcademyLocale.ENGLISH_US -> if (score >= 90) "Excellent!" else if (score >= 70) "Good! +10 XP, +2 coins" else "Keep practising"
+                        AcademyLocale.DARI_AF -> if (score >= 90) "عالی!" else if (score >= 70) "آفرین! +10 XP و +2 سکه" else "دوباره تمرین کن"
+                        AcademyLocale.PASHTO_AF -> if (score >= 90) "ډېر ښه!" else if (score >= 70) "آفرین! +10 XP او +2 سکې" else "بیا تمرین وکړئ"
+                        AcademyLocale.ARABIC -> if (score >= 90) "ممتاز!" else if (score >= 70) "أحسنت! +10 XP و +2 عملة" else "واصل التدريب"
+                    })
                 }
             }
             if (status.isNotBlank()) Text(status, color = MaterialTheme.colorScheme.secondary)
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedButton(onClick = {
                     recognizer?.cancel(); transcript = ""; score = -1; status = ""
-                }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(24.dp)) { Text("دوباره کوشش") }
+                }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(24.dp)) { Text(when (locale) {
+                    AcademyLocale.ENGLISH_US -> "Try again"
+                    AcademyLocale.DARI_AF -> "دوباره کوشش"
+                    AcademyLocale.PASHTO_AF -> "بیا هڅه"
+                    AcademyLocale.ARABIC -> "حاول مجدداً"
+                }) }
                 Button(onClick = {
                     recognizer?.cancel()
                     promptIndex = (promptIndex + 1) % speakingPrompts.size
                     transcript = ""; score = -1; status = ""
-                }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(24.dp)) { Text("بعدی") }
+                }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(24.dp)) { Text(when (locale) {
+                    AcademyLocale.ENGLISH_US -> "Next"
+                    AcademyLocale.DARI_AF -> "بعدی"
+                    AcademyLocale.PASHTO_AF -> "بل"
+                    AcademyLocale.ARABIC -> "التالي"
+                }) }
             }
         }
         Text(
