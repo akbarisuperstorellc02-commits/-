@@ -1194,6 +1194,7 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
     var sessionId by remember { mutableStateOf(UUID.randomUUID().toString()) }
     var reminderTitle by remember { mutableStateOf("") }
     var reminderTime by remember { mutableStateOf("19:00") }
+    var editingReminderId by remember { mutableStateOf<String?>(null) }
     var feedback by remember { mutableStateOf("") }
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -1274,15 +1275,18 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
                 if (reminderTitle.isBlank() || hour == null || minute == null || hour !in 0..23 || minute !in 0..59) {
                     feedback = tr(locale, "invalidTime")
                 } else {
-                    val id = UUID.randomUUID().toString()
+                    val id = editingReminderId ?: UUID.randomUUID().toString()
                     val title = reminderTitle.trim()
                     val schedule = {
                         scope.launch {
                             dao.saveReminder(ReminderEntity(reminderId = id, title = title, hour = hour!!, minute = minute!!, repeatDaysMask = 127, enabled = true))
                         }
+                        ReminderScheduler.cancel(context, id)
                         ReminderScheduler.schedule(context, id, title, hour!!, minute!!, 127)
-                        feedback = tr(locale, "reminderSaved")
+                        feedback = tr(locale, if (editingReminderId == null) "reminderSaved" else "reminderUpdated")
                         reminderTitle = ""
+                        reminderTime = "19:00"
+                        editingReminderId = null
                     }
                     if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                         notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -1300,7 +1304,16 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
                     }
                     schedule()
                 }
-            }, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "scheduleReminder")) }
+            }, modifier = Modifier.fillMaxWidth()) {
+                Text(tr(locale, if (editingReminderId == null) "scheduleReminder" else "updateReminder"))
+            }
+            if (editingReminderId != null) {
+                TextButton(onClick = {
+                    editingReminderId = null
+                    reminderTitle = ""
+                    reminderTime = "19:00"
+                }) { Text(tr(locale, "cancel")) }
+            }
             if (reminders.isEmpty()) Text(tr(locale, "noReminders"))
             reminders.forEach { reminder ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1308,9 +1321,30 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
                         Text(reminder.title, fontWeight = FontWeight.SemiBold)
                         Text(AsciiDigits.normalize("%02d:%02d".format(reminder.hour, reminder.minute)), fontSize = 12.sp)
                     }
+                    Switch(
+                        checked = reminder.enabled,
+                        onCheckedChange = { enabled ->
+                            scope.launch { dao.saveReminder(reminder.copy(enabled = enabled)) }
+                            if (enabled) {
+                                ReminderScheduler.schedule(context, reminder.reminderId, reminder.title, reminder.hour, reminder.minute, reminder.repeatDaysMask)
+                            } else {
+                                ReminderScheduler.cancel(context, reminder.reminderId)
+                            }
+                        }
+                    )
+                    IconButton(onClick = {
+                        editingReminderId = reminder.reminderId
+                        reminderTitle = reminder.title
+                        reminderTime = "%02d:%02d".format(reminder.hour, reminder.minute)
+                    }) { Icon(Icons.Default.Edit, contentDescription = "Edit reminder") }
                     IconButton(onClick = {
                         scope.launch { dao.deleteReminder(reminder.reminderId) }
                         ReminderScheduler.cancel(context, reminder.reminderId)
+                        if (editingReminderId == reminder.reminderId) {
+                            editingReminderId = null
+                            reminderTitle = ""
+                            reminderTime = "19:00"
+                        }
                     }) { Icon(Icons.Default.Delete, contentDescription = "Delete reminder") }
                 }
             }
@@ -1507,7 +1541,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "gameRoadmap" to "More vocabulary, spelling and memory games are planned for the next content phase.",
         "summary" to "Learning summary", "badges" to "Achievements", "badgeFirstLesson" to "First lesson completed", "badgeFiveLessons" to "Five lessons completed", "badgeFirstQuiz" to "First quiz completed", "badgeFirstGame" to "First game played", "badgeHour" to "One hour of study", "noBadges" to "Complete lessons, quizzes and games to earn badges.", "studyToday" to "Today", "studyWeek" to "This week", "studyMonth" to "This month", "studyTotal" to "Total study time", "average" to "Average quiz score", "quizHistory" to "Quiz history", "noHistory" to "No quiz attempts yet.", "quizTitle" to "Quick mixed quiz", "nextQuestion" to "Next question", "finishQuiz" to "Finish quiz", "quizComplete" to "Quiz completed!", "quizSaved" to "Your result has been saved to your learning history.", "seeProgress" to "View progress", "questionProgress" to "Question $arg",
         "displayName" to "Display name", "changeAvatar" to "Change photo", "backupRestore" to "Backup and restore", "resetData" to "Reset all app data", "resetWarning" to "This removes your learning progress, quiz and game history, saved words, reminders and profile settings.", "continueReset" to "Continue", "finalResetTitle" to "Final confirmation", "finalResetWarning" to "This action cannot be undone. Create a backup first if you may need this data.", "finalResetButton" to "Delete all data", "resetSuccess" to "App data has been reset.", "createBackup" to "Create backup", "restoreBackup" to "Restore backup", "backupMergeNote" to "Restore merges saved records with this device; it does not erase local data.", "confirmRestore" to "Restore this backup?", "restoreWarning" to "The selected backup will update profile settings and merge saved learning records.", "cancel" to "Cancel", "backupExported" to "Backup saved successfully.", "restoreSuccess" to "Backup restored successfully.", "backupFailed" to "Backup operation failed. Check the selected file and try again.", "username" to "Username", "save" to "Save profile", "language" to "Language", "theme" to "Theme",
-        "font" to "Font", "minutes" to "minutes", "studyTools" to "Study tools", "timer" to "Study timer", "startTimer" to "Start", "pauseTimer" to "Pause", "finishTimer" to "Finish session", "timerSaved" to "Study session saved.", "reminders" to "Reminders and alarms", "reminderTitle" to "Reminder title", "timeHHMM" to "Time (HH:MM)", "dailyReminder" to "Repeat every day", "scheduleReminder" to "Schedule reminder", "reminderSaved" to "Reminder scheduled.", "invalidTime" to "Enter a title and valid time such as 19:30.", "permissionNeeded" to "Allow notifications in Android settings to receive reminders.", "exactAlarmPermission" to "Allow exact alarms in Android settings; otherwise reminders may be delayed.", "noReminders" to "No reminders scheduled yet.", "DARI_AF" to "Afghan Dari", "PASHTO_AF" to "Afghan Pashto", "ARABIC" to "Arabic", "ENGLISH_US" to "English",
+        "font" to "Font", "minutes" to "minutes", "studyTools" to "Study tools", "timer" to "Study timer", "startTimer" to "Start", "pauseTimer" to "Pause", "finishTimer" to "Finish session", "timerSaved" to "Study session saved.", "reminders" to "Reminders and alarms", "reminderTitle" to "Reminder title", "timeHHMM" to "Time (HH:MM)", "dailyReminder" to "Repeat every day", "scheduleReminder" to "Schedule reminder", "reminderSaved" to "Reminder scheduled.", "reminderUpdated" to "Reminder updated.", "updateReminder" to "Update reminder", "invalidTime" to "Enter a title and valid time such as 19:30.", "permissionNeeded" to "Allow notifications in Android settings to receive reminders.", "exactAlarmPermission" to "Allow exact alarms in Android settings; otherwise reminders may be delayed.", "noReminders" to "No reminders scheduled yet.", "DARI_AF" to "Afghan Dari", "PASHTO_AF" to "Afghan Pashto", "ARABIC" to "Arabic", "ENGLISH_US" to "English",
         "SANS_SERIF" to "Sans Serif", "SERIF" to "Serif", "CURSIVE" to "Cursive"
     )
     val fa = mapOf(
@@ -1527,7 +1561,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "gameRoadmap" to "بازی‌های واژگان، املا و حافظه در مرحله بعدی محتوا اضافه می‌شوند.",
         "summary" to "خلاصه یادگیری تو", "badges" to "افتخارات", "badgeFirstLesson" to "نخستین درس تکمیل شد", "badgeFiveLessons" to "پنج درس تکمیل شد", "badgeFirstQuiz" to "نخستین آزمون انجام شد", "badgeFirstGame" to "نخستین بازی انجام شد", "badgeHour" to "یک ساعت مطالعه", "noBadges" to "برای دریافت مدال، درس‌ها و آزمون‌ها را تکمیل کن.", "studyToday" to "امروز", "studyWeek" to "این هفته", "studyMonth" to "این ماه", "studyTotal" to "مجموع زمان مطالعه", "average" to "میانگین نمره آزمون", "quizHistory" to "تاریخچه آزمون", "noHistory" to "هنوز آزمونی انجام نشده است.", "quizTitle" to "آزمون ترکیبی کوتاه", "nextQuestion" to "پرسش بعدی", "finishQuiz" to "پایان آزمون", "quizComplete" to "آزمون تکمیل شد!", "quizSaved" to "نتیجه در تاریخچه یادگیری ذخیره شد.", "seeProgress" to "دیدن پیشرفت", "questionProgress" to "پرسش $arg",
         "displayName" to "نام نمایشی", "changeAvatar" to "تغییر عکس", "backupRestore" to "پشتیبان‌گیری و بازیابی", "resetData" to "بازنشانی تمام اطلاعات برنامه", "resetWarning" to "پیشرفت آموزشی، تاریخچه آزمون و بازی، واژگان ذخیره‌شده، یادآوری‌ها و تنظیمات پروفایل حذف می‌شوند.", "continueReset" to "ادامه", "finalResetTitle" to "تأیید نهایی", "finalResetWarning" to "این کار برگشت‌پذیر نیست. اگر به اطلاعات نیاز داری، نخست نسخه پشتیبان بساز.", "finalResetButton" to "حذف تمام اطلاعات", "resetSuccess" to "اطلاعات برنامه بازنشانی شد.", "createBackup" to "ساخت نسخه پشتیبان", "restoreBackup" to "بازیابی نسخه پشتیبان", "backupMergeNote" to "بازیابی، اطلاعات را با داده‌های دستگاه یکجا می‌کند و اطلاعات محلی را پاک نمی‌کند.", "confirmRestore" to "این نسخه پشتیبان بازیابی شود؟", "restoreWarning" to "تنظیمات پروفایل و سوابق آموزشی از فایل انتخاب‌شده وارد می‌شوند.", "cancel" to "لغو", "backupExported" to "نسخه پشتیبان با موفقیت ذخیره شد.", "restoreSuccess" to "نسخه پشتیبان با موفقیت بازیابی شد.", "backupFailed" to "عملیات پشتیبان‌گیری ناکام شد؛ فایل را بررسی کن.", "username" to "نام کاربری", "save" to "ذخیره پروفایل", "language" to "زبان", "theme" to "تم",
-        "font" to "فونت", "minutes" to "دقیقه", "studyTools" to "ابزارهای مطالعه", "timer" to "تایمر مطالعه", "startTimer" to "شروع", "pauseTimer" to "مکث", "finishTimer" to "پایان جلسه", "timerSaved" to "جلسه مطالعه ذخیره شد.", "reminders" to "یادآوری و زنگ", "reminderTitle" to "عنوان یادآوری", "timeHHMM" to "زمان (ساعت:دقیقه)", "dailyReminder" to "تکرار هر روز", "scheduleReminder" to "تنظیم یادآوری", "reminderSaved" to "یادآوری تنظیم شد.", "invalidTime" to "عنوان و زمان درست مانند 19:30 وارد کن.", "permissionNeeded" to "برای دریافت یادآوری، اجازه اعلان‌ها را در اندروید فعال کن.", "exactAlarmPermission" to "برای زنگ دقیق، اجازه زنگ‌های دقیق را در تنظیمات اندروید فعال کن.", "noReminders" to "هنوز یادآوری تنظیم نشده است.", "DARI_AF" to "دری افغانستان", "PASHTO_AF" to "پشتو افغانستان", "ARABIC" to "عربی", "ENGLISH_US" to "انگلیسی",
+        "font" to "فونت", "minutes" to "دقیقه", "studyTools" to "ابزارهای مطالعه", "timer" to "تایمر مطالعه", "startTimer" to "شروع", "pauseTimer" to "مکث", "finishTimer" to "پایان جلسه", "timerSaved" to "جلسه مطالعه ذخیره شد.", "reminders" to "یادآوری و زنگ", "reminderTitle" to "عنوان یادآوری", "timeHHMM" to "زمان (ساعت:دقیقه)", "dailyReminder" to "تکرار هر روز", "scheduleReminder" to "تنظیم یادآوری", "reminderSaved" to "یادآوری تنظیم شد.", "reminderUpdated" to "یادآوری به‌روزرسانی شد.", "updateReminder" to "به‌روزرسانی یادآوری", "invalidTime" to "عنوان و زمان درست مانند 19:30 وارد کن.", "permissionNeeded" to "برای دریافت یادآوری، اجازه اعلان‌ها را در اندروید فعال کن.", "exactAlarmPermission" to "برای زنگ دقیق، اجازه زنگ‌های دقیق را در تنظیمات اندروید فعال کن.", "noReminders" to "هنوز یادآوری تنظیم نشده است.", "DARI_AF" to "دری افغانستان", "PASHTO_AF" to "پشتو افغانستان", "ARABIC" to "عربی", "ENGLISH_US" to "انگلیسی",
         "SANS_SERIF" to "سن‌سریف", "SERIF" to "سریف", "CURSIVE" to "دست‌نویس"
     )
     val ps = mapOf("home" to "کور", "learn" to "زده کړه", "games" to "لوبې", "progress" to "پرمختګ", "profile" to "پروفایل",
@@ -1545,7 +1579,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "learningPath" to "مسار تعلم الإنجليزية", "vocabulary" to "دفتر المفردات", "searchWords" to "ابحث عن كلمة", "wordCount" to "$arg كلمة", "chooseLevel" to "اختر مستواك", "viewLessons" to "عرض الدروس", "levelLocked" to "أكمل المستوى السابق لفتح هذا المستوى.", "allLevels" to "كل المستويات",
         "correct" to "ممتاز! إجابة صحيحة.", "quizTitle" to "اختبار قصير متنوع", "nextQuestion" to "السؤال التالي", "finishQuiz" to "إنهاء الاختبار", "quizComplete" to "اكتمل الاختبار!", "quizSaved" to "تم حفظ النتيجة في سجل التعلم.", "seeProgress" to "عرض التقدم", "wrong" to "حاول مرة أخرى.", "hintButton" to "تلميح · 6 عملات", "hintPaid" to "تم تفعيل التلميح؛ خُصمت 6 عملات.",
         "needCoins" to "تحتاج إلى 6 عملات على الأقل.", "displayName" to "الاسم الظاهر", "changeAvatar" to "تغيير الصورة", "backupRestore" to "النسخ الاحتياطي والاستعادة", "resetData" to "إعادة ضبط جميع بيانات التطبيق", "resetWarning" to "سيؤدي ذلك إلى حذف التقدم وسجل الاختبارات والألعاب والمفردات المحفوظة والتذكيرات وإعدادات الملف.", "continueReset" to "متابعة", "finalResetTitle" to "التأكيد النهائي", "finalResetWarning" to "لا يمكن التراجع عن هذا الإجراء. أنشئ نسخة احتياطية أولاً إذا كنت قد تحتاج إلى هذه البيانات.", "finalResetButton" to "حذف جميع البيانات", "resetSuccess" to "تمت إعادة ضبط بيانات التطبيق.", "createBackup" to "إنشاء نسخة احتياطية", "restoreBackup" to "استعادة نسخة احتياطية", "backupMergeNote" to "تدمج الاستعادة السجلات مع بيانات الجهاز ولا تحذف البيانات المحلية.", "confirmRestore" to "هل تريد استعادة هذه النسخة؟", "restoreWarning" to "سيتم تحديث إعدادات الملف ودمج سجلات التعلم من الملف المحدد.", "cancel" to "إلغاء", "backupExported" to "تم حفظ النسخة الاحتياطية بنجاح.", "restoreSuccess" to "تمت استعادة النسخة الاحتياطية بنجاح.", "backupFailed" to "فشلت عملية النسخ الاحتياطي. تحقق من الملف وحاول مجدداً.", "username" to "اسم المستخدم", "save" to "حفظ الملف",
-        "language" to "اللغة", "theme" to "السمة", "font" to "الخط", "minutes" to "دقيقة", "studyTools" to "أدوات الدراسة", "timer" to "مؤقت الدراسة", "startTimer" to "ابدأ", "pauseTimer" to "إيقاف مؤقت", "finishTimer" to "إنهاء الجلسة", "timerSaved" to "تم حفظ جلسة الدراسة.", "reminders" to "التذكيرات والمنبهات", "reminderTitle" to "عنوان التذكير", "timeHHMM" to "الوقت (HH:MM)", "dailyReminder" to "التكرار يومياً", "scheduleReminder" to "جدولة التذكير", "reminderSaved" to "تمت جدولة التذكير.", "invalidTime" to "أدخل عنواناً ووقتاً صحيحاً مثل 19:30.", "permissionNeeded" to "اسمح بالإشعارات من إعدادات Android لاستلام التذكيرات.", "exactAlarmPermission" to "اسمح بالمنبهات الدقيقة من إعدادات Android حتى لا تتأخر التذكيرات.", "noReminders" to "لا توجد تذكيرات مجدولة بعد.",
+        "language" to "اللغة", "theme" to "السمة", "font" to "الخط", "minutes" to "دقيقة", "studyTools" to "أدوات الدراسة", "timer" to "مؤقت الدراسة", "startTimer" to "ابدأ", "pauseTimer" to "إيقاف مؤقت", "finishTimer" to "إنهاء الجلسة", "timerSaved" to "تم حفظ جلسة الدراسة.", "reminders" to "التذكيرات والمنبهات", "reminderTitle" to "عنوان التذكير", "timeHHMM" to "الوقت (HH:MM)", "dailyReminder" to "التكرار يومياً", "scheduleReminder" to "جدولة التذكير", "reminderSaved" to "تمت جدولة التذكير.", "reminderUpdated" to "تم تحديث التذكير.", "updateReminder" to "تحديث التذكير", "invalidTime" to "أدخل عنواناً ووقتاً صحيحاً مثل 19:30.", "permissionNeeded" to "اسمح بالإشعارات من إعدادات Android لاستلام التذكيرات.", "exactAlarmPermission" to "اسمح بالمنبهات الدقيقة من إعدادات Android حتى لا تتأخر التذكيرات.", "noReminders" to "لا توجد تذكيرات مجدولة بعد.",
         "DARI_AF" to "الداري الأفغانية", "PASHTO_AF" to "البشتوية الأفغانية", "ARABIC" to "العربية", "ENGLISH_US" to "الإنجليزية",
         "SANS_SERIF" to "Sans Serif", "SERIF" to "Serif", "CURSIVE" to "Cursive")
     val psComplete = ps + mapOf(
