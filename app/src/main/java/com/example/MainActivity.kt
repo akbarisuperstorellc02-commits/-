@@ -1637,7 +1637,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "myProfile" to "My profile", "learningPath" to "English learning path", "vocabulary" to "Vocabulary notebook", "searchWords" to "Search words", "wordCount" to "$arg words", "chooseLevel" to "Choose your current level",
         "bandSub" to "Structured learning at $arg", "viewLessons" to "View lessons", "levelLocked" to "Complete the previous level to unlock.", "allLevels" to "All levels",
         "lessonExplain" to "Learn the topic, practise vocabulary and check your understanding.", "lessonDetails" to "Open lesson", "hideDetails" to "Hide details", "newWords" to "New vocabulary",
-        "completeLesson" to "Complete lesson · earn XP", "lessonDone" to "Lesson completed", "quizReview" to "Review quizzes", "wordChallenge" to "Word meaning challenge",
+        "completeLesson" to "Complete lesson · earn XP", "lessonDone" to "Lesson completed", "lessonLocked" to "Complete the previous lesson to unlock this one.", "quizReview" to "Review quizzes", "wordChallenge" to "Word meaning challenge",
         "chooseMeaning" to "Choose the Dari meaning of APPLE", "correct" to "Excellent! Correct answer.", "wrong" to "Not quite. Try again.",
         "hintText" to "Hint: It is a fruit.", "hintPaid" to "Hint unlocked. 6 coins spent.", "needCoins" to "You need at least 6 coins.",
         "hintButton" to "Get a hint · 6 coins", "coinBalance" to "Your coins: $arg", "newRound" to "New round",
@@ -1657,7 +1657,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "myProfile" to "پروفایل من", "learningPath" to "مسیر آموزش انگلیسی", "vocabulary" to "دفترچه واژگان", "searchWords" to "جست‌وجوی واژه", "wordCount" to "$arg واژه", "chooseLevel" to "سطح فعلی خود را انتخاب کن",
         "bandSub" to "درس‌های مرحله‌بندی‌شده $arg", "viewLessons" to "دیدن درس‌ها", "levelLocked" to "برای بازشدن این سطح، سطح قبلی را تکمیل کن.", "allLevels" to "همه سطح‌ها",
         "lessonExplain" to "موضوع را یاد بگیر، واژه‌های تازه را تمرین کن و دانسته‌هایت را بسنج.", "lessonDetails" to "بازکردن درس", "hideDetails" to "بستن جزئیات", "newWords" to "واژگان تازه",
-        "completeLesson" to "تکمیل درس · دریافت امتیاز", "quizReview" to "رفتن به آزمون‌ها", "wordChallenge" to "چالش معنی واژه",
+        "completeLesson" to "تکمیل درس · دریافت امتیاز", "lessonDone" to "درس تکمیل شده است", "lessonLocked" to "برای بازشدن این درس، درس قبلی را تکمیل کن.", "quizReview" to "رفتن به آزمون‌ها", "wordChallenge" to "چالش معنی واژه",
         "chooseMeaning" to "معنی دری کلمه APPLE را انتخاب کن", "correct" to "آفرین! پاسخ درست است.", "wrong" to "این پاسخ درست نیست؛ دوباره تلاش کن.",
         "hintText" to "راهنما: این یک میوه است.", "hintPaid" to "راهنما فعال شد؛ 6 سکه مصرف شد.", "needCoins" to "حداقل 6 سکه نیاز داری.",
         "hintButton" to "دریافت راهنما · 6 سکه", "coinBalance" to "سکه‌های تو: $arg", "newRound" to "دور تازه",
@@ -1686,7 +1686,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "DARI_AF" to "الداري الأفغانية", "PASHTO_AF" to "البشتوية الأفغانية", "ARABIC" to "العربية", "ENGLISH_US" to "الإنجليزية",
         "SANS_SERIF" to "Sans Serif", "SERIF" to "Serif", "CURSIVE" to "Cursive")
     val psComplete = ps + mapOf(
-        "lessonExplain" to "موضوع زده کړئ، لغتونه تمرین کړئ او خپله پوهه وازمویئ.",
+        "lessonExplain" to "موضوع زده کړئ، لغتونه تمرین کړئ او خپله پوهه وازمویئ.", "lessonDone" to "درس بشپړ شوی دی", "lessonLocked" to "د دې درس د خلاصولو لپاره مخکینی درس بشپړ کړئ.",
         "journeySub" to "هره نوې کلمه مو موخې ته نږدې کوي.", "goalMins" to "$arg دقیقې", "goalHint" to "د مطالعې وخت ثبتولو لپاره درس پیل کړئ.",
         "continue" to "راتلونکي ګام ته چمتو یاست؟", "chooseLesson" to "کچه وټاکئ او زده کړه روانه وساتئ.", "openLessons" to "درسونه پرانیزئ",
         "myProfile" to "زما پروفایل", "bandSub" to "د $arg لپاره منظم درسونه", "lessonDetails" to "درس پرانیزئ", "hideDetails" to "جزئیات پټ کړئ",
@@ -1697,7 +1697,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "questionProgress" to "پوښتنه $arg"
     )
     val arComplete = ar + mapOf(
-        "lessonExplain" to "تعلّم الموضوع وتدرّب على المفردات واختبر فهمك.",
+        "lessonExplain" to "تعلّم الموضوع وتدرّب على المفردات واختبر فهمك.", "lessonDone" to "اكتمل الدرس", "lessonLocked" to "أكمل الدرس السابق لفتح هذا الدرس.",
         "journeySub" to "كل كلمة جديدة تقرّبك من هدفك.", "goalMins" to "$arg دقيقة", "goalHint" to "ابدأ درساً لتسجيل وقت الدراسة الفعلي.",
         "continue" to "هل أنت مستعد للخطوة التالية؟", "chooseLesson" to "اختر مستوى وتابع التعلم.", "openLessons" to "افتح الدروس",
         "myProfile" to "ملفي الشخصي", "bandSub" to "دروس منظمة للمستوى $arg", "lessonDetails" to "افتح الدرس", "hideDetails" to "إخفاء التفاصيل",
