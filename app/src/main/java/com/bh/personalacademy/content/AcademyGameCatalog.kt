@@ -22,7 +22,8 @@ data class GameQuestion(
     val correctIndex: Int,
     val answer: String,
     val hint: LocalizedText,
-    val explanation: LocalizedText
+    val explanation: LocalizedText,
+    val visualEmoji: String = ""
 )
 
 private data class GameWord(
@@ -170,6 +171,6 @@ object AcademyGameCatalog {
         val rotation = if (mode.style == GameStyle.ODD_ONE_OUT || options.size <= 1) 0 else (round + modeIndex) % options.size
         val shuffledOptions = options.drop(rotation) + options.take(rotation)
         val correctIndex = if (mode.style == GameStyle.ODD_ONE_OUT) 2 else (options.size - rotation) % options.size
-        return GameQuestion(prompt, shuffledOptions, correctIndex, answer, hint, explanation)
+        return GameQuestion(prompt, shuffledOptions, correctIndex, answer, hint, explanation, word.emoji)
     }
 }
