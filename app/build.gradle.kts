@@ -68,7 +68,6 @@ android {
     includeInApk = false
     includeInBundle = true
   }
-  assetPacks += listOf(":gemma_ai_pack_1", ":gemma_ai_pack_2", ":gemma_ai_pack_3")
 }
 
 // Configure the Secrets Gradle Plugin to use .env and .env.example files
