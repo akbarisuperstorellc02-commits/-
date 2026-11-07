@@ -16,6 +16,26 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
 
+internal data class StudyTimeProgress(
+    val totalHours: Int,
+    val remainingMinutes: Int
+)
+
+internal fun calculateStudyTimeProgress(
+    existingHours: Int,
+    existingRemainderMinutes: Int,
+    addedMinutes: Int
+): StudyTimeProgress {
+    val safeHours = existingHours.coerceAtLeast(0)
+    val safeRemainder = existingRemainderMinutes.coerceIn(0, 59)
+    val safeAdded = addedMinutes.coerceAtLeast(0)
+    val accumulatedMinutes = safeRemainder + safeAdded
+    return StudyTimeProgress(
+        totalHours = safeHours + accumulatedMinutes / 60,
+        remainingMinutes = accumulatedMinutes % 60
+    )
+}
+
 data class ScoreReward(
     val points: Int,
     val reason: String,
@@ -184,15 +204,23 @@ class UserProgressManager(context: Context) {
     }
 
     fun addStudyMinutes(minutes: Int) {
+        if (minutes <= 0) return
+
         val newToday = _todayStudyMinutes.value + minutes
         _todayStudyMinutes.value = newToday
-        prefs.edit().putInt("today_study_minutes", newToday).apply()
 
-        val newTotalHours = _totalStudyHours.value + (minutes / 60)
-        if (minutes >= 60) {
-            _totalStudyHours.value = newTotalHours
-            prefs.edit().putInt("total_study_hours", newTotalHours).apply()
-        }
+        val progress = calculateStudyTimeProgress(
+            existingHours = _totalStudyHours.value,
+            existingRemainderMinutes = prefs.getInt("total_study_minutes_remainder", 0),
+            addedMinutes = minutes
+        )
+        _totalStudyHours.value = progress.totalHours
+
+        prefs.edit()
+            .putInt("today_study_minutes", newToday)
+            .putInt("total_study_hours", progress.totalHours)
+            .putInt("total_study_minutes_remainder", progress.remainingMinutes)
+            .apply()
     }
 
     fun setDailyGoal(minutes: Int) {
