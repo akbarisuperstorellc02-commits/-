@@ -17,7 +17,7 @@ enum class AcademyThemeId {
     BLACK_GOLD, WHITE_GOLD, ROYAL_PURPLE, NIGHT, LIGHT, DARK
 }
 
-enum class AcademyFontId { SANS_SERIF, SERIF, CURSIVE, NOTO_NASKH, NOTO_SANS_ARABIC }
+enum class AcademyFontId { SANS_SERIF, SERIF, CURSIVE, VAZIRMATN, SAHEL }
 
 enum class LearningBand { PRE_A1, A1, A2, B1, B2, C1, C2, SPECIALIZED }
 
