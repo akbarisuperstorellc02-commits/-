@@ -134,21 +134,21 @@ object AcademyBackupManager {
             }
             root.array("quizAttempts").forEachObject { o ->
                 dao.restoreQuizAttempt(QuizAttemptEntity(
-                    attemptId = o.getString("attemptId"), profileId = o.optString("profileId", "primary"),
+                    attemptId = o.getString("attemptId"), profileId = profileId,
                     quizId = o.getString("quizId"), score = o.optInt("score"), totalQuestions = o.optInt("totalQuestions"),
                     completedAt = o.optLong("completedAt"), incorrectQuestionIds = o.optString("incorrectQuestionIds")
                 ))
             }
             root.array("gameAttempts").forEachObject { o ->
                 dao.restoreGameAttempt(GameAttemptEntity(
-                    attemptId = o.getString("attemptId"), profileId = o.optString("profileId", "primary"),
+                    attemptId = o.getString("attemptId"), profileId = profileId,
                     gameId = o.getString("gameId"), score = o.optInt("score"),
                     totalQuestions = o.optInt("totalQuestions"), completedAt = o.optLong("completedAt")
                 ))
             }
             root.array("studySessions").forEachObject { o ->
                 dao.mergeStudySession(StudySessionEntity(
-                    sessionId = o.getString("sessionId"), profileId = o.optString("profileId", "primary"),
+                    sessionId = o.getString("sessionId"), profileId = profileId,
                     lessonId = o.getString("lessonId"), startedAt = o.optLong("startedAt"),
                     durationMillis = o.optLong("durationMillis"), completedAt = o.longOrNull("completedAt")
                 ))
@@ -159,14 +159,14 @@ object AcademyBackupManager {
             }
             root.array("rewardEvents").forEachObject { o ->
                 dao.restoreRewardEvent(RewardEventEntity(
-                    eventId = o.getString("eventId"), profileId = o.optString("profileId", "primary"),
+                    eventId = o.getString("eventId"), profileId = profileId,
                     source = o.getString("source"), sourceId = o.getString("sourceId"),
                     xpDelta = o.optInt("xpDelta"), coinDelta = o.optInt("coinDelta"), createdAt = o.optLong("createdAt")
                 ))
             }
             root.array("vocabulary").forEachObject { o ->
                 dao.mergeVocabulary(VocabularyEntity(
-                    wordId = o.getString("wordId"), profileId = o.optString("profileId", "primary"),
+                    wordId = o.getString("wordId"), profileId = profileId,
                     english = o.getString("english"), dariMeaning = o.optString("dariMeaning"),
                     pronunciation = o.optString("pronunciation"), exampleEnglish = o.optString("exampleEnglish"),
                     exampleDari = o.optString("exampleDari"), categoryId = o.optString("categoryId"),
@@ -176,14 +176,14 @@ object AcademyBackupManager {
             }
             root.array("dailyGoals").forEachObject { o ->
                 dao.saveDailyGoal(DailyGoalEntity(
-                    profileId = o.optString("profileId", "primary"), dateIso = o.getString("dateIso"),
+                    profileId = profileId, dateIso = o.getString("dateIso"),
                     targetMinutes = o.optInt("targetMinutes"), targetLessons = o.optInt("targetLessons"),
                     targetWords = o.optInt("targetWords"), targetQuizzes = o.optInt("targetQuizzes")
                 ))
             }
             root.array("reminders").forEachObject { o ->
                 val reminder = ReminderEntity(
-                    reminderId = o.getString("reminderId"), profileId = o.optString("profileId", "primary"),
+                    reminderId = o.getString("reminderId"), profileId = profileId,
                     title = o.getString("title"), hour = o.optInt("hour"), minute = o.optInt("minute"),
                     repeatDaysMask = o.optInt("repeatDaysMask"), enabled = o.optBoolean("enabled")
                 )
