@@ -2551,7 +2551,12 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
     }
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         permissionGranted = granted
-        if (!granted) status = "Microphone permission is needed to practise speaking."
+        if (!granted) status = when (locale) {
+            AcademyLocale.ENGLISH_US -> "Microphone permission is needed to practise speaking."
+            AcademyLocale.DARI_AF -> "برای تمرین گفتار باید اجازه میکروفون را بدهی."
+            AcademyLocale.PASHTO_AF -> "د خبرو د تمرین لپاره د مایکروفون اجازه اړینه ده."
+            AcademyLocale.ARABIC -> "يلزم السماح باستخدام الميكروفون للتدرب على التحدث."
+        }
     }
     val promptList = remember(initialPrompt) {
         if (initialPrompt.isNullOrBlank()) speakingPrompts else listOf(
@@ -2615,7 +2620,8 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
             override fun onBeginningOfSpeech() { listening = true }
             override fun onRmsChanged(rmsdB: Float) {}
             override fun onBufferReceived(buffer: ByteArray?) {}
-            override fun onEndOfSpeech() { listening = false }
+            // Keep the button disabled until final results or an error arrive.
+            override fun onEndOfSpeech() { listening = true }
             override fun onError(error: Int) { listening = false; status = localizedSpeechError(error) }
             override fun onResults(results: Bundle?) {
                 listening = false
@@ -2730,9 +2736,14 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
             Button(
                 onClick = {
                     if (!permissionGranted) permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                    else if (recognizer == null) status = "Speech recognition is unavailable on this device."
+                    else if (recognizer == null) status = when (locale) {
+                        AcademyLocale.ENGLISH_US -> "Speech recognition is unavailable. Install or enable a speech recognition service."
+                        AcademyLocale.DARI_AF -> "تشخیص گفتار در این گوشی فعال نیست؛ سرویس تشخیص گفتار را نصب یا فعال کن."
+                        AcademyLocale.PASHTO_AF -> "په دې وسیله کې د وینا پېژندنه نشته؛ د وینا پېژندنې خدمت نصب یا فعال کړئ."
+                        AcademyLocale.ARABIC -> "التعرف على الكلام غير متاح. ثبّت خدمة التعرف على الكلام أو فعّلها."
+                    }
                     else {
-                        transcript = ""; score = -1
+                        transcript = ""; score = -1; status = ""; listening = true
                         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                             putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
@@ -2740,7 +2751,12 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
                             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
                             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
                         }
-                        recognizer.startListening(intent)
+                        try {
+                            recognizer.startListening(intent)
+                        } catch (_: IllegalStateException) {
+                            listening = false
+                            status = localizedSpeechError(SpeechRecognizer.ERROR_RECOGNIZER_BUSY)
+                        }
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
