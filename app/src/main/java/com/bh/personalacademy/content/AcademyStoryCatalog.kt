@@ -19,6 +19,7 @@ data class AcademyStory(
 )
 object AcademyStoryCatalog {
     private fun t(en:String,fa:String,ps:String,ar:String)=StoryText(en,fa,ps,ar)
+    private fun t(fa:String,ps:String,ar:String)=StoryText(fa,fa,ps,ar)
     private fun s(
         id: String, band: LearningBand, emoji: String, title: StoryText, summary: StoryText,
         englishText: String, translation: StoryText, words: List<StoryWord>,
