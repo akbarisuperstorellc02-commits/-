@@ -50,6 +50,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.bh.personalacademy.content.AcademyGameCatalog
+import com.bh.personalacademy.content.AcademyGrammarCatalog
 import com.bh.personalacademy.content.AcademyLessonCatalog
 import com.bh.personalacademy.content.AcademyStoryCatalog
 import com.bh.personalacademy.content.LocalizedText
@@ -75,7 +76,7 @@ import java.util.Locale
 import java.text.SimpleDateFormat
 import java.util.UUID
 
-private enum class AcademyTab { HOME, LEARN, QUIZ, GAMES, PROGRESS, PROFILE, TOOLS, VOCABULARY, CALENDAR, SPEAKING, STORIES }
+private enum class AcademyTab { HOME, LEARN, GRAMMAR, QUIZ, GAMES, PROGRESS, PROFILE, TOOLS, VOCABULARY, CALENDAR, SPEAKING, STORIES }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -131,6 +132,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
     val totalStudyMillis by dao.observeTotalStudyMillis(profile.profileId).collectAsStateWithLifecycle(initialValue = 0L)
     var tab by remember { mutableStateOf(AcademyTab.HOME) }
     var band by remember { mutableStateOf<LearningBand?>(null) }
+    var speakingLessonPrompt by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(profile.profileId) { viewModel.initialize() }
     LaunchedEffect(profile.profileId, todayIso, profile.dailyStudyGoalMinutes, profile.dailyGoalLessons, profile.dailyGoalWords, profile.dailyGoalQuizzes) {
         dao.saveDailyGoal(
@@ -241,6 +243,8 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                         AcademyTab.LEARN -> LearnPage(profile.locale, band, lessons.map { it.lessonId }.toSet(),
                             { band = it },
                             { tab = AcademyTab.VOCABULARY },
+                            { tab = AcademyTab.GRAMMAR },
+                            { prompt -> speakingLessonPrompt = prompt; tab = AcademyTab.SPEAKING },
                             { id ->
                                 viewModel.completeLesson(id, 100, profile.profileId)
                                 val activeBand = band
@@ -266,6 +270,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                                 viewModel.saveStudySession(lessonId, startedAt, duration, profile.profileId)
                             },
                             { tab = AcademyTab.QUIZ })
+                        AcademyTab.GRAMMAR -> GrammarPage(profile.locale) { tab = AcademyTab.LEARN }
                         AcademyTab.QUIZ -> QuizPage(profile.locale, profile.profileId, dao) { tab = AcademyTab.PROGRESS }
                         AcademyTab.GAMES -> GamePage(profile.locale, profile.profileId, wallet?.coins ?: 0, dao)
                         AcademyTab.PROGRESS -> ProgressPage(profile.locale, lessons.size, attempts, gameAttempts.size, todayStudyMillis, weekStudyMillis, monthStudyMillis, totalStudyMillis, wallet?.xp ?: 0, wallet?.coins ?: 0)
@@ -273,8 +278,8 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                         AcademyTab.TOOLS -> ToolsPage(profile.locale, profile.profileId, dao) { tab = AcademyTab.HOME }
                         AcademyTab.CALENDAR -> CalendarPage(profile.locale, profile.profileId, dao) { tab = AcademyTab.HOME }
                         AcademyTab.VOCABULARY -> VocabularyPage(profile.locale, profile.profileId, dao)
-                        AcademyTab.SPEAKING -> SpeakingPage(profile.locale, profile.profileId, dao)
-                        AcademyTab.STORIES -> StoriesPage(profile.locale)
+                        AcademyTab.SPEAKING -> SpeakingPage(profile.locale, profile.profileId, dao, speakingLessonPrompt)
+                        AcademyTab.STORIES -> StoriesPage(profile.locale) { prompt -> speakingLessonPrompt = prompt; tab = AcademyTab.SPEAKING }
                     }
                 }
             }
@@ -305,6 +310,8 @@ private fun fontFor(font: AcademyFontId) = when(font) {
     AcademyFontId.SANS_SERIF -> FontFamily.SansSerif
     AcademyFontId.SERIF -> FontFamily.Serif
     AcademyFontId.CURSIVE -> FontFamily.Cursive
+    AcademyFontId.NOTO_NASKH -> FontFamily.Serif
+    AcademyFontId.NOTO_SANS_ARABIC -> FontFamily.SansSerif
 }
 
 @Composable
@@ -555,7 +562,7 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
 }
 
 @Composable
-private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedLessonIds: Set<String>, select: (LearningBand?) -> Unit, vocabulary: () -> Unit, complete: (String) -> Unit, saveStudySession: (String, Long, Long) -> Unit, quiz: () -> Unit) {
+private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedLessonIds: Set<String>, select: (LearningBand?) -> Unit, vocabulary: () -> Unit, grammar: () -> Unit, openSpeaking: (String) -> Unit, complete: (String) -> Unit, saveStudySession: (String, Long, Long) -> Unit, quiz: () -> Unit) {
     val names = when (locale) {
         AcademyLocale.ENGLISH_US -> listOf("Pre-A1", "A1", "A2", "B1", "B2", "C1", "C2", "Specialized")
         AcademyLocale.DARI_AF -> listOf("پیش از A1", "A1", "A2", "B1", "B2", "C1", "C2", "تخصصی")
@@ -565,6 +572,7 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
     val lessons = selected?.let { AcademyLessonCatalog.forBand(it) }.orEmpty()
     Page {
         Text(tr(locale, "learningPath"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        OutlinedButton(onClick = grammar, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.36f))) { Icon(Icons.Default.Spellcheck, null); Spacer(Modifier.width(8.dp)); Text(tr(locale, "grammarAcademy")) }
         OutlinedButton(onClick = vocabulary, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.36f))) { Icon(Icons.Default.Bookmarks, null); Spacer(Modifier.width(8.dp)); Text(tr(locale, "vocabulary")) }
         if (selected == null) {
             Text(tr(locale, "chooseLevel"))
@@ -610,6 +618,14 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
                         Text(AsciiDigits.normalize(lesson.example), fontWeight = FontWeight.SemiBold)
                         Text(AsciiDigits.normalize(lesson.translation))
                         Text(AsciiDigits.normalize(lesson.grammarTip))
+                        AcademyCard {
+                            Text(tr(locale, "speakingLesson"), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(AsciiDigits.normalize(lesson.example), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                            Text(AsciiDigits.normalize(lesson.translation), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Button(onClick = { openSpeaking(lesson.example) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) {
+                                Icon(Icons.Default.Mic, null); Spacer(Modifier.width(8.dp)); Text(tr(locale, "practiceSpeaking"))
+                            }
+                        }
                         LessonStudyTimer(
                             lessonId = lesson.id,
                             locale = locale,
@@ -629,6 +645,43 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
                 }
             }
             OutlinedButton(onClick = quiz, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.36f))) { Text(tr(locale, "quizReview")) }
+        }
+    }
+}
+
+@Composable
+private fun GrammarPage(locale: AcademyLocale, onBack: () -> Unit) {
+    var selectedBand by remember { mutableStateOf<LearningBand?>(null) }
+    Page {
+        TextButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, null); Spacer(Modifier.width(6.dp)); Text(tr(locale, "backToLessons")) }
+        Text(tr(locale, "grammarAcademy"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
+        Text(tr(locale, "grammarIntro"), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = { selectedBand = null }, shape = RoundedCornerShape(22.dp)) { Text(tr(locale, "allLevels")) }
+            LearningBand.values().take(4).forEach { level ->
+                OutlinedButton(onClick = { selectedBand = level }, shape = RoundedCornerShape(22.dp)) { Text(level.name.replace("_", "-")) }
+            }
+        }
+        (selectedBand?.let { AcademyGrammarCatalog.forBand(it) } ?: AcademyGrammarCatalog.all).forEach { lesson ->
+            var answer by remember(lesson.id) { mutableIntStateOf(-1) }
+            AcademyCard {
+                Text(lesson.band.name.replace("_", "-"), color = MaterialTheme.colorScheme.primary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(lesson.title.forLocale(locale), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
+                Text(lesson.explanation.forLocale(locale))
+                Text(lesson.example, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Text(lesson.translation.forLocale(locale), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Divider()
+                Text(lesson.question.forLocale(locale), fontWeight = FontWeight.Bold)
+                lesson.options.forEachIndexed { index, option ->
+                    OutlinedButton(onClick = { answer = index }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp),
+                        border = BorderStroke(if (answer == index) 2.dp else 1.dp, if (answer == index && answer == lesson.correctIndex) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline)) {
+                        Text(option.forLocale(locale))
+                    }
+                }
+                if (answer >= 0) Text(if (answer == lesson.correctIndex) tr(locale, "grammarCorrect") else tr(locale, "grammarTryAgain"),
+                    color = if (answer == lesson.correctIndex) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                if (answer >= 0) TextButton(onClick = { answer = -1 }) { Text(tr(locale, "grammarRetry")) }
+            }
         }
     }
 }
@@ -1903,7 +1956,7 @@ private fun ProfilePage(profile: UserProfile, profiles: List<UserProfile>, prefs
 
 
 @Composable
-private fun StoriesPage(locale: AcademyLocale) {
+private fun StoriesPage(locale: AcademyLocale, openSpeaking: (String) -> Unit) {
     var selectedId by remember { mutableStateOf<String?>(null) }
     var showTranslation by remember { mutableStateOf(false) }
     var selectedAnswer by remember { mutableStateOf<Int?>(null) }
@@ -1974,6 +2027,15 @@ private fun StoriesPage(locale: AcademyLocale) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(word.english, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                         Text(word.meaning.forLocale(locale), color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+                Divider()
+                AcademyCard {
+                    Text(when(locale) { AcademyLocale.ENGLISH_US -> "Speaking challenge"; AcademyLocale.DARI_AF -> "تمرین گفتار داستان"; AcademyLocale.PASHTO_AF -> "د کیسې د خبرو تمرین"; AcademyLocale.ARABIC -> "تحدي التحدث من القصة" }, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    val storySpeakingLine = selected.englishText.substringBefore(".").trim().let { if (it.isNotBlank()) "$it." else selected.englishText }
+                    Text(storySpeakingLine, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Button(onClick = { openSpeaking(storySpeakingLine) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) {
+                        Icon(Icons.Default.Mic, null); Spacer(Modifier.width(8.dp)); Text(tr(locale, "practiceSpeaking"))
                     }
                 }
                 Divider()
@@ -2112,10 +2174,10 @@ private fun speechAccuracy(target: String, spoken: String): Int =
     com.bh.personalacademy.speaking.SpeechScoring.accuracy(target, spoken)
 
 @Composable
-private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyDao) {
+private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyDao, initialPrompt: String? = null) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var promptIndex by remember { mutableIntStateOf(0) }
+    var promptIndex by remember(initialPrompt) { mutableIntStateOf(0) }
     var transcript by remember { mutableStateOf("") }
     var status by remember { mutableStateOf("") }
     var listening by remember { mutableStateOf(false) }
@@ -2127,7 +2189,12 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
         permissionGranted = granted
         if (!granted) status = "Microphone permission is needed to practise speaking."
     }
-    val prompt = speakingPrompts[promptIndex]
+    val promptList = remember(initialPrompt) {
+        if (initialPrompt.isNullOrBlank()) speakingPrompts else listOf(
+            SpeakingPrompt("lesson_${initialPrompt.hashCode()}", initialPrompt, "جمله را با صدای بلند تمرین کن.", "دا جمله په لوړ غږ تمرین کړئ.", "تدرّب على نطق الجملة بصوت عالٍ.")
+        ) + speakingPrompts
+    }
+    val prompt = promptList[promptIndex.coerceIn(0, promptList.lastIndex)]
     val currentPrompt by rememberUpdatedState(prompt)
     val recognizer = remember {
         if (SpeechRecognizer.isRecognitionAvailable(context)) SpeechRecognizer.createSpeechRecognizer(context) else null
@@ -2201,7 +2268,7 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
                 AcademyLocale.PASHTO_AF -> "واورئ، خبرې وکړئ او نمرې واخلئ"
                 AcademyLocale.ARABIC -> "استمع وتحدث واكسب النقاط"
             }, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            Text((promptIndex + 1).toString() + " / " + speakingPrompts.size, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+            Text((promptIndex + 1).toString() + " / " + promptList.size, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
             Text(prompt.text, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Text(when (locale) {
                 AcademyLocale.ENGLISH_US -> "Read, listen, then say the sentence aloud."
@@ -2278,7 +2345,7 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
                 }) }
                 Button(onClick = {
                     recognizer?.cancel()
-                    promptIndex = (promptIndex + 1) % speakingPrompts.size
+                    promptIndex = (promptIndex + 1) % promptList.size
                     transcript = ""; score = -1; status = ""
                 }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(24.dp)) { Text(when (locale) {
                     AcademyLocale.ENGLISH_US -> "Next"
