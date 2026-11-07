@@ -1,12 +1,34 @@
 package com.example
 
 import com.example.data.CurriculumData
-import com.example.data.MasterGohariAI
+import com.example.data.calculateStudyTimeProgress
 import com.example.util.SpeechEvaluator
 import org.junit.Assert.*
 import org.junit.Test
 
 class ExampleUnitTest {
+
+    @Test
+    fun studyMinutesAccumulateAcrossShortSessions() {
+        val afterFirstSession = calculateStudyTimeProgress(14, 0, 25)
+        assertEquals(14, afterFirstSession.totalHours)
+        assertEquals(25, afterFirstSession.remainingMinutes)
+
+        val afterSecondSession = calculateStudyTimeProgress(
+            afterFirstSession.totalHours,
+            afterFirstSession.remainingMinutes,
+            35
+        )
+        assertEquals(15, afterSecondSession.totalHours)
+        assertEquals(0, afterSecondSession.remainingMinutes)
+    }
+
+    @Test
+    fun invalidStudyMinutesDoNotReduceProgress() {
+        val progress = calculateStudyTimeProgress(3, 20, -15)
+        assertEquals(3, progress.totalHours)
+        assertEquals(20, progress.remainingMinutes)
+    }
 
     @Test
     fun testZahraAcademyLevelsAndClassrooms() {
@@ -24,6 +46,20 @@ class ExampleUnitTest {
     }
 
     @Test
+    fun advancedStagesExtendTheOriginalCurriculumWithoutChangingItsIds() {
+        val allLevels = com.example.data.expandLearningCurriculum(CurriculumData.levels + com.example.data.AdvancedCurriculumLevels.levels)
+        assertEquals(45, allLevels.size)
+        assertEquals((1..45).toList(), allLevels.map { it.id })
+        assertEquals("A1", allLevels.first().levelCode)
+        assertEquals("Z24", allLevels.last().levelCode)
+        allLevels.forEach { level ->
+            assertTrue(level.items.size >= 3)
+            assertTrue(level.examQuestions.size >= 3)
+        }
+        assertEquals((1..60).toList(), (CurriculumData.wordGameStages + com.example.data.AdvancedWordGameStages.stages).map { it.stageNumber })
+    }
+
+    @Test
     fun testSpeechEvaluatorSloganMatch() {
         val target = "Start from zero, continue until absolute mastery!"
         val spoken = "Start from zero continue until absolute mastery"
@@ -33,18 +69,15 @@ class ExampleUnitTest {
     }
 
     @Test
-    fun testZahraPrivateTutorAI() {
-        val greeting = MasterGohariAI.getInitialGreeting()
-        assertTrue(greeting.isFromTutor)
-        assertNotNull(greeting.persianTranslation)
-        assertTrue(greeting.englishText.contains("Zahra"))
-
-        // Test request to explain from scratch
-        val replyFromScratch = MasterGohariAI.generateReply("از اول برام توضیح بده")
-        assertTrue(replyFromScratch.englishText.contains("Apple") || replyFromScratch.persianTranslation?.contains("صفر") == true)
-
-        // Test respectful grammar correction
-        val grammarTest = MasterGohariAI.generateReply("I is ready")
-        assertTrue(grammarTest.grammarTipFa?.contains("فاعل") == true || grammarTest.weaknessFlagged != null)
+    fun expandedCurriculumAddsLessonsAndPracticeToEveryStage() {
+        val expanded = com.example.data.expandLearningCurriculum(CurriculumData.levels)
+        assertEquals(30, expanded.size)
+        expanded.forEach { level ->
+            val original = CurriculumData.levels.first { it.id == level.id }
+            assertEquals(original.items.size + 2, level.items.size)
+            assertEquals(original.examQuestions.size + 4, level.examQuestions.size)
+            assertTrue(level.items.all { it.levelCode == level.levelCode })
+        }
     }
+
 }

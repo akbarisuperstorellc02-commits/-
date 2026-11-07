@@ -58,7 +58,6 @@ fun HomeScreen(
     userProgressManager: UserProgressManager,
     ttsHelper: TextToSpeechHelper?,
     onNavigateToLevels: () -> Unit,
-    onNavigateToChat: () -> Unit,
     onNavigateToSpeakingDrill: () -> Unit,
     onNavigateToWordGame: () -> Unit,
     onNavigateToCalendar: () -> Unit,
@@ -215,7 +214,7 @@ fun HomeScreen(
             }
         }
 
-        // Hero Card: Zahra Puffy Profile & Roadmap from A1 to Z9
+        // Hero Card: Zahra Puffy Profile & Roadmap from A1 to Z24
         item {
             PuffyCard(
                 modifier = Modifier.fillMaxWidth(),
@@ -231,7 +230,7 @@ fun HomeScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         PuffyBadge(
-                            text = "مسیر طلایی A1 تا Z9",
+                            text = "مسیر طلایی A1 تا Z24",
                             emoji = "👑",
                             backgroundColor = theme.backgroundColor,
                             textColor = theme.primaryColor
@@ -244,7 +243,7 @@ fun HomeScreen(
                             color = theme.buttonBevel
                         )
                         Text(
-                            text = "آموزش‌های گسترده و پیوسته از الفبای A1 تا قله تسلط مطلق Z9 با معلم هوشمند صبور",
+                            text = "آموزش‌های گسترده و پیوسته از الفبای A1 تا مرحله پیشرفته Z24 با تمرین و آزمون‌های مرحله‌ای",
                             fontSize = 11.sp,
                             color = Color.DarkGray,
                             modifier = Modifier.padding(vertical = 4.dp),
@@ -362,7 +361,7 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     HomeFeatureCard(
-                        title = "سطوح A1 تا Z9",
+                        title = "سطوح A1 تا Z24",
                         subtitle = "$unlockedCount از $totalLevels سطح فعال",
                         emoji = "👑",
                         badge = "۳۰ سطح جامع",
@@ -373,7 +372,7 @@ fun HomeScreen(
 
                     HomeFeatureCard(
                         title = "بازی لغات پفکی",
-                        subtitle = "۳۰ مرحله ادامه دار با پاداش",
+                        subtitle = "۶۰ مرحله ادامه‌دار با پاداش",
                         emoji = "🎮",
                         badge = "مرحله‌ای",
                         color = theme.accentGold,
@@ -387,13 +386,13 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     HomeFeatureCard(
-                        title = "معلم هوش مصنوعی",
-                        subtitle = "صبور و مهربان از سطح صفر",
-                        emoji = "🎙️",
-                        badge = "اختصاصی",
+                        title = "تمرین گفتار و تلفظ",
+                        subtitle = "تمرین شنیدن و بیان جمله‌ها",
+                        emoji = "🗣️",
+                        badge = "تمرینی",
                         color = theme.secondaryColor,
                         modifier = Modifier.weight(1f),
-                        onClick = onNavigateToChat
+                        onClick = onNavigateToSpeakingDrill
                     )
 
                     HomeFeatureCard(

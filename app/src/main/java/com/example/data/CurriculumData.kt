@@ -19,10 +19,10 @@ object CurriculumData {
         GoldenMedal("m5", "الماس درخشان سری B", "گذر از مراحل B1 تا B3 با نمرات عالی", "💎", false, 25),
         GoldenMedal("m6", "ستاره طلایی سری C و D", "تسلط بر داستان‌سرایی و فن بیان بدون لهجه", "🌟", false, 35),
         GoldenMedal("m7", "جام بلورین خودسازی سری G", "مطالعه و تحلیل متون روانشناسی خودسازی به انگلیسی", "🏆", false, 50),
-        GoldenMedal("m8", "تاج اعظم تسلط مطلق Z9", "رسیدن به اوج قله یادگیری از A1 تا Z9 زهرا", "👑", false, 75)
+        GoldenMedal("m8", "تاج اعظم تسلط مطلق Z24", "رسیدن به اوج قله یادگیری از A1 تا Z24 زهرا", "👑", false, 75)
     )
 
-    // Extensive Level Series from A1 to Z9
+    // Extensive Level Series from A1 to Z24
     val levels: List<Level> = listOf(
         // === TIER A ===
         Level(
@@ -443,7 +443,7 @@ object CurriculumData {
             )
         ),
 
-        // === TIER Z: ULTIMATE MASTERY (Z1 to Z9) ===
+        // === TIER Z: ULTIMATE MASTERY (Z1 to Z24) ===
         Level(
             id = 22,
             levelCode = "Z1",
