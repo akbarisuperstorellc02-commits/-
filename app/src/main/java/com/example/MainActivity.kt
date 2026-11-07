@@ -43,7 +43,7 @@ import com.bh.personalacademy.reminders.ReminderScheduler
 import java.util.UUID
 import java.util.Calendar
 
-private enum class AcademyTab { HOME, LEARN, QUIZ, GAMES, PROGRESS, PROFILE, TOOLS }
+private enum class AcademyTab { HOME, LEARN, QUIZ, GAMES, PROGRESS, PROFILE, TOOLS, VOCABULARY }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,6 +105,7 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
                             { tab = AcademyTab.LEARN }, { tab = AcademyTab.GAMES }, { tab = AcademyTab.PROFILE }, { tab = AcademyTab.TOOLS })
                         AcademyTab.LEARN -> LearnPage(profile.locale, band, lessons.size,
                             { band = it },
+                            { tab = AcademyTab.VOCABULARY },
                             { id -> scope.launch {
                                 dao.saveLessonProgress(LessonProgressEntity(lessonId = id, completedAt = System.currentTimeMillis(), bestScore = 100, attempts = 1))
                                 dao.applyRewardOnce(RewardEventEntity(UUID.randomUUID().toString(), source = "LESSON", sourceId = id,
@@ -115,6 +116,7 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
                         AcademyTab.PROGRESS -> ProgressPage(profile.locale, lessons.size, attempts, wallet?.xp ?: 0, wallet?.coins ?: 0)
                         AcademyTab.PROFILE -> ProfilePage(profile, preferences)
                         AcademyTab.TOOLS -> ToolsPage(profile.locale, dao) { tab = AcademyTab.HOME }
+                        AcademyTab.VOCABULARY -> VocabularyPage(profile.locale, dao)
                     }
                 }
             }
@@ -206,11 +208,12 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
 }
 
 @Composable
-private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completed: Int, select: (LearningBand?) -> Unit, complete: (String) -> Unit, quiz: () -> Unit) {
+private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completed: Int, select: (LearningBand?) -> Unit, vocabulary: () -> Unit, complete: (String) -> Unit, quiz: () -> Unit) {
     val names = listOf("Pre-A1", "A1", "A2", "B1", "B2", "C1")
     val lessons = selected?.let { AcademyLessonCatalog.forBand(it) }.orEmpty()
     Page {
         Text(tr(locale, "learningPath"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        OutlinedButton(onClick = vocabulary, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.Bookmarks, null); Spacer(Modifier.width(8.dp)); Text(tr(locale, "vocabulary")) }
         if (selected == null) {
             Text(tr(locale, "chooseLevel"))
             LearningBand.values().forEachIndexed { i, level ->
@@ -249,6 +252,50 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completed:
                 }
             }
             OutlinedButton(onClick = quiz, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "quizReview")) }
+        }
+    }
+}
+
+@Composable
+private fun VocabularyPage(locale: AcademyLocale, dao: AcademyDao) {
+    val words by dao.observeVocabulary().collectAsStateWithLifecycle(initialValue = emptyList())
+    val scope = rememberCoroutineScope()
+    var search by remember { mutableStateOf("") }
+    LaunchedEffect(Unit) {
+        AcademyCurriculum.lessons.forEach { lesson ->
+            lesson.words.forEach { word ->
+                dao.insertVocabularyIfMissing(VocabularyEntity(
+                    wordId = "${lesson.id}_${word.english.lowercase().replace(" ", "_")}",
+                    english = word.english,
+                    dariMeaning = word.dari,
+                    pronunciation = word.pronunciation,
+                    exampleEnglish = lesson.exampleEnglish,
+                    exampleDari = lesson.exampleDari,
+                    categoryId = lesson.band.name
+                ))
+            }
+        }
+    }
+    val filtered = words.filter { it.english.contains(search, ignoreCase = true) || it.dariMeaning.contains(search, ignoreCase = true) }
+    Page {
+        Text(tr(locale, "vocabulary"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        OutlinedTextField(search, { search = it }, modifier = Modifier.fillMaxWidth(), label = { Text(tr(locale, "searchWords")) }, singleLine = true)
+        Text(tr(locale, "wordCount", AsciiDigits.normalize("${filtered.size}")), fontSize = 12.sp)
+        filtered.forEach { word ->
+            AcademyCard {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(word.english, style = MaterialTheme.typography.titleMedium)
+                        Text(word.dariMeaning)
+                        Text(word.pronunciation, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = .65f))
+                    }
+                    IconButton(onClick = {
+                        scope.launch { dao.saveVocabulary(word.copy(favourite = !word.favourite)) }
+                    }) { Icon(if (word.favourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder, contentDescription = null) }
+                }
+                Text(word.exampleEnglish, fontWeight = FontWeight.SemiBold)
+                Text(word.exampleDari, fontSize = 13.sp)
+            }
         }
     }
 }
@@ -558,7 +605,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "level" to "Level", "coins" to "Coins", "dailyGoal" to "Daily study goal", "goalMins" to "$arg minutes",
         "goalHint" to "Start a lesson to track your real study time.", "lessons" to "Lessons completed", "quizzes" to "Quizzes taken",
         "continue" to "Ready for your next step?", "chooseLesson" to "Choose a level and continue learning.", "openLessons" to "Open lessons",
-        "myProfile" to "My profile", "learningPath" to "English learning path", "chooseLevel" to "Choose your current level",
+        "myProfile" to "My profile", "learningPath" to "English learning path", "vocabulary" to "Vocabulary notebook", "searchWords" to "Search words", "wordCount" to "$arg words", "chooseLevel" to "Choose your current level",
         "bandSub" to "Structured learning at $arg", "viewLessons" to "View lessons", "allLevels" to "All levels",
         "lessonExplain" to "Learn the topic, practise vocabulary and check your understanding.", "lessonDetails" to "Open lesson", "hideDetails" to "Hide details", "newWords" to "New vocabulary",
         "completeLesson" to "Complete lesson · earn XP", "quizReview" to "Review quizzes", "wordChallenge" to "Word meaning challenge",
@@ -578,7 +625,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "level" to "سطح", "coins" to "سکه", "dailyGoal" to "هدف روزانه مطالعه", "goalMins" to "$arg دقیقه",
         "goalHint" to "برای ثبت زمان واقعی، یک درس را آغاز کن.", "lessons" to "درس‌های تکمیل‌شده", "quizzes" to "آزمون‌های انجام‌شده",
         "continue" to "برای قدم بعدی آماده‌ای؟", "chooseLesson" to "یک سطح را انتخاب کن و یادگیری را ادامه بده.", "openLessons" to "رفتن به درس‌ها",
-        "myProfile" to "پروفایل من", "learningPath" to "مسیر آموزش انگلیسی", "chooseLevel" to "سطح فعلی خود را انتخاب کن",
+        "myProfile" to "پروفایل من", "learningPath" to "مسیر آموزش انگلیسی", "vocabulary" to "دفترچه واژگان", "searchWords" to "جست‌وجوی واژه", "wordCount" to "$arg واژه", "chooseLevel" to "سطح فعلی خود را انتخاب کن",
         "bandSub" to "درس‌های مرحله‌بندی‌شده $arg", "viewLessons" to "دیدن درس‌ها", "allLevels" to "همه سطح‌ها",
         "lessonExplain" to "موضوع را یاد بگیر، واژه‌های تازه را تمرین کن و دانسته‌هایت را بسنج.", "lessonDetails" to "بازکردن درس", "hideDetails" to "بستن جزئیات", "newWords" to "واژگان تازه",
         "completeLesson" to "تکمیل درس · دریافت امتیاز", "quizReview" to "رفتن به آزمون‌ها", "wordChallenge" to "چالش معنی واژه",
@@ -594,7 +641,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
     val ps = mapOf("home" to "کور", "learn" to "زده کړه", "games" to "لوبې", "progress" to "پرمختګ", "profile" to "پروفایل",
         "greeting" to "سلام، $arg!", "welcome" to "هره ورځ لږ پرمختګ، لویه لاسته راوړنه.", "journey" to "ستاسو د زده کړې سفر",
         "level" to "کچه", "coins" to "سکې", "dailyGoal" to "د مطالعې ورځنی هدف", "lessons" to "بشپړ شوي درسونه", "quizzes" to "ازموینې",
-        "learningPath" to "د انګلیسي زده کړې لاره", "chooseLevel" to "خپله کچه وټاکئ", "viewLessons" to "درسونه وګورئ", "allLevels" to "ټولې کچې",
+        "learningPath" to "د انګلیسي زده کړې لاره", "vocabulary" to "د لغتونو کتابچه", "searchWords" to "د لغت لټون", "wordCount" to "$arg لغتونه", "chooseLevel" to "خپله کچه وټاکئ", "viewLessons" to "درسونه وګورئ", "allLevels" to "ټولې کچې",
         "correct" to "ډېر ښه! ځواب سم دی.", "quizTitle" to "لنډه ګډه ازموینه", "quizComplete" to "ازموینه بشپړه شوه!", "quizSaved" to "ستاسو پایله د زده کړې په تاریخ کې خوندي شوه.", "seeProgress" to "پرمختګ وګورئ", "wrong" to "بیا هڅه وکړئ.", "hintButton" to "لارښوونه · 6 سکې", "hintPaid" to "لارښوونه فعاله شوه؛ 6 سکې ولګېدې.",
         "needCoins" to "لږ تر لږه 6 سکې پکار دي.", "displayName" to "ښکاره نوم", "username" to "کارن نوم", "save" to "پروفایل خوندي کړئ",
         "language" to "ژبه", "theme" to "بڼه", "font" to "لیکبڼه", "minutes" to "دقیقې", "studyTools" to "د مطالعې وسایل", "timer" to "د مطالعې ټایمر", "startTimer" to "پیل", "pauseTimer" to "تم", "finishTimer" to "ناسته پای ته ورسوه", "timerSaved" to "د مطالعې ناسته خوندي شوه.", "reminders" to "یادونې او الارم", "reminderTitle" to "د یادونې سرلیک", "timeHHMM" to "وخت (HH:MM)", "dailyReminder" to "هره ورځ تکرار", "scheduleReminder" to "یادونه تنظیم کړه", "reminderSaved" to "یادونه تنظیم شوه.", "invalidTime" to "سرلیک او سم وخت ولیکئ، لکه 19:30.", "permissionNeeded" to "د یادونو ترلاسه کولو لپاره د Android خبرتیا اجازه ورکړئ.", "noReminders" to "تر اوسه یادونه نشته.",
@@ -603,7 +650,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
     val ar = mapOf("home" to "الرئيسية", "learn" to "التعلم", "games" to "الألعاب", "progress" to "التقدم", "profile" to "الملف الشخصي",
         "greeting" to "مرحباً، $arg!", "welcome" to "خطوة صغيرة كل يوم تصنع إنجازاً كبيراً.", "journey" to "رحلة التعلم",
         "level" to "المستوى", "coins" to "العملات", "dailyGoal" to "هدف الدراسة اليومي", "lessons" to "الدروس المكتملة", "quizzes" to "الاختبارات",
-        "learningPath" to "مسار تعلم الإنجليزية", "chooseLevel" to "اختر مستواك", "viewLessons" to "عرض الدروس", "allLevels" to "كل المستويات",
+        "learningPath" to "مسار تعلم الإنجليزية", "vocabulary" to "دفتر المفردات", "searchWords" to "ابحث عن كلمة", "wordCount" to "$arg كلمة", "chooseLevel" to "اختر مستواك", "viewLessons" to "عرض الدروس", "allLevels" to "كل المستويات",
         "correct" to "ممتاز! إجابة صحيحة.", "quizTitle" to "اختبار قصير متنوع", "quizComplete" to "اكتمل الاختبار!", "quizSaved" to "تم حفظ النتيجة في سجل التعلم.", "seeProgress" to "عرض التقدم", "wrong" to "حاول مرة أخرى.", "hintButton" to "تلميح · 6 عملات", "hintPaid" to "تم تفعيل التلميح؛ خُصمت 6 عملات.",
         "needCoins" to "تحتاج إلى 6 عملات على الأقل.", "displayName" to "الاسم الظاهر", "username" to "اسم المستخدم", "save" to "حفظ الملف",
         "language" to "اللغة", "theme" to "السمة", "font" to "الخط", "minutes" to "دقيقة", "studyTools" to "أدوات الدراسة", "timer" to "مؤقت الدراسة", "startTimer" to "ابدأ", "pauseTimer" to "إيقاف مؤقت", "finishTimer" to "إنهاء الجلسة", "timerSaved" to "تم حفظ جلسة الدراسة.", "reminders" to "التذكيرات والمنبهات", "reminderTitle" to "عنوان التذكير", "timeHHMM" to "الوقت (HH:MM)", "dailyReminder" to "التكرار يومياً", "scheduleReminder" to "جدولة التذكير", "reminderSaved" to "تمت جدولة التذكير.", "invalidTime" to "أدخل عنواناً ووقتاً صحيحاً مثل 19:30.", "permissionNeeded" to "اسمح بالإشعارات من إعدادات Android لاستلام التذكيرات.", "noReminders" to "لا توجد تذكيرات مجدولة بعد.",
