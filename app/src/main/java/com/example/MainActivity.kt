@@ -28,7 +28,7 @@ import com.example.academy.domain.model.*
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-private enum class AcademyTab { HOME, LEARN, GAMES, PROGRESS, PROFILE }
+private enum class AcademyTab { HOME, LEARN, QUIZ, GAMES, PROGRESS, PROFILE }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,7 +85,8 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
                                 dao.saveLessonProgress(LessonProgressEntity(lessonId = id, completedAt = System.currentTimeMillis(), bestScore = 100, attempts = 1))
                                 dao.applyRewardOnce(RewardEventEntity(UUID.randomUUID().toString(), source = "LESSON", sourceId = id,
                                     xpDelta = 25, coinDelta = 5, createdAt = System.currentTimeMillis()))
-                            } }, { tab = AcademyTab.PROGRESS })
+                            } }, { tab = AcademyTab.QUIZ })
+                        AcademyTab.QUIZ -> QuizPage(profile.locale, dao) { tab = AcademyTab.PROGRESS }
                         AcademyTab.GAMES -> GamePage(profile.locale, wallet?.coins ?: 0, dao)
                         AcademyTab.PROGRESS -> ProgressPage(profile.locale, lessons.size, attempts, wallet?.xp ?: 0, wallet?.coins ?: 0)
                         AcademyTab.PROFILE -> ProfilePage(profile, preferences)
@@ -243,6 +244,64 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
     }
 }
 
+
+@Composable
+private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> Unit) {
+    data class Question(val prompt: String, val options: List<String>, val correct: Int, val explanation: String)
+    val questions = listOf(
+        Question("What does APPLE mean?", listOf("سیب", "کتاب", "آب"), 0, "APPLE = سیب"),
+        Question("Choose the correct greeting for the morning.", listOf("Good night", "Good morning", "Goodbye"), 1, "Good morning = صبح بخیر"),
+        Question("I ___ a student.", listOf("is", "are", "am"), 2, "With I, use AM.")
+    )
+    var index by remember { mutableIntStateOf(0) }
+    var score by remember { mutableIntStateOf(0) }
+    var finished by remember { mutableStateOf(false) }
+    var explanation by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(finished) {
+        if (finished) {
+            val attemptId = UUID.randomUUID().toString()
+            dao.insertQuizAttempt(QuizAttemptEntity(
+                attemptId = attemptId, quizId = "starter_mixed_quiz",
+                score = score, totalQuestions = questions.size,
+                completedAt = System.currentTimeMillis()
+            ))
+            if (score >= 2) {
+                dao.applyRewardOnce(RewardEventEntity(
+                    eventId = UUID.randomUUID().toString(), source = "QUIZ",
+                    sourceId = "starter_mixed_quiz_first_reward", xpDelta = 30, coinDelta = 6,
+                    createdAt = System.currentTimeMillis()
+                ))
+            }
+        }
+    }
+    Page {
+        Text(tr(locale, "quizTitle"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        AcademyCard {
+            if (finished) {
+                Text(tr(locale, "quizComplete"), style = MaterialTheme.typography.titleLarge)
+                Text("${AsciiDigits.normalize(score.toString())}/${questions.size}", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
+                Text(tr(locale, "quizSaved"))
+                Button(onClick = onFinished, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "seeProgress")) }
+            } else {
+                val question = questions[index]
+                Text(tr(locale, "questionProgress", "${index + 1}", "${questions.size}"))
+                LinearProgressIndicator(progress = { (index + 1).toFloat() / questions.size }, modifier = Modifier.fillMaxWidth())
+                Text(question.prompt, style = MaterialTheme.typography.titleLarge)
+                question.options.forEachIndexed { optionIndex, option ->
+                    OutlinedButton(onClick = {
+                        val correct = optionIndex == question.correct
+                        if (correct) score += 1
+                        explanation = question.explanation
+                        if (index == questions.lastIndex) finished = true else index += 1
+                    }, modifier = Modifier.fillMaxWidth()) { Text(option) }
+                }
+                if (explanation.isNotEmpty()) Text(explanation)
+            }
+        }
+    }
+}
+
 @Composable
 private fun ProgressPage(locale: AcademyLocale, lessons: Int, attempts: List<QuizAttemptEntity>, xp: Long, coins: Long) {
     Page {
@@ -331,7 +390,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "hintText" to "Hint: It is a fruit.", "hintPaid" to "Hint unlocked. 6 coins spent.", "needCoins" to "You need at least 6 coins.",
         "hintButton" to "Get a hint · 6 coins", "coinBalance" to "Your coins: $arg", "newRound" to "New round",
         "gameRoadmap" to "More vocabulary, spelling and memory games are planned for the next content phase.",
-        "summary" to "Learning summary", "average" to "Average quiz score", "quizHistory" to "Quiz history", "noHistory" to "No quiz attempts yet.",
+        "summary" to "Learning summary", "average" to "Average quiz score", "quizHistory" to "Quiz history", "noHistory" to "No quiz attempts yet.", "quizTitle" to "Quick mixed quiz", "quizComplete" to "Quiz completed!", "quizSaved" to "Your result has been saved to your learning history.", "seeProgress" to "View progress", "questionProgress" to "Question $arg",
         "displayName" to "Display name", "username" to "Username", "save" to "Save profile", "language" to "Language", "theme" to "Theme",
         "font" to "Font", "minutes" to "minutes", "DARI_AF" to "Afghan Dari", "PASHTO_AF" to "Afghan Pashto", "ARABIC" to "Arabic", "ENGLISH_US" to "English",
         "SANS_SERIF" to "Sans Serif", "SERIF" to "Serif", "CURSIVE" to "Cursive"
@@ -351,7 +410,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "hintText" to "راهنما: این یک میوه است.", "hintPaid" to "راهنما فعال شد؛ 6 سکه مصرف شد.", "needCoins" to "حداقل 6 سکه نیاز داری.",
         "hintButton" to "دریافت راهنما · 6 سکه", "coinBalance" to "سکه‌های تو: $arg", "newRound" to "دور تازه",
         "gameRoadmap" to "بازی‌های واژگان، املا و حافظه در مرحله بعدی محتوا اضافه می‌شوند.",
-        "summary" to "خلاصه یادگیری تو", "average" to "میانگین نمره آزمون", "quizHistory" to "تاریخچه آزمون", "noHistory" to "هنوز آزمونی انجام نشده است.",
+        "summary" to "خلاصه یادگیری تو", "average" to "میانگین نمره آزمون", "quizHistory" to "تاریخچه آزمون", "noHistory" to "هنوز آزمونی انجام نشده است.", "quizTitle" to "آزمون ترکیبی کوتاه", "quizComplete" to "آزمون تکمیل شد!", "quizSaved" to "نتیجه در تاریخچه یادگیری ذخیره شد.", "seeProgress" to "دیدن پیشرفت", "questionProgress" to "پرسش $arg",
         "displayName" to "نام نمایشی", "username" to "نام کاربری", "save" to "ذخیره پروفایل", "language" to "زبان", "theme" to "تم",
         "font" to "فونت", "minutes" to "دقیقه", "DARI_AF" to "دری افغانستان", "PASHTO_AF" to "پشتو افغانستان", "ARABIC" to "عربی", "ENGLISH_US" to "انگلیسی",
         "SANS_SERIF" to "سن‌سریف", "SERIF" to "سریف", "CURSIVE" to "دست‌نویس"
@@ -360,7 +419,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "greeting" to "سلام، $arg!", "welcome" to "هره ورځ لږ پرمختګ، لویه لاسته راوړنه.", "journey" to "ستاسو د زده کړې سفر",
         "level" to "کچه", "coins" to "سکې", "dailyGoal" to "د مطالعې ورځنی هدف", "lessons" to "بشپړ شوي درسونه", "quizzes" to "ازموینې",
         "learningPath" to "د انګلیسي زده کړې لاره", "chooseLevel" to "خپله کچه وټاکئ", "viewLessons" to "درسونه وګورئ", "allLevels" to "ټولې کچې",
-        "correct" to "ډېر ښه! ځواب سم دی.", "wrong" to "بیا هڅه وکړئ.", "hintButton" to "لارښوونه · 6 سکې", "hintPaid" to "لارښوونه فعاله شوه؛ 6 سکې ولګېدې.",
+        "correct" to "ډېر ښه! ځواب سم دی.", "quizTitle" to "لنډه ګډه ازموینه", "quizComplete" to "ازموینه بشپړه شوه!", "quizSaved" to "ستاسو پایله د زده کړې په تاریخ کې خوندي شوه.", "seeProgress" to "پرمختګ وګورئ", "wrong" to "بیا هڅه وکړئ.", "hintButton" to "لارښوونه · 6 سکې", "hintPaid" to "لارښوونه فعاله شوه؛ 6 سکې ولګېدې.",
         "needCoins" to "لږ تر لږه 6 سکې پکار دي.", "displayName" to "ښکاره نوم", "username" to "کارن نوم", "save" to "پروفایل خوندي کړئ",
         "language" to "ژبه", "theme" to "بڼه", "font" to "لیکبڼه", "minutes" to "دقیقې",
         "DARI_AF" to "افغان دري", "PASHTO_AF" to "افغان پښتو", "ARABIC" to "عربي", "ENGLISH_US" to "انګلیسي",
@@ -369,7 +428,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "greeting" to "مرحباً، $arg!", "welcome" to "خطوة صغيرة كل يوم تصنع إنجازاً كبيراً.", "journey" to "رحلة التعلم",
         "level" to "المستوى", "coins" to "العملات", "dailyGoal" to "هدف الدراسة اليومي", "lessons" to "الدروس المكتملة", "quizzes" to "الاختبارات",
         "learningPath" to "مسار تعلم الإنجليزية", "chooseLevel" to "اختر مستواك", "viewLessons" to "عرض الدروس", "allLevels" to "كل المستويات",
-        "correct" to "ممتاز! إجابة صحيحة.", "wrong" to "حاول مرة أخرى.", "hintButton" to "تلميح · 6 عملات", "hintPaid" to "تم تفعيل التلميح؛ خُصمت 6 عملات.",
+        "correct" to "ممتاز! إجابة صحيحة.", "quizTitle" to "اختبار قصير متنوع", "quizComplete" to "اكتمل الاختبار!", "quizSaved" to "تم حفظ النتيجة في سجل التعلم.", "seeProgress" to "عرض التقدم", "wrong" to "حاول مرة أخرى.", "hintButton" to "تلميح · 6 عملات", "hintPaid" to "تم تفعيل التلميح؛ خُصمت 6 عملات.",
         "needCoins" to "تحتاج إلى 6 عملات على الأقل.", "displayName" to "الاسم الظاهر", "username" to "اسم المستخدم", "save" to "حفظ الملف",
         "language" to "اللغة", "theme" to "السمة", "font" to "الخط", "minutes" to "دقيقة",
         "DARI_AF" to "الداري الأفغانية", "PASHTO_AF" to "البشتوية الأفغانية", "ARABIC" to "العربية", "ENGLISH_US" to "الإنجليزية",
