@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         ReminderEntity::class,
         GameAttemptEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AcademyDatabase : RoomDatabase() {
