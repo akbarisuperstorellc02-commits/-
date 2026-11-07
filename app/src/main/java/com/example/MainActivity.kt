@@ -528,8 +528,8 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
                         Text(option.forLocale(locale))
                     }
                 }
-                if (hintCount > 0 && selectedMode.style != GameStyle.WORD_BUILD) {
-                    Text(question.hint.forLocale(locale), color = MaterialTheme.colorScheme.primary)
+                if (hintCount > 0) {
+                    if (selectedMode.style != GameStyle.WORD_BUILD) Text(question.hint.forLocale(locale), color = MaterialTheme.colorScheme.primary)
                     Text(
                         AsciiDigits.normalize(question.answer.take(hintCount).padEnd(question.answer.length, '_')),
                         fontWeight = FontWeight.Bold,
