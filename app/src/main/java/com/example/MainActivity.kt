@@ -1480,20 +1480,66 @@ private fun ProgressPage(locale: AcademyLocale, lessons: Int, attempts: List<Qui
             Line(tr(locale, "average"), "$average%")
         }
         AcademyCard {
-            Text(tr(locale, "badges"), style = MaterialTheme.typography.titleLarge)
-            val badges = listOf(
-                Triple(lessons >= 1, "🌱", tr(locale, "badgeFirstLesson")),
-                Triple(lessons >= 5, "📚", tr(locale, "badgeFiveLessons")),
-                Triple(attempts.isNotEmpty(), "📝", tr(locale, "badgeFirstQuiz")),
-                Triple(games >= 1, "🎮", tr(locale, "badgeFirstGame")),
-                Triple(totalStudyMillis >= 3_600_000L, "⏳", tr(locale, "badgeHour"))
+            Text(
+                when (locale) {
+                    AcademyLocale.ENGLISH_US -> "Badges & animal companions"
+                    AcademyLocale.DARI_AF -> "نشان‌ها و همراهان حیوانی"
+                    AcademyLocale.PASHTO_AF -> "نښانونه او د حیواناتو ملګري"
+                    AcademyLocale.ARABIC -> "الشارات ورفاق الحيوانات"
+                },
+                style = MaterialTheme.typography.titleLarge
             )
-            val earned = badges.filter { it.first }
-            if (earned.isEmpty()) Text(tr(locale, "noBadges"))
-            earned.forEach { (_, icon, title) ->
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(icon, fontSize = 24.sp)
-                    Text(title, fontWeight = FontWeight.SemiBold)
+            Text(
+                when (locale) {
+                    AcademyLocale.ENGLISH_US -> "Collect friendly companions as you learn. Every badge has a clear goal."
+                    AcademyLocale.DARI_AF -> "با پیشرفت در یادگیری، همراهان دوست‌داشتنی و نشان‌های تازه به‌دست بیاور."
+                    AcademyLocale.PASHTO_AF -> "د زده کړې په پرمختګ سره دوستانه ملګري او نوي نښانونه ترلاسه کړئ."
+                    AcademyLocale.ARABIC -> "اجمع رفاقاً لطيفين وشارات جديدة كلما تقدمت في التعلم."
+                },
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 12.sp
+            )
+            val badges = listOf(
+                Triple(lessons >= 1, "🐣", when (locale) { AcademyLocale.ENGLISH_US -> "First steps"; AcademyLocale.DARI_AF -> "نخستین گام"; AcademyLocale.PASHTO_AF -> "لومړی ګام"; AcademyLocale.ARABIC -> "الخطوات الأولى" }),
+                Triple(lessons >= 3, "🦊", when (locale) { AcademyLocale.ENGLISH_US -> "Curious fox · 3 lessons"; AcademyLocale.DARI_AF -> "روباه کنجکاو · 3 درس"; AcademyLocale.PASHTO_AF -> "تلونکی ګیدړ · 3 درسونه"; AcademyLocale.ARABIC -> "الثعلب الفضولي · 3 دروس" }),
+                Triple(attempts.isNotEmpty(), "🦉", when (locale) { AcademyLocale.ENGLISH_US -> "Wise owl · first quiz"; AcademyLocale.DARI_AF -> "جغد دانا · نخستین آزمون"; AcademyLocale.PASHTO_AF -> "هوښیار کونګ · لومړۍ ازموینه"; AcademyLocale.ARABIC -> "البومة الحكيمة · أول اختبار" }),
+                Triple(games >= 1, "🐬", when (locale) { AcademyLocale.ENGLISH_US -> "Playful dolphin · first game"; AcademyLocale.DARI_AF -> "دلفین بازیگوش · نخستین بازی"; AcademyLocale.PASHTO_AF -> "لوبغاړی دولفین · لومړۍ لوبه"; AcademyLocale.ARABIC -> "الدلفين المرح · أول لعبة" }),
+                Triple(lessons >= 10, "🦋", when (locale) { AcademyLocale.ENGLISH_US -> "Butterfly growth · 10 lessons"; AcademyLocale.DARI_AF -> "رشد پروانه‌ای · 10 درس"; AcademyLocale.PASHTO_AF -> "د پتنګ وده · 10 درسونه"; AcademyLocale.ARABIC -> "نمو الفراشة · 10 دروس" }),
+                Triple(totalStudyMillis >= 3_600_000L, "🐢", when (locale) { AcademyLocale.ENGLISH_US -> "Steady turtle · 1 hour"; AcademyLocale.DARI_AF -> "لاک‌پشت پیوسته‌کار · 1 ساعت"; AcademyLocale.PASHTO_AF -> "زیارکښ شمشتی · 1 ساعت"; AcademyLocale.ARABIC -> "السلحفاة المثابرة · ساعة" }),
+                Triple(lessons >= 20, "🐝", when (locale) { AcademyLocale.ENGLISH_US -> "Busy bee · 20 lessons"; AcademyLocale.DARI_AF -> "زنبور پرتلاش · 20 درس"; AcademyLocale.PASHTO_AF -> "زیارکښه مچۍ · 20 درسونه"; AcademyLocale.ARABIC -> "النحلة النشيطة · 20 درساً" }),
+                Triple(attempts.size >= 10, "🦁", when (locale) { AcademyLocale.ENGLISH_US -> "Brave lion · 10 quizzes"; AcademyLocale.DARI_AF -> "شیر دلیر · 10 آزمون"; AcademyLocale.PASHTO_AF -> "زړور زمری · 10 ازموینې"; AcademyLocale.ARABIC -> "الأسد الشجاع · 10 اختبارات" }),
+                Triple(games >= 10, "🐼", when (locale) { AcademyLocale.ENGLISH_US -> "Game master panda · 10 games"; AcademyLocale.DARI_AF -> "پاندای استاد · 10 بازی"; AcademyLocale.PASHTO_AF -> "د لوبو پانډا · 10 لوبې"; AcademyLocale.ARABIC -> "الباندا المحترف · 10 ألعاب" }),
+                Triple(totalStudyMillis >= 18_000_000L, "🌟", when (locale) { AcademyLocale.ENGLISH_US -> "Five-hour star"; AcademyLocale.DARI_AF -> "ستاره پنج‌ساعته"; AcademyLocale.PASHTO_AF -> "د پنځو ساعتونو ستوری"; AcademyLocale.ARABIC -> "نجمة خمس ساعات" }),
+                Triple(lessons >= 50, "🚀", when (locale) { AcademyLocale.ENGLISH_US -> "Learning rocket · 50 lessons"; AcademyLocale.DARI_AF -> "موشک یادگیری · 50 درس"; AcademyLocale.PASHTO_AF -> "د زده کړې توغندی · 50 درسونه"; AcademyLocale.ARABIC -> "صاروخ التعلم · 50 درساً" }),
+                Triple(xp >= 1000, "🏆", when (locale) { AcademyLocale.ENGLISH_US -> "XP champion · 1,000 XP"; AcademyLocale.DARI_AF -> "قهرمان امتیاز · 1,000 XP"; AcademyLocale.PASHTO_AF -> "د امتیاز اتل · 1,000 XP"; AcademyLocale.ARABIC -> "بطل النقاط · 1,000 XP" })
+            )
+            val earnedCount = badges.count { it.first }
+            Text(
+                AsciiDigits.normalize("$earnedCount / ${badges.size}"),
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
+            badges.forEach { (earned, icon, title) ->
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (earned) 0.55f else 0.22f))
+                        .padding(horizontal = 12.dp, vertical = 9.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(icon, fontSize = 26.sp, color = if (earned) Color.Unspecified else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f))
+                    Column(Modifier.weight(1f)) {
+                        Text(title, fontWeight = FontWeight.SemiBold, color = if (earned) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            if (earned) when (locale) { AcademyLocale.ENGLISH_US -> "Unlocked"; AcademyLocale.DARI_AF -> "به‌دست آمده"; AcademyLocale.PASHTO_AF -> "ترلاسه شوی"; AcademyLocale.ARABIC -> "تم فتحها" }
+                            else when (locale) { AcademyLocale.ENGLISH_US -> "Keep going to unlock"; AcademyLocale.DARI_AF -> "برای بازکردن ادامه بده"; AcademyLocale.PASHTO_AF -> "د خلاصولو لپاره دوام ورکړئ"; AcademyLocale.ARABIC -> "واصل لفتحها" },
+                            fontSize = 10.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (earned) Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    else Icon(Icons.Default.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f))
                 }
             }
         }
