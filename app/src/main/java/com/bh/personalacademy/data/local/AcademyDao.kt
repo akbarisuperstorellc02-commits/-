@@ -36,7 +36,7 @@ abstract class AcademyDao {
     @Query("SELECT * FROM quiz_attempts WHERE profileId = :profileId ORDER BY completedAt DESC")
     abstract fun observeQuizAttempts(profileId: String = "primary"): Flow<List<QuizAttemptEntity>>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertStudySession(session: StudySessionEntity)
 
     @Query("""
