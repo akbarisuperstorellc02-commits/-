@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example"
+    namespace = "com.bh.personalacademy"
     compileSdk { version = release(36) }
 
     defaultConfig {
