@@ -1,8 +1,8 @@
-# BH Personal Academy — Product Specification
+# Self-Growth Academy — Product Specification
 
 ## Product identity
-- Persian/Dari name: خودسازی و انگلیسی
-- English name: Self-Growth & English
+- Persian/Dari name: خودسازی آکادمی
+- English name: Self-Growth Academy
 - Default display name: زهرا (stored as user data; never hard-coded in UI)
 - Android application; offline-first; multiple independent local learner profiles with profile-scoped settings and learning records.
 
