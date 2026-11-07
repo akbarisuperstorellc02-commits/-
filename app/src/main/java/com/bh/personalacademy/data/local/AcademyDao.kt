@@ -154,4 +154,27 @@ abstract class AcademyDao {
 
     @Query("DELETE FROM reminders WHERE reminderId = :reminderId")
     abstract suspend fun deleteReminder(reminderId: String)
+
+    @Query("DELETE FROM lesson_progress") protected abstract suspend fun clearLessonProgress()
+    @Query("DELETE FROM quiz_attempts") protected abstract suspend fun clearQuizAttempts()
+    @Query("DELETE FROM game_attempts") protected abstract suspend fun clearGameAttempts()
+    @Query("DELETE FROM study_sessions") protected abstract suspend fun clearStudySessions()
+    @Query("DELETE FROM wallets") protected abstract suspend fun clearWallets()
+    @Query("DELETE FROM reward_events") protected abstract suspend fun clearRewardEvents()
+    @Query("DELETE FROM vocabulary") protected abstract suspend fun clearVocabulary()
+    @Query("DELETE FROM daily_goals") protected abstract suspend fun clearDailyGoals()
+    @Query("DELETE FROM reminders") protected abstract suspend fun clearReminders()
+
+    @Transaction
+    open suspend fun clearAllLearningData() {
+        clearLessonProgress()
+        clearQuizAttempts()
+        clearGameAttempts()
+        clearStudySessions()
+        clearWallets()
+        clearRewardEvents()
+        clearVocabulary()
+        clearDailyGoals()
+        clearReminders()
+    }
 }
