@@ -1,11 +1,11 @@
-# خودسازی و انگلیسی — Self-Growth & English
+# خودسازی آکادمی — Self-Growth Academy
 
 Offline-first Android app for English learning and personal growth.
 
 ## App identity
 
-- Display name: خودسازی و انگلیسی
-- English name: Self-Growth & English
+- Display name: خودسازی آکادمی
+- English name: Self-Growth Academy
 - Application ID: `com.bh.personalacademy`
 - Default profile: زهرا
 - Default locale: Afghan Dari (`fa-AF`)
@@ -65,7 +65,7 @@ Debug APK output:
 
 `app/build/outputs/apk/debug/app-debug.apk`
 
-GitHub Actions uploads the debug APK as the `bh-personal-academy-debug-apk` artifact when the build succeeds.
+GitHub Actions uploads the debug APK as the `self-growth-academy-debug-apk` artifact when the build succeeds.
 
 ## Current validation
 
