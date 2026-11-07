@@ -37,7 +37,10 @@ object AcademyBackupManager {
                     .put("locale", profile.locale.name)
                     .put("theme", profile.theme.name)
                     .put("font", profile.font.name)
-                    .put("dailyGoalMinutes", profile.dailyStudyGoalMinutes))
+                    .put("dailyGoalMinutes", profile.dailyStudyGoalMinutes)
+                    .put("dailyGoalLessons", profile.dailyGoalLessons)
+                    .put("dailyGoalWords", profile.dailyGoalWords)
+                    .put("dailyGoalQuizzes", profile.dailyGoalQuizzes))
 
             root.put("lessonProgress", JSONArray().apply {
                 dao.observeLessonProgress().first().forEach { put(JSONObject()
@@ -113,6 +116,7 @@ object AcademyBackupManager {
             preferences.updateTheme(enumValue(profile.optString("theme"), AcademyThemeId.SOFT_PINK))
             preferences.updateFont(enumValue(profile.optString("font"), AcademyFontId.SANS_SERIF))
             preferences.updateDailyGoal(profile.optInt("dailyGoalMinutes", 20).coerceIn(5, 240))
+            preferences.updateDailyTargets(profile.optInt("dailyGoalLessons", 1), profile.optInt("dailyGoalWords", 5), profile.optInt("dailyGoalQuizzes", 1))
             preferences.updateAvatar(if (profile.isNull("avatarUri")) null else profile.optString("avatarUri"))
 
             root.array("lessonProgress").forEachObject { o ->
