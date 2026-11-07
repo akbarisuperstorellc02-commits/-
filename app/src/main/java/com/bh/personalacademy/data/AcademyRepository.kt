@@ -12,6 +12,10 @@ import com.bh.personalacademy.data.local.WalletEntity
 import com.bh.personalacademy.data.preferences.AcademyPreferences
 import com.example.academy.domain.model.RewardEventIds
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 import java.util.UUID
 
 /**
@@ -23,29 +27,32 @@ class AcademyRepository(
     private val dao: AcademyDao
 ) {
     val profile = preferences.profile
-    val wallet = dao.observeWallet()
-    val lessonProgress = dao.observeLessonProgress()
-    val quizAttempts = dao.observeQuizAttempts()
-    val gameAttempts = dao.observeGameAttempts()
-    val vocabulary = dao.observeVocabulary()
-    val reminders = dao.observeReminders()
-    val studySessions = dao.observeStudySessions()
-    val totalStudyMillis = dao.observeTotalStudyMillis()
+    private val activeProfileId = profile.map { it.profileId }.distinctUntilChanged()
+    val profiles = preferences.profiles
+    val wallet = activeProfileId.flatMapLatest { dao.observeWallet(it) }
+    val lessonProgress = activeProfileId.flatMapLatest { dao.observeLessonProgress(it) }
+    val quizAttempts = activeProfileId.flatMapLatest { dao.observeQuizAttempts(it) }
+    val gameAttempts = activeProfileId.flatMapLatest { dao.observeGameAttempts(it) }
+    val vocabulary = activeProfileId.flatMapLatest { dao.observeVocabulary(it) }
+    val reminders = activeProfileId.flatMapLatest { dao.observeReminders(it) }
+    val studySessions = activeProfileId.flatMapLatest { dao.observeStudySessions(it) }
+    val totalStudyMillis = activeProfileId.flatMapLatest { dao.observeTotalStudyMillis(it) }
 
     fun studyMillis(fromMillis: Long, untilMillis: Long): Flow<Long> =
-        dao.observeStudyMillis(fromMillis, untilMillis)
+        activeProfileId.flatMapLatest { dao.observeStudyMillis(fromMillis, untilMillis, it) }
 
     fun completedLessons(fromMillis: Long, untilMillis: Long): Flow<Int> =
-        dao.observeCompletedLessonCount(fromMillis, untilMillis)
+        activeProfileId.flatMapLatest { dao.observeCompletedLessonCount(fromMillis, untilMillis, it) }
 
     fun quizCount(fromMillis: Long, untilMillis: Long): Flow<Int> =
-        dao.observeQuizCount(fromMillis, untilMillis)
+        activeProfileId.flatMapLatest { dao.observeQuizCount(fromMillis, untilMillis, it) }
 
     fun practisedWordCount(fromMillis: Long, untilMillis: Long): Flow<Int> =
-        dao.observeWordsPractisedCount(fromMillis, untilMillis)
+        activeProfileId.flatMapLatest { dao.observeWordsPractisedCount(fromMillis, untilMillis, it) }
 
     suspend fun initializeProfileWallet() {
-        dao.insertWallet(WalletEntity(profileId = "primary", coins = 30))
+        val id = preferences.profile.map { it.profileId }.distinctUntilChanged().first()
+        dao.insertWallet(WalletEntity(profileId = id, coins = 30))
     }
 
     suspend fun completeLesson(lessonId: String, score: Int = 100, profileId: String = "primary") {
