@@ -129,7 +129,7 @@ object AcademyGameCatalog {
             else ->
                 t("Choose the best answer for “${word.english}”.", "بهترین پاسخ برای «${word.english}» را انتخاب کن.", "د «${word.english}» لپاره غوره ځواب وټاکئ.", "اختر أفضل إجابة عن «${word.english}».")
         }
-        val hint = t("First letter: ${word.english.first()}", "حرف نخست: ${word.english.first()}", "لومړی توری: ${word.english.first()}", "الحرف الأول: ${word.english.first()}")
+        val hint = t("Each hint reveals one more letter.", "هر راهنما یک حرف دیگر را آشکار می‌کند.", "هره لارښوونه یو بل توری ښکاره کوي.", "كل تلميح يكشف حرفاً إضافياً.")
         val explanation = t("${word.english} means ${word.fa}.", "واژه ${word.english} به معنی ${word.fa} است.", "${word.english} د ${word.ps} مانا لري.", "${word.english} تعني ${word.ar}.")
         val correctIndex = if (mode.style == GameStyle.ODD_ONE_OUT) 2 else 0
         return GameQuestion(prompt, options, correctIndex, word.english, hint, explanation)
