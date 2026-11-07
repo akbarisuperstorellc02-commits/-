@@ -323,6 +323,7 @@ fun MasterGohariChatScreen(
                     },
                     enabled = downloadStatus.state != com.example.data.GemmaDownloadProgress.State.DOWNLOADING &&
                         downloadStatus.state != com.example.data.GemmaDownloadProgress.State.QUEUED &&
+                        downloadStatus.state != com.example.data.GemmaDownloadProgress.State.PAUSED &&
                         downloadStatus.state != com.example.data.GemmaDownloadProgress.State.VERIFYING
                 ) {
                     Text(if (downloadStatus.state == com.example.data.GemmaDownloadProgress.State.FAILED) "تلاش دوباره برای دانلود" else "دانلود مدل هوش مصنوعی")
