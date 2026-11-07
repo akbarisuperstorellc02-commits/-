@@ -107,7 +107,7 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
                             { band = it },
                             { tab = AcademyTab.VOCABULARY },
                             { id -> scope.launch {
-                                dao.saveLessonProgress(LessonProgressEntity(lessonId = id, completedAt = System.currentTimeMillis(), bestScore = 100, attempts = 1))
+                                dao.recordLessonCompletion(lessonId = id, completedAt = System.currentTimeMillis(), score = 100)
                                 dao.applyRewardOnce(RewardEventEntity(UUID.randomUUID().toString(), source = "LESSON", sourceId = id,
                                     xpDelta = 25, coinDelta = 5, createdAt = System.currentTimeMillis()))
                             } }, { tab = AcademyTab.QUIZ })
