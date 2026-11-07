@@ -145,8 +145,20 @@ object AcademyGameCatalog {
         } else {
             t("Each hint reveals one more letter.", "هر راهنما یک حرف دیگر را آشکار می‌کند.", "هره لارښوونه یو بل توری ښکاره کوي.", "كل تلميح يكشف حرفاً إضافياً.")
         }
-        val explanation = t("${word.english} means ${word.fa}.", "واژه ${word.english} به معنی ${word.fa} است.", "${word.english} د ${word.ps} مانا لري.", "${word.english} تعني ${word.ar}.")
-        val correctIndex = if (mode.style == GameStyle.ODD_ONE_OUT) 2 else 0
-        return GameQuestion(prompt, options, correctIndex, word.english, hint, explanation)
+        val answer = if (mode.style == GameStyle.ODD_ONE_OUT) "book" else word.english
+        val explanation = if (mode.style == GameStyle.ODD_ONE_OUT) {
+            t(
+                "Book is different because apple and banana are fruits.",
+                "کتاب متفاوت است؛ سیب و کیله میوه هستند.",
+                "کتاب توپیر لري، ځکه مڼه او کېله مېوې دي.",
+                "الكتاب مختلف لأن التفاح والموز فاكهتان."
+            )
+        } else {
+            t("${word.english} means ${word.fa}.", "واژه ${word.english} به معنی ${word.fa} است.", "${word.english} د ${word.ps} مانا لري.", "${word.english} تعني ${word.ar}.")
+        }
+        val rotation = if (mode.style == GameStyle.ODD_ONE_OUT || options.size <= 1) 0 else (round + modeIndex) % options.size
+        val shuffledOptions = options.drop(rotation) + options.take(rotation)
+        val correctIndex = if (mode.style == GameStyle.ODD_ONE_OUT) 2 else (options.size - rotation) % options.size
+        return GameQuestion(prompt, shuffledOptions, correctIndex, answer, hint, explanation)
     }
 }
