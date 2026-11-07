@@ -1,6 +1,5 @@
 {
-  "name": "خودسازی آکادمی",
-  "description": "اپلیکیشن خودسازی آکادمی؛ آموزش زبان انگلیسی، رشد فردی، تمرین، بازی و پیگیری پیشرفت روزانه.",
+  "name": "آکادمی خودسازی Learning",
+  "description": "اپلیکیشن آکادمی خودسازی Learning؛ آموزش زبان انگلیسی، رشد فردی، تمرین، بازی و پیگیری پیشرفت روزانه.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
