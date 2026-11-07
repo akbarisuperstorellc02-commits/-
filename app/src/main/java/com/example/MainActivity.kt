@@ -430,7 +430,7 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
                 val parts = reminderTime.trim().split(":")
                 val hour = parts.getOrNull(0)?.toIntOrNull()
                 val minute = parts.getOrNull(1)?.toIntOrNull()
-                if (reminderTitle.isBlank() || hour !in 0..23 || minute !in 0..59) {
+                if (reminderTitle.isBlank() || hour == null || minute == null || hour !in 0..23 || minute !in 0..59) {
                     feedback = tr(locale, "invalidTime")
                 } else {
                     val id = UUID.randomUUID().toString()
@@ -446,7 +446,8 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
                     if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                         notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
                         feedback = tr(locale, "permissionNeeded")
-                    } else schedule()
+                    }
+                    schedule()
                 }
             }, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "scheduleReminder")) }
             if (reminders.isEmpty()) Text(tr(locale, "noReminders"))
