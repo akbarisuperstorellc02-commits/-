@@ -204,7 +204,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                     border = BorderStroke(1.dp, palette.primary.copy(alpha = 0.16f))
                 ) {
                 NavigationBar(containerColor = palette.surface, tonalElevation = 6.dp) {
-                    val items = listOf(
+                    val items = mutableListOf(
                         Triple(AcademyTab.HOME, Icons.Default.Home, tr(profile.locale, "home")),
                         Triple(AcademyTab.LEARN, Icons.Default.MenuBook, tr(profile.locale, "learn")),
                         Triple(AcademyTab.GAMES, Icons.Default.Extension, tr(profile.locale, "games")),
@@ -217,7 +217,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                             AcademyLocale.ARABIC -> "تحدث"
                         })
                     )
-                    items.add(Triple(AcademyTab.STORIES, Icons.Default.AutoStories, when (profile.locale) {
+                    items.add(Triple(AcademyTab.STORIES, Icons.Default.MenuBook, when (profile.locale) {
                         AcademyLocale.ENGLISH_US -> "Stories"
                         AcademyLocale.DARI_AF -> "داستان‌ها"
                         AcademyLocale.PASHTO_AF -> "کیسې"
