@@ -12,20 +12,27 @@ abstract class AcademyDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun saveLessonProgress(progress: LessonProgressEntity)
 
-    @Query("""
-        INSERT INTO lesson_progress (profileId, lessonId, completedAt, bestScore, attempts)
-        VALUES (:profileId, :lessonId, :completedAt, :score, 1)
-        ON CONFLICT(profileId, lessonId) DO UPDATE SET
-            completedAt = excluded.completedAt,
-            bestScore = MAX(lesson_progress.bestScore, excluded.bestScore),
-            attempts = lesson_progress.attempts + 1
-    """)
-    abstract suspend fun recordLessonCompletion(
+    @Query("SELECT * FROM lesson_progress WHERE profileId = :profileId AND lessonId = :lessonId LIMIT 1")
+    abstract suspend fun getLessonProgress(profileId: String, lessonId: String): LessonProgressEntity?
+
+    @Transaction
+    open suspend fun recordLessonCompletion(
         lessonId: String,
         completedAt: Long,
         score: Int,
         profileId: String = "primary"
-    )
+    ) {
+        val previous = getLessonProgress(profileId, lessonId)
+        saveLessonProgress(
+            LessonProgressEntity(
+                profileId = profileId,
+                lessonId = lessonId,
+                completedAt = completedAt,
+                bestScore = maxOf(previous?.bestScore ?: 0, score),
+                attempts = (previous?.attempts ?: 0) + 1
+            )
+        )
+    }
 
     @Query("SELECT * FROM lesson_progress WHERE profileId = :profileId")
     abstract fun observeLessonProgress(profileId: String = "primary"): Flow<List<LessonProgressEntity>>
