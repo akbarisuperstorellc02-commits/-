@@ -696,6 +696,7 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
     var feedback by remember(selectedGameId, round) { mutableStateOf("") }
     var gameFinished by remember(selectedGameId) { mutableStateOf(false) }
     var secondsLeft by remember(selectedGameId, round) { mutableIntStateOf(20) }
+    var typedAnswer by remember(selectedGameId, round) { mutableStateOf("") }
     val question = selectedMode?.let { AcademyGameCatalog.questionFor(it, round) }
 
     LaunchedEffect(selectedGameId, round, answered) {
@@ -845,6 +846,7 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
                         fontSize = 12.sp
                     )
                 }
+                if (selectedMode.style != GameStyle.WORD_BUILD) {
                 question.options.forEachIndexed { optionIndex, option ->
                     OutlinedButton(
                         onClick = {
@@ -880,6 +882,61 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
                         modifier = Modifier.fillMaxWidth()
                     , shape = RoundedCornerShape(26.dp), border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.36f))) {
                         Text(option.forLocale(locale))
+                    }
+                }
+                }
+                if (selectedMode.style == GameStyle.WORD_BUILD) {
+                    OutlinedTextField(
+                        value = typedAnswer,
+                        onValueChange = { typedAnswer = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        label = { Text(when (locale) {
+                            AcademyLocale.ENGLISH_US -> "Type the word"
+                            AcademyLocale.DARI_AF -> "واژه را بنویس"
+                            AcademyLocale.PASHTO_AF -> "کلمه ولیکئ"
+                            AcademyLocale.ARABIC -> "اكتب الكلمة"
+                        }) }
+                    )
+                    Button(
+                        onClick = {
+                            if (!answered && typedAnswer.isNotBlank()) {
+                                answered = true
+                                val isCorrect = typedAnswer.trim().equals(question.answer, ignoreCase = true)
+                                if (isCorrect) {
+                                    score += 1
+                                    feedback = question.explanation.forLocale(locale)
+                                    scope.launch {
+                                        dao.applyRewardOnce(RewardEventEntity(
+                                            eventId = UUID.randomUUID().toString(),
+                                            source = "GAME",
+                                            sourceId = selectedMode.id + "_round_" + round,
+                                            xpDelta = 10,
+                                            coinDelta = 2,
+                                            createdAt = System.currentTimeMillis()
+                                        ))
+                                    }
+                                } else {
+                                    feedback = when (locale) {
+                                        AcademyLocale.ENGLISH_US -> "Not quite. Correct answer: " + question.answer + ". "
+                                        AcademyLocale.DARI_AF -> "پاسخ درست نیست. جواب درست: " + question.answer + ". "
+                                        AcademyLocale.PASHTO_AF -> "سم نه دی. سم ځواب: " + question.answer + ". "
+                                        AcademyLocale.ARABIC -> "ليست صحيحة. الإجابة الصحيحة: " + question.answer + ". "
+                                    } + question.explanation.forLocale(locale)
+                                }
+                            }
+                        },
+                        enabled = !answered && typedAnswer.isNotBlank(),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(26.dp),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp)
+                    ) {
+                        Text(when (locale) {
+                            AcademyLocale.ENGLISH_US -> "Check spelling"
+                            AcademyLocale.DARI_AF -> "بررسی واژه"
+                            AcademyLocale.PASHTO_AF -> "کلمه وازمویئ"
+                            AcademyLocale.ARABIC -> "تحقق من الكلمة"
+                        })
                     }
                 }
                 if (hintCount > 0) {
