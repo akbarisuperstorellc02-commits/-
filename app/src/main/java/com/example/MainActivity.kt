@@ -363,7 +363,7 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences) {
         }
         AcademyCard {
             Text(tr(profile.locale, "theme"), style = MaterialTheme.typography.titleMedium)
-            AcademyThemeId.values().chunked(2).forEach { pair ->
+            AcademyThemeId.values().toList().chunked(2).forEach { pair ->
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     pair.forEach { option ->
                         OutlinedButton(onClick = { scope.launch { prefs.updateTheme(option) } }, modifier = Modifier.weight(1f)) {
