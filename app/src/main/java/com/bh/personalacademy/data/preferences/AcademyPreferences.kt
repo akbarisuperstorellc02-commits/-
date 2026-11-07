@@ -151,7 +151,17 @@ class AcademyPreferences(private val context: Context) {
     suspend fun resetProfile() {
         context.academyDataStore.edit { data ->
             val id = data[Keys.activeProfile] ?: "primary"
-            data.asMap().keys.filter { it.name.startsWith("${id}_") }.forEach { data.remove(it) }
+            data.remove(stringPreferencesKey("${id}_display_name"))
+            data.remove(stringPreferencesKey("${id}_username"))
+            data.remove(stringPreferencesKey("${id}_locale"))
+            data.remove(stringPreferencesKey("${id}_theme"))
+            data.remove(stringPreferencesKey("${id}_font"))
+            data.remove(stringPreferencesKey("${id}_avatar_uri"))
+            data.remove(intPreferencesKey("${id}_daily_goal_minutes"))
+            data.remove(intPreferencesKey("${id}_daily_goal_lessons"))
+            data.remove(intPreferencesKey("${id}_daily_goal_words"))
+            data.remove(intPreferencesKey("${id}_daily_goal_quizzes"))
+            data.remove(longKey(id, "created_at"))
             if (id == "primary") {
                 data.remove(Keys.displayName); data.remove(Keys.username); data.remove(Keys.locale)
                 data.remove(Keys.theme); data.remove(Keys.font); data.remove(Keys.dailyGoal)
