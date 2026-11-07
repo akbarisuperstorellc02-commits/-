@@ -1,6 +1,7 @@
 package com.bh.personalacademy.data.preferences
 import android.content.Context
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.clear
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -35,4 +36,5 @@ class AcademyPreferences(private val context: Context) {
  suspend fun updateDailyGoal(minutes:Int){context.academyDataStore.edit{it[Keys.dailyGoal]=minutes.coerceIn(5,240)}}
  suspend fun updateDailyTargets(lessons:Int,words:Int,quizzes:Int){context.academyDataStore.edit{it[Keys.dailyLessons]=lessons.coerceIn(1,20);it[Keys.dailyWords]=words.coerceIn(1,100);it[Keys.dailyQuizzes]=quizzes.coerceIn(1,10)}}
  suspend fun updateAvatar(uri:String?){context.academyDataStore.edit{if(uri==null)it.remove(Keys.avatarUri) else it[Keys.avatarUri]=uri}}
+ suspend fun resetProfile(){context.academyDataStore.edit{it.clear()}}
 }
