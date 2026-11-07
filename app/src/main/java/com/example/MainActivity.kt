@@ -378,6 +378,33 @@ private fun VocabularyPage(locale: AcademyLocale, dao: AcademyDao) {
                 }
                 Text(word.exampleEnglish, fontWeight = FontWeight.SemiBold)
                 Text(word.exampleDari, fontSize = 13.sp)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        when (locale) {
+                            AcademyLocale.ENGLISH_US -> "Mastery: ${word.mastery}/5"
+                            AcademyLocale.DARI_AF -> "میزان یادگیری: ${word.mastery}/5"
+                            AcademyLocale.PASHTO_AF -> "د زده کړې کچه: ${word.mastery}/5"
+                            AcademyLocale.ARABIC -> "مستوى الإتقان: ${word.mastery}/5"
+                        },
+                        modifier = Modifier.weight(1f),
+                        fontSize = 12.sp
+                    )
+                    Button(onClick = {
+                        scope.launch {
+                            dao.saveVocabulary(word.copy(
+                                mastery = (word.mastery + 1).coerceAtMost(5),
+                                lastPractisedAt = System.currentTimeMillis()
+                            ))
+                        }
+                    }) {
+                        Text(when (locale) {
+                            AcademyLocale.ENGLISH_US -> "Practised"
+                            AcademyLocale.DARI_AF -> "تمرین شد"
+                            AcademyLocale.PASHTO_AF -> "تمرین شو"
+                            AcademyLocale.ARABIC -> "تم التدريب"
+                        })
+                    }
+                }
             }
         }
     }
@@ -1149,6 +1176,33 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences) {
             Text("${AsciiDigits.normalize(goal.toInt().toString())} ${tr(profile.locale, "minutes")}")
             Slider(value = goal, onValueChange = { goal = it }, valueRange = 5f..120f, steps = 22,
                 onValueChangeFinished = { scope.launch { prefs.updateDailyGoal(goal.toInt()) } })
+            var lessonTarget by remember(profile.dailyGoalLessons) { mutableFloatStateOf(profile.dailyGoalLessons.toFloat()) }
+            var wordTarget by remember(profile.dailyGoalWords) { mutableFloatStateOf(profile.dailyGoalWords.toFloat()) }
+            var quizTarget by remember(profile.dailyGoalQuizzes) { mutableFloatStateOf(profile.dailyGoalQuizzes.toFloat()) }
+            Text(when (profile.locale) {
+                AcademyLocale.ENGLISH_US -> "Daily lessons: ${lessonTarget.toInt()}"
+                AcademyLocale.DARI_AF -> "درس روزانه: ${lessonTarget.toInt()}"
+                AcademyLocale.PASHTO_AF -> "ورځني درسونه: ${lessonTarget.toInt()}"
+                AcademyLocale.ARABIC -> "الدروس اليومية: ${lessonTarget.toInt()}"
+            })
+            Slider(value = lessonTarget, onValueChange = { lessonTarget = it }, valueRange = 1f..10f, steps = 8,
+                onValueChangeFinished = { scope.launch { prefs.updateDailyTargets(lessonTarget.toInt(), wordTarget.toInt(), quizTarget.toInt()) } })
+            Text(when (profile.locale) {
+                AcademyLocale.ENGLISH_US -> "Daily words: ${wordTarget.toInt()}"
+                AcademyLocale.DARI_AF -> "واژه روزانه: ${wordTarget.toInt()}"
+                AcademyLocale.PASHTO_AF -> "ورځنۍ کلمې: ${wordTarget.toInt()}"
+                AcademyLocale.ARABIC -> "الكلمات اليومية: ${wordTarget.toInt()}"
+            })
+            Slider(value = wordTarget, onValueChange = { wordTarget = it }, valueRange = 1f..50f, steps = 48,
+                onValueChangeFinished = { scope.launch { prefs.updateDailyTargets(lessonTarget.toInt(), wordTarget.toInt(), quizTarget.toInt()) } })
+            Text(when (profile.locale) {
+                AcademyLocale.ENGLISH_US -> "Daily quizzes: ${quizTarget.toInt()}"
+                AcademyLocale.DARI_AF -> "آزمون روزانه: ${quizTarget.toInt()}"
+                AcademyLocale.PASHTO_AF -> "ورځنۍ ازموینې: ${quizTarget.toInt()}"
+                AcademyLocale.ARABIC -> "الاختبارات اليومية: ${quizTarget.toInt()}"
+            })
+            Slider(value = quizTarget, onValueChange = { quizTarget = it }, valueRange = 1f..5f, steps = 3,
+                onValueChangeFinished = { scope.launch { prefs.updateDailyTargets(lessonTarget.toInt(), wordTarget.toInt(), quizTarget.toInt()) } })
         }
     }
 }
