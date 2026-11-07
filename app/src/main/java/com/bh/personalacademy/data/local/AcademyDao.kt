@@ -216,6 +216,9 @@ abstract class AcademyDao {
     @Query("SELECT * FROM reminders WHERE profileId = :profileId AND enabled = 1")
     abstract suspend fun getEnabledReminders(profileId: String = "primary"): List<ReminderEntity>
 
+    @Query("SELECT * FROM reminders WHERE enabled = 1")
+    abstract suspend fun getAllEnabledReminders(): List<ReminderEntity>
+
     @Query("DELETE FROM reminders WHERE reminderId = :reminderId")
     abstract suspend fun deleteReminder(reminderId: String)
 
