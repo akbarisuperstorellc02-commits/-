@@ -18,3 +18,5 @@ data class VocabularyEntity(@PrimaryKey val wordId:String,val profileId:String="
 data class DailyGoalEntity(val profileId:String="primary",val dateIso:String,val targetMinutes:Int,val targetLessons:Int,val targetWords:Int,val targetQuizzes:Int)
 @Entity(tableName="reminders",indices=[Index(value = ["profileId"])])
 data class ReminderEntity(@PrimaryKey val reminderId:String,val profileId:String="primary",val title:String,val hour:Int,val minute:Int,val repeatDaysMask:Int,val enabled:Boolean)
+@Entity(tableName="game_attempts",indices=[Index(value=["profileId"]),Index(value=["completedAt"])])
+data class GameAttemptEntity(@PrimaryKey val attemptId:String,val profileId:String="primary",val gameId:String,val score:Int,val totalQuestions:Int,val completedAt:Long)
