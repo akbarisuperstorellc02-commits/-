@@ -44,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.bh.personalacademy.content.AcademyGameCatalog
 import com.bh.personalacademy.content.AcademyLessonCatalog
+import com.bh.personalacademy.ui.components.LessonStudyTimer
 import com.bh.personalacademy.content.GameMode
 import com.bh.personalacademy.content.GameStyle
 import com.bh.personalacademy.data.local.*
@@ -133,7 +134,20 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
                                             sourceId = activeBand.name, xpDelta = 100, coinDelta = 20, createdAt = System.currentTimeMillis()))
                                     }
                                 }
-                            } }, { tab = AcademyTab.QUIZ })
+                            } },
+                            { lessonId, startedAt, duration ->
+                                scope.launch {
+                                    dao.insertStudySession(
+                                        StudySessionEntity(
+                                            sessionId = UUID.randomUUID().toString(),
+                                            lessonId = lessonId,
+                                            startedAt = startedAt,
+                                            durationMillis = duration
+                                        )
+                                    )
+                                }
+                            },
+                            { tab = AcademyTab.QUIZ })
                         AcademyTab.QUIZ -> QuizPage(profile.locale, dao) { tab = AcademyTab.PROGRESS }
                         AcademyTab.GAMES -> GamePage(profile.locale, wallet?.coins ?: 0, dao)
                         AcademyTab.PROGRESS -> ProgressPage(profile.locale, lessons.size, attempts, gameAttempts.size, wallet?.xp ?: 0, wallet?.coins ?: 0)
@@ -231,7 +245,7 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
 }
 
 @Composable
-private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedLessonIds: Set<String>, select: (LearningBand?) -> Unit, vocabulary: () -> Unit, complete: (String) -> Unit, quiz: () -> Unit) {
+private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedLessonIds: Set<String>, select: (LearningBand?) -> Unit, vocabulary: () -> Unit, complete: (String) -> Unit, saveStudySession: (String, Long, Long) -> Unit, quiz: () -> Unit) {
     val names = listOf("Pre-A1", "A1", "A2", "B1", "B2", "C1")
     val lessons = selected?.let { AcademyLessonCatalog.forBand(it) }.orEmpty()
     Page {
@@ -273,6 +287,12 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
                         Text(AsciiDigits.normalize(lesson.example), fontWeight = FontWeight.SemiBold)
                         Text(AsciiDigits.normalize(lesson.translation))
                         Text(AsciiDigits.normalize(lesson.grammarTip))
+                        LessonStudyTimer(
+                            lessonId = lesson.id,
+                            locale = locale,
+                            modifier = Modifier.fillMaxWidth(),
+                            onSaveSession = saveStudySession
+                        )
                     }
                     Button(onClick = { complete(lesson.id) }, modifier = Modifier.fillMaxWidth()) {
                         Icon(Icons.Default.CheckCircle, null); Spacer(Modifier.width(6.dp)); Text(tr(locale, "completeLesson"))
