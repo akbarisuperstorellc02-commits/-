@@ -185,13 +185,20 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                 bodyMedium = MaterialTheme.typography.bodyMedium.copy(fontFamily = fontFor(profile.font)),
                 titleLarge = MaterialTheme.typography.titleLarge.copy(fontFamily = fontFor(profile.font), fontWeight = FontWeight.Bold)),
             shapes = Shapes(
-                small = RoundedCornerShape(20.dp),
-                medium = RoundedCornerShape(28.dp),
-                large = RoundedCornerShape(34.dp)
+                small = RoundedCornerShape(26.dp),
+                medium = RoundedCornerShape(32.dp),
+                large = RoundedCornerShape(40.dp)
             )
         ) {
             Scaffold(containerColor = palette.background, bottomBar = {
-                NavigationBar(containerColor = palette.surface) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = palette.surface,
+                    shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
+                    shadowElevation = 18.dp,
+                    border = BorderStroke(1.dp, palette.primary.copy(alpha = 0.16f))
+                ) {
+                NavigationBar(containerColor = palette.surface, tonalElevation = 6.dp) {
                     val items = listOf(
                         Triple(AcademyTab.HOME, Icons.Default.Home, tr(profile.locale, "home")),
                         Triple(AcademyTab.LEARN, Icons.Default.MenuBook, tr(profile.locale, "learn")),
@@ -203,6 +210,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                         NavigationBarItem(selected = tab == destination, onClick = { tab = destination; band = null },
                             icon = { Icon(icon, contentDescription = label) }, label = { Text(label, maxLines = 1, fontSize = 10.sp) })
                     }
+                }
                 }
             }) { padding ->
                 Box(Modifier.fillMaxSize().padding(padding)) {
@@ -287,9 +295,10 @@ private fun PuffyAvatar(emoji: String, size: Int) {
     Surface(
         modifier = Modifier.size(size.dp),
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
-        shadowElevation = 7.dp
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.16f),
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)),
+        shadowElevation = 12.dp,
+        tonalElevation = 5.dp
     ) {
         Box(contentAlignment = Alignment.Center) { Text(emoji, fontSize = (size * 0.48f).sp) }
     }
@@ -299,12 +308,16 @@ private fun PuffyAvatar(emoji: String, size: Int) {
 private fun AcademyCard(content: @Composable ColumnScope.() -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(30.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)),
+        shape = RoundedCornerShape(34.dp),
+        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 9.dp, pressedElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 14.dp, pressedElevation = 7.dp)
     ) {
-        Column(Modifier.padding(horizontal = 20.dp, vertical = 20.dp), verticalArrangement = Arrangement.spacedBy(12.dp), content = content)
+        Column(
+            Modifier.padding(horizontal = 21.dp, vertical = 21.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+            content = content
+        )
     }
 }
 @Composable
@@ -469,12 +482,32 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
     }
 }
 @Composable private fun Stat(label: String, value: String) {
-    Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(14.dp)) {
-        Column(Modifier.padding(10.dp), horizontalAlignment = Alignment.CenterHorizontally) { Text(AsciiDigits.normalize(value), fontWeight = FontWeight.Bold); Text(label, fontSize = 11.sp) }
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        shape = RoundedCornerShape(22.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+        shadowElevation = 5.dp,
+        tonalElevation = 3.dp
+    ) {
+        Column(Modifier.padding(horizontal = 15.dp, vertical = 11.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(AsciiDigits.normalize(value), fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+            Text(label, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+        }
     }
 }
 @Composable private fun MiniStat(label: String, value: String, modifier: Modifier) {
-    AcademyCard { Text(AsciiDigits.normalize(value), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary); Text(label, fontSize = 12.sp) }
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(30.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
+    ) {
+        Column(Modifier.fillMaxWidth().padding(18.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Text(AsciiDigits.normalize(value), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.ExtraBold)
+            Text(label, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+        }
+    }
 }
 
 @Composable
