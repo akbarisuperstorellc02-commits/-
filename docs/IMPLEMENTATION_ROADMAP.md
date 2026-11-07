@@ -45,3 +45,8 @@
 - Work only on feature/bh-personal-academy-rebuild.
 - Do not merge to main without explicit approval.
 - Do not mark unfinished modules as complete.
+
+- [x] Add 8 new lessons, for 70 total.
+- [x] Add unit coverage for sequential lesson and band unlock rules.
+- [x] Add illustrated game selection tiles and vocabulary visual clues.
+- [x] Scale adaptive launcher foreground into Android safe zone.
