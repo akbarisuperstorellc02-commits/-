@@ -43,6 +43,9 @@ abstract class AcademyDao {
     @Insert
     abstract suspend fun insertQuizAttempt(attempt: QuizAttemptEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun restoreQuizAttempt(attempt: QuizAttemptEntity)
+
     @Query("SELECT * FROM quiz_attempts WHERE profileId = :profileId ORDER BY completedAt DESC")
     abstract fun observeQuizAttempts(profileId: String = "primary"): Flow<List<QuizAttemptEntity>>
 
@@ -51,6 +54,9 @@ abstract class AcademyDao {
 
     @Insert
     abstract suspend fun insertGameAttempt(attempt: GameAttemptEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun restoreGameAttempt(attempt: GameAttemptEntity)
 
     @Query("SELECT * FROM game_attempts WHERE profileId = :profileId ORDER BY completedAt DESC")
     abstract fun observeGameAttempts(profileId: String = "primary"): Flow<List<GameAttemptEntity>>
@@ -81,8 +87,14 @@ abstract class AcademyDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun insertRewardEvent(event: RewardEventEntity): Long
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun restoreRewardEvent(event: RewardEventEntity)
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun insertWallet(wallet: WalletEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun restoreWallet(wallet: WalletEntity)
 
     @Query("SELECT * FROM wallets WHERE profileId = :profileId")
     abstract fun observeWallet(profileId: String = "primary"): Flow<WalletEntity?>
@@ -121,6 +133,12 @@ abstract class AcademyDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun saveDailyGoal(goal: DailyGoalEntity)
+
+    @Query("SELECT * FROM daily_goals WHERE profileId = :profileId ORDER BY dateIso")
+    abstract fun observeDailyGoals(profileId: String = "primary"): Flow<List<DailyGoalEntity>>
+
+    @Query("SELECT * FROM reward_events WHERE profileId = :profileId ORDER BY createdAt")
+    abstract fun observeRewardEvents(profileId: String = "primary"): Flow<List<RewardEventEntity>>
 
     @Query("SELECT * FROM daily_goals WHERE profileId = :profileId AND dateIso = :dateIso LIMIT 1")
     abstract fun observeDailyGoal(dateIso: String, profileId: String = "primary"): Flow<DailyGoalEntity?>
