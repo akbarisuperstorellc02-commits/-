@@ -47,7 +47,7 @@ class ExampleUnitTest {
 
     @Test
     fun advancedStagesExtendTheOriginalCurriculumWithoutChangingItsIds() {
-        val allLevels = CurriculumData.levels + com.example.data.AdvancedCurriculumLevels.levels
+        val allLevels = com.example.data.expandLearningCurriculum(CurriculumData.levels + com.example.data.AdvancedCurriculumLevels.levels)
         assertEquals(45, allLevels.size)
         assertEquals((1..45).toList(), allLevels.map { it.id })
         assertEquals("A1", allLevels.first().levelCode)
