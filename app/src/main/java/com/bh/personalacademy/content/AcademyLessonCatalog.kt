@@ -17,7 +17,21 @@ data class LocalizedText(
     }
 }
 
-data class LessonWord(val english: String, val dari: String, val pronunciation: String)
+data class LessonWord(
+    val english: String,
+    val dari: String,
+    val pronunciation: String,
+    val pashto: String = dari,
+    val arabic: String = dari,
+    val emoji: String = ""
+) {
+    fun meaningFor(locale: AcademyLocale): String = when (locale) {
+        AcademyLocale.ENGLISH_US -> english
+        AcademyLocale.DARI_AF -> dari
+        AcademyLocale.PASHTO_AF -> pashto
+        AcademyLocale.ARABIC -> arabic
+    }
+}
 
 data class LessonContent(
     val id: String,
@@ -52,7 +66,26 @@ object AcademyLessonCatalog {
         l("pre_a1_alphabet", LearningBand.PRE_A1, "English alphabet", "الفبای انگلیسی", "انګلیسي الفبا", "الأبجدية الإنجليزية",
             "Recognize the 26 letters.", "با ۲۶ حرف انگلیسی آشنا شو.", "د انګلیسي ۲۶ توري وپېژنئ.", "تعرّف إلى الحروف الإنجليزية الستة والعشرين.",
             "الفبای انگلیسی ۲۶ حرف دارد. نام حرف با صدای آن در کلمه همیشه یکسان نیست.", "A is for apple.", "A برای کلمه apple به معنی سیب است.", "نام حرف A «اِی» است، اما در apple صدای کوتاه /æ/ می‌دهد.",
-            LessonWord("apple","سیب","/ˈæp.əl/"), LessonWord("book","کتاب","/bʊk/"), LessonWord("cat","پیشو","/kæt/")),
+            LessonWord("apple","سیب","/ˈæp.əl/"), LessonWord("book","کتاب","/bʊk/"), LessonWord("cat","پشک","/kæt/")),
+        l("pre_a1_animals", LearningBand.PRE_A1, "Animals", "نام حیوانات", "د حیواناتو نومونه", "أسماء الحيوانات",
+            "Learn the names of 15 common animals.", "نام 15 حیوان پرکاربرد را به انگلیسی یاد بگیر.", "د 15 عامو حیواناتو نومونه په انګلیسي زده کړئ.", "تعلّم أسماء 15 حيواناً شائعاً باللغة الإنجليزية.",
+            "با نام حیوانات آشنا شو. هر واژه را گوش کن، تلفظش را تکرار کن و آن را در جمله به‌کار ببر. به تصویرک هر حیوان توجه کن.",
+            "The dog is friendly.", "سگ مهربان است.", "نام حیوانات را با صدای بلند تمرین کن و تفاوت تلفظ واژه‌ها را بشنو.",
+            LessonWord("dog","سگ","/dɔːɡ/","سپی","كلب","🐶"),
+            LessonWord("cat","پشک","/kæt/","پیشو","قطة","🐱"),
+            LessonWord("cow","گاو","/kaʊ/","غوا","بقرة","🐄"),
+            LessonWord("sheep","گوسفند","/ʃiːp/","پسه","خروف","🐑"),
+            LessonWord("goat","بز","/ɡoʊt/","وزه","ماعز","🐐"),
+            LessonWord("horse","اسپ","/hɔːrs/","آس","حصان","🐴"),
+            LessonWord("donkey","خر","/ˈdɑːŋ.ki/","خر","حمار","🫏"),
+            LessonWord("camel","شتر","/ˈkæm.əl/","اوښ","جمل","🐪"),
+            LessonWord("lion","شیر","/ˈlaɪ.ən/","زمری","أسد","🦁"),
+            LessonWord("tiger","ببر","/ˈtaɪ.ɡər/","پړانګ","نمر","🐯"),
+            LessonWord("elephant","فیل","/ˈel.ə.fənt/","فیل","فيل","🐘"),
+            LessonWord("monkey","میمون","/ˈmʌŋ.ki/","بیزو","قرد","🐒"),
+            LessonWord("rabbit","خرگوش","/ˈræb.ɪt/","سوی","أرنب","🐰"),
+            LessonWord("bird","پرنده","/bɜːrd/","مرغۍ","طائر","🐦"),
+            LessonWord("fish","ماهی","/fɪʃ/","کب","سمكة","🐟")),
         l("pre_a1_greetings", LearningBand.PRE_A1, "Greetings", "سلام و احوال‌پرسی", "روغبړ او سلام", "التحيات",
             "Use simple greetings politely.", "سلام‌های ساده و مؤدبانه را به‌کار ببر.", "ساده او په ادب سلام کول زده کړئ.", "استخدم التحيات البسيطة بأدب.",
             "برای آغاز مکالمه از Hello یا Hi استفاده می‌کنیم. برای خداحافظی Goodbye یا Bye مناسب است.", "Hello! How are you?", "سلام! حالت چطور است؟", "Hello رسمی‌تر از Hi است؛ هر دو در مکالمه روزمره کاربرد دارند.",
