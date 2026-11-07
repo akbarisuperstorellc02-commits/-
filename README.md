@@ -20,13 +20,14 @@ Offline-first Android app for English learning and personal growth.
 - No AI, chatbot, private AI tutor, AI models, AI APIs or AI SDKs.
 - No internet permission is declared; core learning is local and offline.
 - All displayed numbers must use ASCII digits (0-9), regardless of language.
-- Profile preferences are stored locally with Preferences DataStore.
+- Multiple learner profiles are stored locally with profile-specific Preferences DataStore settings and profile-scoped Room records.
+- Switching profiles switches the active wallet, lessons, quizzes, games, study sessions, vocabulary, goals, reminders and statistics. Vocabulary uses a profile-aware composite key with a Room 3→4 migration.
 - Learning activity, rewards, vocabulary, reminders and history are stored in Room.
 
 ## Implemented app areas
 
 - Compose app shell with home, learning, games, progress and profile navigation, plus study tools, vocabulary and calendar pages.
-- Editable profile details, avatar selection, locale, font and sixteen theme choices.
+- Multiple local profiles with creation and switching; each profile has independent settings, avatar, locale, font, themes, wallet and learning records.
 - Eight learning stages from Pre-A1 through C2, followed by a Specialized English track; current lesson catalog contains 62 lesson entries across general and professional English; 8 graded stories in the story library.
 - Lesson completion, level unlock rules and one-time reward ledger.
 - 26 educational game modes in the current game catalog. Regression checks now cover hidden missing-word answers and valid letter scrambling; several named modes still need dedicated mechanics and full manual QA.
@@ -36,7 +37,7 @@ Offline-first Android app for English learning and personal growth.
 - Lesson study timer and daily/weekly/monthly study statistics.
 - Calendar and activity history.
 - Reminder scheduling, notification permission handling, exact-alarm fallback and reboot restoration.
-- JSON backup and merge-restore for profile and learning records.
+- JSON backup and merge-restore scoped to the currently selected profile.
 - Two-step reset flow.
 
 ## Architecture
@@ -75,7 +76,7 @@ GitHub Actions uploads the debug APK as the `bh-personal-academy-debug-apk` arti
 
 ## Known incomplete work before release
 
-- Independent multi-profile support is not complete: the current repository and Room queries still default to the single `primary` profile. Do not create a second profile until profile-scoped storage and a data-preserving migration are implemented.
+- Multi-profile support has now been implemented in DataStore and profile-scoped Room queries, including vocabulary composite keys and migration 3→4; it still requires automated and physical-device regression testing before release.
 - The final user-provided launcher icon has not yet been integrated; the current launcher resources must be replaced with the approved source image.
 - Physical-device QA remains required for layouts, all translations, each game mode, timer lifecycle, notifications, reboot restoration, backup/restore and reset.
 - A signed release APK/AAB has not yet been produced; the available APK is a debug build.
