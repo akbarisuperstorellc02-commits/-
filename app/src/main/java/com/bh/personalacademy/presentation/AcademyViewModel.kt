@@ -25,6 +25,7 @@ class AcademyViewModel(
 ) : ViewModel() {
     val profile: StateFlow<UserProfile> =
         repository.profile.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UserProfile())
+    val profiles = repository.profiles.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val wallet: StateFlow<WalletEntity?> =
         repository.wallet.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     val lessonProgress: StateFlow<List<LessonProgressEntity>> =
