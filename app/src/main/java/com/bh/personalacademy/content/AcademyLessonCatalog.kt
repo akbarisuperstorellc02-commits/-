@@ -377,8 +377,8 @@ object AcademyLessonCatalog {
         l("pre_a1_small_talk", LearningBand.PRE_A1, "First conversations and small talk", "مکالمه و احوال‌پرسی ابتدایی", "لومړنۍ خبرې او روغبړ", "المحادثة الأولى والتحية",
             "Start, continue and politely end a short conversation.", "یک گفت‌وگوی کوتاه را آغاز کن، ادامه بده و مؤدبانه پایان بده.", "لنډې خبرې پیل، دوام او په ادب پای ته ورسوئ.", "ابدأ محادثة قصيرة وتابعها وأنهِها بأدب.",
             "برای آغاز از Hello یا Good morning استفاده کن. سپس بپرس How are you? پاسخ کوتاه بده و با And you? گفت‌وگو را ادامه بده. در پایان از Nice to meet you یا See you later استفاده کن.",
-            "A: Good morning! How are you?\\nB: I'm fine, thank you. And you?\\nA: I'm great. Nice to meet you!",
-            "الف: صبح بخیر! حالت چطور است؟\\nب: خوب هستم، تشکر. تو چطور؟\\nالف: عالی هستم. از دیدنت خوش شدم!",
+            "A: Good morning! How are you?\nB: I'm fine, thank you. And you?\nA: I'm great. Nice to meet you!",
+            "الف: صبح بخیر! حالت چطور است؟\nب: خوب هستم، تشکر. تو چطور؟\nالف: عالی هستم. از دیدنت خوش شدم!",
             "در گفت‌وگوی طبیعی فقط پاسخ کوتاه نده؛ یک پرسش برگشتی مانند And you? بپرس تا مکالمه ادامه پیدا کند.",
             LessonWord("Good morning","صبح بخیر","/ɡʊd ˈmɔːr.nɪŋ/"), LessonWord("How are you?","حالت چطور است؟","/haʊ ɑːr juː/"), LessonWord("Nice to meet you","از دیدنت خوش شدم","/naɪs tə miːt juː/"))
 
