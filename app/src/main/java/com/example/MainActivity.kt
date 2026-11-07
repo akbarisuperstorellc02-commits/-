@@ -1434,8 +1434,8 @@ private fun AcademySplashOverlay(locale: AcademyLocale, message: String, onFinis
                     Text("📘", fontSize = 66.sp)
                     Text("✦", fontSize = 26.sp, modifier = Modifier.align(Alignment.TopEnd).padding(12.dp))
                 }
-                Text("خودسازی و انگلیسی", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
-                Text("Self-Growth & English", color = Color.White.copy(alpha = 0.86f), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Text("خودسازی آکادمی", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+                Text("Self-Growth Academy", color = Color.White.copy(alpha = 0.86f), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 Surface(color = Color.White.copy(alpha = 0.13f), shape = RoundedCornerShape(26.dp), border = BorderStroke(1.dp, Color.White.copy(alpha = 0.24f))) {
                     Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(when (locale) {
