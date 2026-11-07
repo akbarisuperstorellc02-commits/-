@@ -103,11 +103,59 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
     }
     val weekStudyMillis by dao.observeStudyMillis(weekRange.first, weekRange.second).collectAsStateWithLifecycle(initialValue = 0L)
     val monthStudyMillis by dao.observeStudyMillis(monthRange.first, monthRange.second).collectAsStateWithLifecycle(initialValue = 0L)
+    val todayIso = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()) }
+    val weekSessionStarts by dao.observeStudySessionStarts(weekRange.first, weekRange.second).collectAsStateWithLifecycle(initialValue = emptyList())
+    val monthSessionStarts by dao.observeStudySessionStarts(monthRange.first, monthRange.second).collectAsStateWithLifecycle(initialValue = emptyList())
+    val weekStudyDays = remember(weekSessionStarts) { weekSessionStarts.map { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(it)) }.toSet().size }
+    val monthStudyDays = remember(monthSessionStarts) { monthSessionStarts.map { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(it)) }.toSet().size }
     val totalStudyMillis by dao.observeTotalStudyMillis().collectAsStateWithLifecycle(initialValue = 0L)
     val scope = rememberCoroutineScope()
     var tab by remember { mutableStateOf(AcademyTab.HOME) }
     var band by remember { mutableStateOf<LearningBand?>(null) }
     LaunchedEffect(Unit) { dao.insertWallet(WalletEntity(profileId = "primary", coins = 30)) }
+    LaunchedEffect(todayIso, profile.dailyStudyGoalMinutes, profile.dailyGoalLessons, profile.dailyGoalWords, profile.dailyGoalQuizzes) {
+        dao.saveDailyGoal(
+            DailyGoalEntity(
+                dateIso = todayIso,
+                targetMinutes = profile.dailyStudyGoalMinutes,
+                targetLessons = profile.dailyGoalLessons,
+                targetWords = profile.dailyGoalWords,
+                targetQuizzes = profile.dailyGoalQuizzes
+            )
+        )
+    }
+    LaunchedEffect(todayStudyMillis, todayLessonCount, todayWordCount, todayQuizCount,
+        profile.dailyStudyGoalMinutes, profile.dailyGoalLessons, profile.dailyGoalWords, profile.dailyGoalQuizzes) {
+        val goalsMet = todayStudyMillis >= profile.dailyStudyGoalMinutes * 60_000L &&
+            todayLessonCount >= profile.dailyGoalLessons &&
+            todayWordCount >= profile.dailyGoalWords &&
+            todayQuizCount >= profile.dailyGoalQuizzes
+        if (goalsMet) {
+            dao.applyRewardOnce(
+                RewardEventEntity(
+                    eventId = "daily_goal_$todayIso", source = "DAILY_GOAL", sourceId = todayIso,
+                    xpDelta = 25, coinDelta = 10, createdAt = System.currentTimeMillis()
+                )
+            )
+        }
+    }
+    LaunchedEffect(weekStudyDays, monthStudyDays) {
+        val now = System.currentTimeMillis()
+        if (weekStudyDays >= 5) {
+            val key = SimpleDateFormat("YYYY-'W'ww", Locale.US).format(Date(now))
+            dao.applyRewardOnce(RewardEventEntity(
+                eventId = "weekly_challenge_$key", source = "CHALLENGE", sourceId = "weekly_$key",
+                xpDelta = 50, coinDelta = 20, createdAt = now
+            ))
+        }
+        if (monthStudyDays >= 20) {
+            val key = SimpleDateFormat("yyyy-MM", Locale.US).format(Date(now))
+            dao.applyRewardOnce(RewardEventEntity(
+                eventId = "monthly_challenge_$key", source = "CHALLENGE", sourceId = "monthly_$key",
+                xpDelta = 150, coinDelta = 50, createdAt = now
+            ))
+        }
+    }
 
     val palette = paletteFor(profile.theme)
     CompositionLocalProvider(LocalLayoutDirection provides if (profile.locale.isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr) {
@@ -143,7 +191,7 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
                 Box(Modifier.fillMaxSize().padding(padding)) {
                     when (tab) {
                         AcademyTab.HOME -> HomePage(profile, wallet, lessons.size, attempts.size, (todayStudyMillis / 60000L).toInt(),
-                            todayLessonCount, todayWordCount, todayQuizCount,
+                            todayLessonCount, todayWordCount, todayQuizCount, weekStudyDays, monthStudyDays,
                             { tab = AcademyTab.LEARN }, { tab = AcademyTab.GAMES }, { tab = AcademyTab.PROFILE }, { tab = AcademyTab.TOOLS }, { tab = AcademyTab.CALENDAR })
                         AcademyTab.LEARN -> LearnPage(profile.locale, band, lessons.map { it.lessonId }.toSet(),
                             { band = it },
@@ -221,7 +269,7 @@ private fun AcademyCard(content: @Composable ColumnScope.() -> Unit) {
     }
 }
 @Composable
-private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, studyMinutes: Int, todayLessons: Int, todayWords: Int, todayQuizzes: Int, learn: () -> Unit, games: () -> Unit, profile: () -> Unit, tools: () -> Unit, calendar: () -> Unit) {
+private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, studyMinutes: Int, todayLessons: Int, todayWords: Int, todayQuizzes: Int, weeklyStudyDays: Int, monthlyStudyDays: Int, learn: () -> Unit, games: () -> Unit, profile: () -> Unit, tools: () -> Unit, calendar: () -> Unit) {
     var currentTimeMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(Unit) {
         while (true) {
@@ -260,6 +308,33 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
             LinearProgressIndicator(progress = { goalProgress }, modifier = Modifier.fillMaxWidth())
             Text("${AsciiDigits.normalize(studyMinutes.toString())} / ${AsciiDigits.normalize(p.dailyStudyGoalMinutes.toString())} ${tr(p.locale, "minutes")}", fontSize = 12.sp)
             Text(tr(p.locale, "goalHint"), fontSize = 12.sp)
+        }
+        AcademyCard {
+            Text(when (p.locale) {
+                AcademyLocale.ENGLISH_US -> "Study challenges"
+                AcademyLocale.DARI_AF -> "چالش‌های مطالعه"
+                AcademyLocale.PASHTO_AF -> "د مطالعې ننګونې"
+                AcademyLocale.ARABIC -> "تحديات الدراسة"
+            }, style = MaterialTheme.typography.titleMedium)
+            val challengeRows = listOf(
+                Triple(
+                    when (p.locale) { AcademyLocale.ENGLISH_US -> "Study 5 days this week" ; AcademyLocale.DARI_AF -> "5 روز این هفته مطالعه کن" ; AcademyLocale.PASHTO_AF -> "په دې اونۍ کې 5 ورځې مطالعه وکړئ" ; AcademyLocale.ARABIC -> "ادرس 5 أيام هذا الأسبوع" },
+                    weeklyStudyDays, 5
+                ),
+                Triple(
+                    when (p.locale) { AcademyLocale.ENGLISH_US -> "Study 20 days this month" ; AcademyLocale.DARI_AF -> "20 روز این ماه مطالعه کن" ; AcademyLocale.PASHTO_AF -> "په دې میاشت کې 20 ورځې مطالعه وکړئ" ; AcademyLocale.ARABIC -> "ادرس 20 يوماً هذا الشهر" },
+                    monthlyStudyDays, 20
+                )
+            )
+            challengeRows.forEach { (label, current, target) ->
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("$label · ${AsciiDigits.normalize(current.toString())}/$target", fontSize = 12.sp)
+                    LinearProgressIndicator(
+                        progress = { (current.toFloat() / target).coerceIn(0f, 1f) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
         }
         AcademyCard {
             Text(
