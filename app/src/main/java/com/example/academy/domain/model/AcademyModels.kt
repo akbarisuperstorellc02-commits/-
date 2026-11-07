@@ -30,6 +30,9 @@ data class UserProfile(
     val theme: AcademyThemeId = AcademyThemeId.SOFT_PINK,
     val font: AcademyFontId = AcademyFontId.SANS_SERIF,
     val dailyStudyGoalMinutes: Int = 20,
+    val dailyGoalLessons: Int = 1,
+    val dailyGoalWords: Int = 5,
+    val dailyGoalQuizzes: Int = 1,
     val createdAtEpochMillis: Long = 0L
 ) {
     fun withDisplayName(name: String): UserProfile =
