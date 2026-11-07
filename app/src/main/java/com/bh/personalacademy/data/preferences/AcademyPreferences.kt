@@ -1,7 +1,6 @@
 package com.bh.personalacademy.data.preferences
 import android.content.Context
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.clear
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
