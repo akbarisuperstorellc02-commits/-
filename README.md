@@ -27,11 +27,12 @@ Offline-first Android app for English learning and personal growth.
 
 - Compose app shell with home, learning, games, progress and profile navigation, plus study tools, vocabulary and calendar pages.
 - Editable profile details, avatar selection, locale, font and sixteen theme choices.
-- Eight learning stages from Pre-A1 through C2, followed by a Specialized English track; current lesson catalog contains 62 lesson entries across general and professional English.
+- Eight learning stages from Pre-A1 through C2, followed by a Specialized English track; current lesson catalog contains 62 lesson entries across general and professional English; 8 graded stories in the story library.
 - Lesson completion, level unlock rules and one-time reward ledger.
 - 26 educational game modes in the current game catalog. Regression checks now cover hidden missing-word answers and valid letter scrambling; several named modes still need dedicated mechanics and full manual QA.
 - Mixed quiz formats, saved quiz attempts and incorrect-question history.
 - Searchable vocabulary notebook with persisted favourites and practice tracking.
+- Multilingual story library with graded short stories from beginner to specialized level, English reading text, localized translations, vocabulary cards and comprehension questions.
 - Lesson study timer and daily/weekly/monthly study statistics.
 - Calendar and activity history.
 - Reminder scheduling, notification permission handling, exact-alarm fallback and reboot restoration.
