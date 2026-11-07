@@ -337,7 +337,7 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
     var round by remember(selectedGameId) { mutableIntStateOf(0) }
     var score by remember(selectedGameId) { mutableIntStateOf(0) }
     var answered by remember(selectedGameId, round) { mutableStateOf(false) }
-    var hint by remember(selectedGameId, round) { mutableStateOf(false) }
+    var hintCount by remember(selectedGameId, round) { mutableIntStateOf(0) }
     var hintPending by remember(selectedGameId, round) { mutableStateOf(false) }
     var feedback by remember(selectedGameId, round) { mutableStateOf("") }
     var gameFinished by remember(selectedGameId) { mutableStateOf(false) }
@@ -528,16 +528,23 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
                         Text(option.forLocale(locale))
                     }
                 }
-                if (hint) Text(question.hint.forLocale(locale), color = MaterialTheme.colorScheme.primary)
+                if (hintCount > 0 && selectedMode.style != GameStyle.WORD_BUILD) {
+                    Text(question.hint.forLocale(locale), color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        AsciiDigits.normalize(question.answer.take(hintCount).padEnd(question.answer.length, '_')),
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp
+                    )
+                }
                 if (feedback.isNotEmpty()) Text(feedback, fontWeight = FontWeight.SemiBold)
                 if (!answered) {
                     OutlinedButton(
                         onClick = {
-                            if (!hint && !hintPending) {
+                            if (hintCount < question.answer.length && !hintPending) {
                                 hintPending = true
                                 scope.launch {
                                     if (dao.spendHintCoins() > 0) {
-                                        hint = true
+                                        hintCount += 1
                                         feedback = when (locale) {
                                             AcademyLocale.ENGLISH_US -> "Hint unlocked. Exactly 6 coins spent."
                                             AcademyLocale.DARI_AF -> "راهنما فعال شد؛ دقیقاً 6 سکه مصرف شد."
@@ -551,7 +558,7 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
                                 }
                             }
                         },
-                        enabled = !hint && !hintPending,
+                        enabled = hintCount < question.answer.length && !hintPending,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
