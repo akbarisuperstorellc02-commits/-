@@ -67,9 +67,16 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
 
     val palette = paletteFor(profile.theme)
     CompositionLocalProvider(LocalLayoutDirection provides if (profile.locale.isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr) {
+        val appColorScheme = if (profile.theme == AcademyThemeId.BLACK_GOLD || profile.theme == AcademyThemeId.DARK) {
+            darkColorScheme(primary = palette.primary, onPrimary = Color(0xFF1D1B16), secondary = palette.secondary,
+                background = palette.background, surface = palette.surface, onSurface = Color.White,
+                surfaceVariant = palette.variant, onSurfaceVariant = Color.White)
+        } else {
+            lightColorScheme(primary = palette.primary, onPrimary = Color.White, secondary = palette.secondary,
+                background = palette.background, surface = palette.surface, surfaceVariant = palette.variant)
+        }
         MaterialTheme(
-            colorScheme = lightColorScheme(primary = palette.primary, onPrimary = Color.White, secondary = palette.secondary,
-                background = palette.background, surface = palette.surface, surfaceVariant = palette.variant),
+            colorScheme = appColorScheme,
             typography = Typography(bodyLarge = MaterialTheme.typography.bodyLarge.copy(fontFamily = fontFor(profile.font)),
                 bodyMedium = MaterialTheme.typography.bodyMedium.copy(fontFamily = fontFor(profile.font)),
                 titleLarge = MaterialTheme.typography.titleLarge.copy(fontFamily = fontFor(profile.font), fontWeight = FontWeight.Bold))
@@ -120,6 +127,8 @@ private fun paletteFor(theme: AcademyThemeId): Palette = when (theme) {
     AcademyThemeId.WHITE_GOLD -> Palette(Color(0xFF9A762A), Color(0xFFD6B96E), Color(0xFFFAF8F1), Color.White, Color(0xFFF0EBDD))
     AcademyThemeId.ROYAL_PURPLE, AcademyThemeId.PINK_PURPLE -> Palette(Color(0xFF8051A8), Color(0xFFB99BD3), Color(0xFFF7F1FB), Color.White, Color(0xFFEDE2F5))
     AcademyThemeId.LILAC_WHITE, AcademyThemeId.NIGHT -> Palette(Color(0xFF9576B5), Color(0xFFC6B2D8), Color(0xFFF7F3FA), Color.White, Color(0xFFEDE6F3))
+    AcademyThemeId.SPACE -> Palette(Color(0xFF5368B5), Color(0xFF9B8BD4), Color(0xFFEEF0FA), Color.White, Color(0xFFE1E4F4))
+    AcademyThemeId.LIGHT -> Palette(Color(0xFF6E8CB8), Color(0xFFADC5E2), Color(0xFFFAFCFF), Color.White, Color(0xFFEAF0F7))
     AcademyThemeId.DARK -> Palette(Color(0xFF8E78C7), Color(0xFFB7A8DE), Color(0xFF191820), Color(0xFF282631), Color(0xFF393644))
     else -> Palette(Color(0xFFD96F9E), Color(0xFFF2AFCB), Color(0xFFFFF5F8), Color.White, Color(0xFFFBE3ED))
 }
