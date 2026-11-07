@@ -240,7 +240,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                             { band = it },
                             { tab = AcademyTab.VOCABULARY },
                             { id ->
-                                viewModel.completeLesson(id, 100)
+                                viewModel.completeLesson(id, 100, profile.profileId)
                                 val activeBand = band
                                 if (activeBand != null) {
                                     val completedBefore = lessons.map { it.lessonId }.toSet()
