@@ -36,6 +36,12 @@ abstract class AcademyDao {
     @Query("SELECT * FROM quiz_attempts WHERE profileId = :profileId ORDER BY completedAt DESC")
     abstract fun observeQuizAttempts(profileId: String = "primary"): Flow<List<QuizAttemptEntity>>
 
+    @Insert
+    abstract suspend fun insertGameAttempt(attempt: GameAttemptEntity)
+
+    @Query("SELECT * FROM game_attempts WHERE profileId = :profileId ORDER BY completedAt DESC")
+    abstract fun observeGameAttempts(profileId: String = "primary"): Flow<List<GameAttemptEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertStudySession(session: StudySessionEntity)
 
