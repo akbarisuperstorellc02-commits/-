@@ -1872,9 +1872,9 @@ private fun StoriesPage(locale: AcademyLocale) {
                 Text(selected.englishText, style = MaterialTheme.typography.bodyLarge, lineHeight = 27.sp)
                 OutlinedButton(onClick = { showTranslation = !showTranslation }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) {
                     Icon(Icons.Default.Translate, null); Spacer(Modifier.width(8.dp))
-                    Text(when(locale) { AcademyLocale.ENGLISH_US -> if(showTranslation) "Hide translation" else "Show translation"; AcademyLocale.DARI_AF -> if(showTranslation) "پنهان‌کردن ترجمه" else "نمایش ترجمه"; AcademyLocale.PASHTO_AF -> if(showTranslation) "ژباړه پټه کړه" else "ژباړه ښکاره کړه"; AcademyLocale.ARABIC -> if(showTranslation) "إخفاء الترجمة" else "عرض الترجمة" })
+                    Text(when(locale) { AcademyLocale.ENGLISH_US -> if(showTranslation) "Hide Dari translation" else "Show Dari translation"; AcademyLocale.DARI_AF -> if(showTranslation) "پنهان‌کردن ترجمه" else "نمایش ترجمه"; AcademyLocale.PASHTO_AF -> if(showTranslation) "ژباړه پټه کړه" else "ژباړه ښکاره کړه"; AcademyLocale.ARABIC -> if(showTranslation) "إخفاء الترجمة" else "عرض الترجمة" })
                 }
-                if (showTranslation) Text(selected.translation.forLocale(locale), color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 25.sp)
+                if (showTranslation) Text(if (locale == AcademyLocale.ENGLISH_US) selected.translation.fa else selected.translation.forLocale(locale), color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 25.sp)
                 Divider()
                 Text(when(locale) { AcademyLocale.ENGLISH_US -> "Useful words"; AcademyLocale.DARI_AF -> "واژگان مهم"; AcademyLocale.PASHTO_AF -> "مهمې کلمې"; AcademyLocale.ARABIC -> "كلمات مفيدة" }, fontWeight = FontWeight.Bold)
                 selected.words.forEach { word ->
