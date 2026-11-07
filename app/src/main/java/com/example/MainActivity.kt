@@ -1616,7 +1616,7 @@ private fun ProfilePage(profile: UserProfile, profiles: List<UserProfile>, prefs
     var resetStep by remember { mutableIntStateOf(0) }
     val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) scope.launch {
-            runCatching { AcademyBackupManager.export(context, uri, prefs, dao) }
+            runCatching { AcademyBackupManager.export(context, uri, prefs, dao, profile.profileId) }
                 .onSuccess { Toast.makeText(context, tr(profile.locale, "backupExported"), Toast.LENGTH_LONG).show() }
                 .onFailure { Toast.makeText(context, tr(profile.locale, "backupFailed"), Toast.LENGTH_LONG).show() }
         }
@@ -1842,7 +1842,7 @@ private fun ProfilePage(profile: UserProfile, profiles: List<UserProfile>, prefs
                     val uri = pendingImportUri
                     pendingImportUri = null
                     if (uri != null) scope.launch {
-                        runCatching { AcademyBackupManager.restore(context, uri, prefs, dao) }
+                        runCatching { AcademyBackupManager.restore(context, uri, prefs, dao, profile.profileId) }
                             .onSuccess { Toast.makeText(context, tr(profile.locale, "restoreSuccess"), Toast.LENGTH_LONG).show() }
                             .onFailure { Toast.makeText(context, tr(profile.locale, "backupFailed"), Toast.LENGTH_LONG).show() }
                     }
