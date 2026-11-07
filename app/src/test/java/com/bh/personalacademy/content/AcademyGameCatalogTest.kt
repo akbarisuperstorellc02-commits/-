@@ -25,6 +25,7 @@ class AcademyGameCatalogTest {
                 assertEquals(mode.id, 3, question.options.size)
                 assertTrue(mode.id, question.correctIndex in question.options.indices)
                 assertFalse(mode.id, question.answer.isBlank())
+                assertFalse(mode.id, question.visualEmoji.isBlank())
                 assertNotNull(question.hint)
                 assertFalse(mode.id, question.explanation.forLocale(AcademyLocale.DARI_AF).isBlank())
             }
