@@ -58,7 +58,6 @@ fun HomeScreen(
     userProgressManager: UserProgressManager,
     ttsHelper: TextToSpeechHelper?,
     onNavigateToLevels: () -> Unit,
-    onNavigateToChat: () -> Unit,
     onNavigateToSpeakingDrill: () -> Unit,
     onNavigateToWordGame: () -> Unit,
     onNavigateToCalendar: () -> Unit,
@@ -244,7 +243,7 @@ fun HomeScreen(
                             color = theme.buttonBevel
                         )
                         Text(
-                            text = "آموزش‌های گسترده و پیوسته از الفبای A1 تا قله تسلط مطلق Z9 با معلم هوشمند صبور",
+                            text = "آموزش گام‌به‌گام از الفبا تا مهارت پیشرفته، همراه با تمرین و آزمون",
                             fontSize = 11.sp,
                             color = Color.DarkGray,
                             modifier = Modifier.padding(vertical = 4.dp),
@@ -387,13 +386,13 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     HomeFeatureCard(
-                        title = "معلم هوش مصنوعی",
-                        subtitle = "صبور و مهربان از سطح صفر",
-                        emoji = "🎙️",
-                        badge = "اختصاصی",
+                        title = "تمرین تلفظ و گفتار",
+                        subtitle = "گوش‌دادن، تکرار و ارزیابی",
+                        emoji = "🗣️",
+                        badge = "تمرین عملی",
                         color = theme.secondaryColor,
                         modifier = Modifier.weight(1f),
-                        onClick = onNavigateToChat
+                        onClick = onNavigateToSpeakingDrill
                     )
 
                     HomeFeatureCard(
