@@ -2545,6 +2545,7 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
     var status by remember { mutableStateOf("") }
     var listening by remember { mutableStateOf(false) }
     var score by remember { mutableIntStateOf(-1) }
+    var ttsReady by remember { mutableStateOf(false) }
     var permissionGranted by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)
     }
@@ -2560,11 +2561,52 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
     val prompt = promptList[promptIndex.coerceIn(0, promptList.lastIndex)]
     val currentPrompt by rememberUpdatedState(prompt)
     val recognizer = remember {
-        if (SpeechRecognizer.isRecognitionAvailable(context)) SpeechRecognizer.createSpeechRecognizer(context) else null
+        when {
+            !SpeechRecognizer.isRecognitionAvailable(context) -> null
+            Build.VERSION.SDK_INT >= 33 && SpeechRecognizer.isOnDeviceRecognitionAvailable(context) ->
+                SpeechRecognizer.createOnDeviceSpeechRecognizer(context)
+            else -> SpeechRecognizer.createSpeechRecognizer(context)
+        }
     }
     val speechEngine = remember {
-        TextToSpeech(context) { result ->
-            if (result == TextToSpeech.SUCCESS) { /* Ready for playback. */ }
+        TextToSpeech(context) { result -> ttsReady = result == TextToSpeech.SUCCESS }
+    }
+    fun localizedSpeechError(error: Int): String = when (error) {
+        SpeechRecognizer.ERROR_AUDIO -> when (locale) {
+            AcademyLocale.ENGLISH_US -> "Microphone audio problem. Check your microphone and try again."
+            AcademyLocale.DARI_AF -> "در ضبط صدا مشکل پیش آمد؛ میکروفون را بررسی و دوباره کوشش کن."
+            AcademyLocale.PASHTO_AF -> "د غږ په ثبت کې ستونزه ده؛ مایکروفون وګورئ او بیا هڅه وکړئ."
+            AcademyLocale.ARABIC -> "حدثت مشكلة في صوت الميكروفون. تحقق منه وحاول مجدداً."
+        }
+        SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> when (locale) {
+            AcademyLocale.ENGLISH_US -> "Microphone permission is required."
+            AcademyLocale.DARI_AF -> "اجازه استفاده از میکروفون لازم است."
+            AcademyLocale.PASHTO_AF -> "د مایکروفون اجازه اړینه ده."
+            AcademyLocale.ARABIC -> "يلزم السماح باستخدام الميكروفون."
+        }
+        SpeechRecognizer.ERROR_NETWORK, SpeechRecognizer.ERROR_NETWORK_TIMEOUT, SpeechRecognizer.ERROR_SERVER -> when (locale) {
+            AcademyLocale.ENGLISH_US -> "Speech service could not connect. Check your connection or try on-device speech recognition."
+            AcademyLocale.DARI_AF -> "سرویس تشخیص گفتار وصل نشد؛ اتصال را بررسی کن یا تشخیص آفلاین گوشی را فعال بساز."
+            AcademyLocale.PASHTO_AF -> "د وینا پېژندنې خدمت ونښلېد؛ اړیکه وګورئ یا د وسیلې دننه پېژندنه فعاله کړئ."
+            AcademyLocale.ARABIC -> "تعذر الاتصال بخدمة التعرف على الكلام. تحقق من الاتصال أو استخدم التعرف على الجهاز."
+        }
+        SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> when (locale) {
+            AcademyLocale.ENGLISH_US -> "The microphone is busy. Wait a moment and try again."
+            AcademyLocale.DARI_AF -> "میکروفون مصروف است؛ لحظه‌ای صبر کن و دوباره کوشش کن."
+            AcademyLocale.PASHTO_AF -> "مایکروفون بوخت دی؛ لږ تم شئ او بیا هڅه وکړئ."
+            AcademyLocale.ARABIC -> "الميكروفون مشغول. انتظر قليلاً ثم حاول مجدداً."
+        }
+        SpeechRecognizer.ERROR_SPEECH_TIMEOUT, SpeechRecognizer.ERROR_NO_MATCH -> when (locale) {
+            AcademyLocale.ENGLISH_US -> "No clear speech was detected. Speak a little louder and try again."
+            AcademyLocale.DARI_AF -> "گفتار واضح تشخیص نشد؛ کمی بلندتر و شمرده‌تر صحبت کن."
+            AcademyLocale.PASHTO_AF -> "روښانه وینا ونه پېژندل شوه؛ لږ په لوړ او څرګند غږ خبرې وکړئ."
+            AcademyLocale.ARABIC -> "لم يتم التعرف على كلام واضح. تحدث بصوت أوضح وحاول مجدداً."
+        }
+        else -> when (locale) {
+            AcademyLocale.ENGLISH_US -> "Speech recognition failed. Please try again."
+            AcademyLocale.DARI_AF -> "تشخیص گفتار انجام نشد؛ دوباره کوشش کن."
+            AcademyLocale.PASHTO_AF -> "وینا ونه پېژندل شوه؛ بیا هڅه وکړئ."
+            AcademyLocale.ARABIC -> "فشل التعرف على الكلام. حاول مجدداً."
         }
     }
     DisposableEffect(recognizer) {
@@ -2574,16 +2616,29 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
             override fun onRmsChanged(rmsdB: Float) {}
             override fun onBufferReceived(buffer: ByteArray?) {}
             override fun onEndOfSpeech() { listening = false }
-            override fun onError(error: Int) { listening = false; status = "Speech was not recognized. Try again in a quiet place." }
+            override fun onError(error: Int) { listening = false; status = localizedSpeechError(error) }
             override fun onResults(results: Bundle?) {
                 listening = false
-                val spoken = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty()
-                transcript = spoken
                 val evaluatedPrompt = currentPrompt
-                val computedScore = speechAccuracy(evaluatedPrompt.text, spoken)
+                val candidates = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).orEmpty()
+                    .filter { it.isNotBlank() }
+                val best = candidates.maxByOrNull { speechAccuracy(evaluatedPrompt.text, it) }
+                if (best == null) {
+                    transcript = ""
+                    score = -1
+                    status = localizedSpeechError(SpeechRecognizer.ERROR_NO_MATCH)
+                    return
+                }
+                transcript = best
+                val computedScore = speechAccuracy(evaluatedPrompt.text, best)
                 score = computedScore
-                status = "Score compares recognized words; it is not phoneme-level accent analysis."
-                if (spoken.isNotBlank()) {
+                status = when (locale) {
+                    AcademyLocale.ENGLISH_US -> "Score is based on recognized words, not detailed accent or phoneme analysis."
+                    AcademyLocale.DARI_AF -> "امتیاز بر اساس واژه‌های تشخیص‌شده است، نه تحلیل دقیق لهجه و آواها."
+                    AcademyLocale.PASHTO_AF -> "نمره د پېژندل شویو کلمو پر بنسټ ده، نه د لهجې او غږونو بشپړ تحلیل."
+                    AcademyLocale.ARABIC -> "تعتمد الدرجة على الكلمات المتعرف عليها، وليس على تحليل دقيق للهجة أو الأصوات."
+                }
+                if (best.isNotBlank()) {
                     val earned = computedScore
                     scope.launch {
                         dao.insertGameAttempt(GameAttemptEntity(
@@ -2641,8 +2696,27 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
             }, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Button(
                 onClick = {
-                    speechEngine.language = Locale.US
-                    speechEngine.speak(prompt.text, TextToSpeech.QUEUE_FLUSH, null, "prompt_" + prompt.id)
+                    if (!ttsReady) {
+                        status = when (locale) {
+                            AcademyLocale.ENGLISH_US -> "Voice playback is still loading. Please wait a moment."
+                            AcademyLocale.DARI_AF -> "صدای تمرین هنوز آماده نیست؛ یک لحظه صبر کن."
+                            AcademyLocale.PASHTO_AF -> "د تمرین غږ لا چمتو نه دی؛ لږ انتظار وکړئ."
+                            AcademyLocale.ARABIC -> "الصوت لا يزال قيد التحميل. انتظر قليلاً."
+                        }
+                    } else {
+                        val languageStatus = speechEngine.setLanguage(Locale.US)
+                        if (languageStatus == TextToSpeech.LANG_MISSING_DATA || languageStatus == TextToSpeech.LANG_NOT_SUPPORTED) {
+                            status = when (locale) {
+                                AcademyLocale.ENGLISH_US -> "English voice data is not installed on this device."
+                                AcademyLocale.DARI_AF -> "بسته صدای انگلیسی در گوشی نصب نیست."
+                                AcademyLocale.PASHTO_AF -> "په وسیله کې د انګلیسي غږیز معلومات نشته."
+                                AcademyLocale.ARABIC -> "بيانات الصوت الإنجليزي غير مثبتة على الجهاز."
+                            }
+                        } else {
+                            status = ""
+                            speechEngine.speak(prompt.text, TextToSpeech.QUEUE_FLUSH, null, "prompt_" + prompt.id)
+                        }
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(26.dp),
@@ -2662,8 +2736,9 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
                         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                             putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
-                            putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
-                            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
+                            putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en-US")
+                            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+                            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
                         }
                         recognizer.startListening(intent)
                     }
@@ -2719,7 +2794,12 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
             }
         }
         Text(
-            "امتیاز بر اساس شباهت متن تشخیص‌شده با جمله اصلی محاسبه می‌شود؛ این ارزیابی کامل لهجه و آواشناسی نیست. کیفیت تشخیص به سرویس گفتار و بسته زبان گوشی بستگی دارد.",
+            when (locale) {
+                AcademyLocale.ENGLISH_US -> "The score compares the recognized sentence with the example. It does not measure accent perfectly; accuracy depends on your phone's speech service and language data."
+                AcademyLocale.DARI_AF -> "امتیاز از مقایسه جمله تشخیص‌شده با نمونه محاسبه می‌شود؛ لهجه را به‌صورت کامل نمی‌سنجد و دقت آن به سرویس گفتار و بسته زبان گوشی بستگی دارد."
+                AcademyLocale.PASHTO_AF -> "نمره د پېژندل شوې جملې او بېلګې د پرتله کولو له مخې ده؛ لهجه په بشپړ ډول نه ارزوي او د وسیلې د وینا خدمت پورې اړه لري."
+                AcademyLocale.ARABIC -> "تقارن الدرجة الجملة المتعرف عليها مع المثال، ولا تقيس اللهجة بشكل كامل؛ وتعتمد الدقة على خدمة الكلام وبيانات اللغة في الهاتف."
+            },
             fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
