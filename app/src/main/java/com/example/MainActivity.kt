@@ -51,6 +51,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.bh.personalacademy.content.AcademyGameCatalog
 import com.bh.personalacademy.content.AcademyLessonCatalog
+import com.bh.personalacademy.content.AcademyStoryCatalog
 import com.bh.personalacademy.content.LocalizedText
 import com.bh.personalacademy.ui.components.LessonStudyTimer
 import com.bh.personalacademy.content.GameMode
@@ -1254,7 +1255,7 @@ private fun CalendarPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> U
     Page {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-            TextButton(onClick = onBack, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(locale, "home")) }
+            TextButton(onClick = onBack) { Text(tr(locale, "home")) }
         }
         AcademyCard {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1430,7 +1431,7 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
     Page {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(tr(locale, "studyTools"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-            TextButton(onClick = onBack, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(locale, "home")) }
+            TextButton(onClick = onBack) { Text(tr(locale, "home")) }
         }
         AcademyCard {
             Text(tr(locale, "timer"), style = MaterialTheme.typography.titleLarge)
@@ -1823,12 +1824,18 @@ private fun StoriesPage(locale: AcademyLocale) {
     var completed by remember { mutableStateOf(setOf<String>()) }
     val stories = AcademyStoryCatalog.all
     val selected = stories.firstOrNull { it.id == selectedId }
-    val levelLabel = { band: LearningBand ->
+    val levelLabel: (LearningBand) -> String = { storyBand ->
+        val group = when (storyBand) {
+            LearningBand.PRE_A1, LearningBand.A1 -> 0
+            LearningBand.A2, LearningBand.B1 -> 1
+            LearningBand.B2, LearningBand.C1, LearningBand.C2 -> 2
+            LearningBand.SPECIALIZED -> 3
+        }
         when (locale) {
-            AcademyLocale.ENGLISH_US -> when (band) { LearningBand.PRE_A1, LearningBand.A1 -> "Beginner"; LearningBand.A2, LearningBand.B1 -> "Intermediate"; LearningBand.B2, LearningBand.C1, LearningBand.C2 -> "Advanced"; LearningBand.SPECIALIZED -> "Specialized" }
-            AcademyLocale.DARI_AF -> when (band) { LearningBand.PRE_A1, LearningBand.A1 -> "مبتدی"; LearningBand.A2, LearningBand.B1 -> "متوسط"; LearningBand.B2, LearningBand.C1, LearningBand.C2 -> "پیشرفته"; LearningBand.SPECIALIZED -> "تخصصی" }
-            AcademyLocale.PASHTO_AF -> when (band) { LearningBand.PRE_A1, LearningBand.A1 -> "پیل", LearningBand.A2, LearningBand.B1 -> "منځنۍ", LearningBand.B2, LearningBand.C1, LearningBand.C2 -> "پرمختللې", LearningBand.SPECIALIZED -> "ځانګړې" }
-            AcademyLocale.ARABIC -> when (band) { LearningBand.PRE_A1, LearningBand.A1 -> "مبتدئ"; LearningBand.A2, LearningBand.B1 -> "متوسط"; LearningBand.B2, LearningBand.C1, LearningBand.C2 -> "متقدم"; LearningBand.SPECIALIZED -> "متخصص" }
+            AcademyLocale.ENGLISH_US -> listOf("Beginner", "Intermediate", "Advanced", "Specialized")[group]
+            AcademyLocale.DARI_AF -> listOf("مبتدی", "متوسط", "پیشرفته", "تخصصی")[group]
+            AcademyLocale.PASHTO_AF -> listOf("پیل", "منځنۍ", "پرمختللې", "ځانګړې")[group]
+            AcademyLocale.ARABIC -> listOf("مبتدئ", "متوسط", "متقدم", "متخصص")[group]
         }
     }
     Page {
