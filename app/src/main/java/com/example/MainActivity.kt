@@ -686,11 +686,50 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
 
 @Composable
 private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> Unit) {
-    data class Question(val prompt: String, val options: List<String>, val correct: Int, val explanation: String)
+    data class Question(
+        val type: LocalizedText,
+        val prompt: LocalizedText,
+        val options: List<LocalizedText>,
+        val correct: Int,
+        val explanation: LocalizedText
+    )
+    fun text(en: String, fa: String, ps: String, ar: String) = LocalizedText(en, fa, ps, ar)
     val questions = listOf(
-        Question("What does APPLE mean?", listOf("سیب", "کتاب", "آب"), 0, "APPLE = سیب"),
-        Question("Choose the correct greeting for the morning.", listOf("Good night", "Good morning", "Goodbye"), 1, "Good morning = صبح بخیر"),
-        Question("I ___ a student.", listOf("is", "are", "am"), 2, "With I, use AM.")
+        Question(
+            text("Vocabulary", "واژگان", "لغتونه", "المفردات"),
+            text("What does APPLE mean?", "معنی APPLE چیست؟", "د APPLE مانا څه ده؟", "ما معنى APPLE؟"),
+            listOf(text("Apple / سیب", "سیب", "مڼه", "تفاحة"), text("Book / کتاب", "کتاب", "کتاب", "كتاب"), text("Water / آب", "آب", "اوبه", "ماء")),
+            0,
+            text("APPLE means سیب.", "APPLE به معنی سیب است.", "APPLE د مڼې په مانا دی.", "APPLE تعني تفاحة.")
+        ),
+        Question(
+            text("True or false", "درست یا نادرست", "سم یا ناسم", "صح أم خطأ"),
+            text("Blue is a colour.", "Blue یک رنگ است.", "Blue یو رنګ دی.", "Blue لون."),
+            listOf(text("True", "درست", "سم", "صحيح"), text("False", "نادرست", "ناسم", "خطأ")),
+            0,
+            text("Blue means آبی.", "Blue به معنی آبی است.", "Blue د آبي رنګ مانا لري.", "Blue تعني الأزرق.")
+        ),
+        Question(
+            text("Fill in the blank", "جای خالی را پر کن", "تش ځای ډک کړئ", "أكمل الفراغ"),
+            text("She ___ a student.", "She ___ a student.", "She ___ a student.", "She ___ a student."),
+            listOf(text("am", "am", "am", "am"), text("is", "is", "is", "is"), text("are", "are", "are", "are")),
+            1,
+            text("Use IS with she, he and it.", "با she، he و it از IS استفاده می‌کنیم.", "له she، he او it سره IS کاروو.", "نستخدم IS مع she وhe وit.")
+        ),
+        Question(
+            text("Translation", "ترجمه", "ژباړه", "الترجمة"),
+            text("Choose the translation of: Good morning.", "ترجمه Good morning را انتخاب کن.", "د Good morning ژباړه وټاکئ.", "اختر ترجمة Good morning."),
+            listOf(text("صبح بخیر", "صبح بخیر", "سهار مو پخیر", "صباح الخير"), text("شب بخیر", "شب بخیر", "شپه مو پخیر", "تصبح على خير"), text("خداحافظ", "خداحافظ", "خدای پامان", "مع السلامة")),
+            0,
+            text("Good morning is used in the morning.", "Good morning برای صبح استفاده می‌شود.", "Good morning د سهار لپاره کارېږي.", "تُستخدم Good morning في الصباح.")
+        ),
+        Question(
+            text("Sentence building", "جمله‌سازی", "د جملې جوړول", "تركيب الجملة"),
+            text("Choose the correct sentence: (I / tea / drink)", "جمله درست را انتخاب کن: (I / tea / drink)", "سمه جمله وټاکئ: (I / tea / drink)", "اختر الجملة الصحيحة: (I / tea / drink)"),
+            listOf(text("I drink tea.", "I drink tea.", "I drink tea.", "I drink tea."), text("Tea I drink.", "Tea I drink.", "Tea I drink.", "Tea I drink."), text("Drink I tea.", "Drink I tea.", "Drink I tea.", "Drink I tea.")),
+            0,
+            text("The usual order is subject + verb + object.", "ترتیب معمول جمله فاعل + فعل + مفعول است.", "د جملې عادي ترتیب فاعل + فعل + مفعول دی.", "الترتيب المعتاد هو الفاعل ثم الفعل ثم المفعول.")
+        )
     )
     var index by remember { mutableIntStateOf(0) }
     var score by remember { mutableIntStateOf(0) }
@@ -698,19 +737,25 @@ private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> U
     var selectedAnswer by remember { mutableIntStateOf(-1) }
     var explanation by remember { mutableStateOf("") }
     val incorrectIds = remember { mutableStateListOf<String>() }
+
     LaunchedEffect(finished) {
         if (finished) {
             val attemptId = UUID.randomUUID().toString()
             dao.insertQuizAttempt(QuizAttemptEntity(
-                attemptId = attemptId, quizId = "starter_mixed_quiz",
-                score = score, totalQuestions = questions.size,
+                attemptId = attemptId,
+                quizId = "starter_mixed_quiz",
+                score = score,
+                totalQuestions = questions.size,
                 completedAt = System.currentTimeMillis(),
                 incorrectQuestionIds = incorrectIds.joinToString(",")
             ))
-            if (score >= 2) {
+            if (score >= 3) {
                 dao.applyRewardOnce(RewardEventEntity(
-                    eventId = UUID.randomUUID().toString(), source = "QUIZ",
-                    sourceId = "starter_mixed_quiz_first_reward", xpDelta = 30, coinDelta = 6,
+                    eventId = UUID.randomUUID().toString(),
+                    source = "QUIZ",
+                    sourceId = "starter_mixed_quiz_first_reward",
+                    xpDelta = 30,
+                    coinDelta = 6,
                     createdAt = System.currentTimeMillis()
                 ))
             }
@@ -728,22 +773,29 @@ private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> U
                 val question = questions[index]
                 Text(tr(locale, "questionProgress", "${index + 1}/${questions.size}"))
                 LinearProgressIndicator(progress = { (index + 1).toFloat() / questions.size }, modifier = Modifier.fillMaxWidth())
-                Text(question.prompt, style = MaterialTheme.typography.titleLarge)
+                Text(question.type.forLocale(locale), fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                Text(question.prompt.forLocale(locale), style = MaterialTheme.typography.titleLarge)
                 question.options.forEachIndexed { optionIndex, option ->
-                    OutlinedButton(onClick = {
-                        if (selectedAnswer == -1) {
-                            selectedAnswer = optionIndex
-                            if (optionIndex == question.correct) score += 1 else incorrectIds.add("q_${index + 1}")
-                            explanation = question.explanation
-                        }
-                    }, enabled = selectedAnswer == -1, modifier = Modifier.fillMaxWidth()) { Text(option) }
+                    OutlinedButton(
+                        onClick = {
+                            if (selectedAnswer == -1) {
+                                selectedAnswer = optionIndex
+                                if (optionIndex == question.correct) score += 1 else incorrectIds.add("q_${index + 1}")
+                                explanation = question.explanation.forLocale(locale)
+                            }
+                        },
+                        enabled = selectedAnswer == -1,
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text(option.forLocale(locale)) }
                 }
                 if (explanation.isNotEmpty()) {
                     Text(explanation, color = MaterialTheme.colorScheme.primary)
                     Button(onClick = {
                         if (index == questions.lastIndex) finished = true
                         else { index += 1; selectedAnswer = -1; explanation = "" }
-                    }, modifier = Modifier.fillMaxWidth()) { Text(if (index == questions.lastIndex) tr(locale, "finishQuiz") else tr(locale, "nextQuestion")) }
+                    }, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (index == questions.lastIndex) tr(locale, "finishQuiz") else tr(locale, "nextQuestion"))
+                    }
                 }
             }
         }
