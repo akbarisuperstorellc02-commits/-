@@ -953,7 +953,7 @@ private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> U
                 Button(onClick = onFinished, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "seeProgress")) }
             } else {
                 val question = quizQuestions[index]
-                Text(tr(locale, "questionProgress", "${index + 1}/${questions.size}"))
+                Text(tr(locale, "questionProgress", "${index + 1}/${quizQuestions.size}"))
                 LinearProgressIndicator(progress = { (index + 1).toFloat() / quizQuestions.size }, modifier = Modifier.fillMaxWidth())
                 Text(question.type.forLocale(locale), fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
                 Text(question.prompt.forLocale(locale), style = MaterialTheme.typography.titleLarge)
@@ -976,7 +976,7 @@ private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> U
                         if (index == quizQuestions.lastIndex) finished = true
                         else { index += 1; selectedAnswer = -1; explanation = "" }
                     }, modifier = Modifier.fillMaxWidth()) {
-                        Text(if (index == questions.lastIndex) tr(locale, "finishQuiz") else tr(locale, "nextQuestion"))
+                        Text(if (index == quizQuestions.lastIndex) tr(locale, "finishQuiz") else tr(locale, "nextQuestion"))
                     }
                 }
             }
