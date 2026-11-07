@@ -24,7 +24,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Gamepad
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.School
@@ -55,7 +54,6 @@ import com.example.ui.screens.DiaryCalendarScreen
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.LearningLevelsScreen
 import com.example.ui.screens.LevelExamScreen
-import com.example.ui.screens.MasterGohariChatScreen
 import com.example.ui.screens.PuffyProfileScreen
 import com.example.ui.screens.SettingsAndThemeScreen
 import com.example.ui.screens.SpeakingPracticeScreen
@@ -66,206 +64,94 @@ import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.theme.ZahraThemeState
 import com.example.util.TextToSpeechHelper
 
-enum class AppScreen {
-    SPLASH,
-    HOME,
-    LEVELS,
-    LEVEL_EXAM,
-    CHAT,
-    SPEAKING,
-    GAME,
-    CALENDAR,
-    SETTINGS,
-    PROFILE
-}
+enum class AppScreen { SPLASH, HOME, LEVELS, LEVEL_EXAM, SPEAKING, GAME, CALENDAR, SETTINGS, PROFILE }
 
 class MainActivity : ComponentActivity() {
-
     private var ttsHelper: TextToSpeechHelper? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // STEP 1: Mandatory App Check configuration with launch intent before any UI or Firebase operations
-        com.example.util.configureAppCheck(this, intent)
-
         enableEdgeToEdge()
         ttsHelper = TextToSpeechHelper(this)
-
-        val userProgressManager = UserProgressManager(this)
-
+        val progress = UserProgressManager(this)
         setContent {
-            val currentTheme by userProgressManager.currentTheme.collectAsState()
-            val currentFontStyle by userProgressManager.fontStyle.collectAsState()
-            val currentAvatar by userProgressManager.learnerAvatar.collectAsState()
-            val currentLearnerName by userProgressManager.learnerName.collectAsState()
-            val dailyGoal by userProgressManager.dailyGoalMinutes.collectAsState()
-
-            val zahraState = ZahraThemeState(
-                currentTheme = currentTheme,
-                fontStyle = currentFontStyle,
-                learnerName = currentLearnerName,
-                learnerAvatar = currentAvatar,
-                dailyGoalMinutes = dailyGoal
+            val theme by progress.currentTheme.collectAsState()
+            val font by progress.fontStyle.collectAsState()
+            val avatar by progress.learnerAvatar.collectAsState()
+            val name by progress.learnerName.collectAsState()
+            val goal by progress.dailyGoalMinutes.collectAsState()
+            val academyTheme = ZahraThemeState(
+                currentTheme = theme, fontStyle = font, learnerName = name,
+                learnerAvatar = avatar, dailyGoalMinutes = goal
             )
-
-            CompositionLocalProvider(LocalZahraTheme provides zahraState) {
+            CompositionLocalProvider(LocalZahraTheme provides academyTheme) {
                 MyApplicationTheme(dynamicColor = false) {
-                    MainAppContent(
-                        userProgressManager = userProgressManager,
-                        ttsHelper = ttsHelper
-                    )
+                    MainAppContent(progress, ttsHelper)
                 }
             }
         }
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         ttsHelper?.shutdown()
+        super.onDestroy()
     }
 }
 
 @Composable
-fun MainAppContent(
-    userProgressManager: UserProgressManager,
-    ttsHelper: TextToSpeechHelper?
-) {
-    var currentScreen by remember { mutableStateOf(AppScreen.SPLASH) }
-    var activeExamLevel by remember { mutableStateOf<Level?>(null) }
-    var activeClassroomFilter by remember { mutableStateOf<ClassroomType?>(null) }
+fun MainAppContent(userProgressManager: UserProgressManager, ttsHelper: TextToSpeechHelper?) {
+    var screen by remember { mutableStateOf(AppScreen.SPLASH) }
+    var examLevel by remember { mutableStateOf<Level?>(null) }
+    var classroom by remember { mutableStateOf<ClassroomType?>(null) }
     val levels by userProgressManager.levelsState.collectAsState()
 
-    if (currentScreen != AppScreen.HOME && currentScreen != AppScreen.SPLASH) {
+    if (screen != AppScreen.HOME && screen != AppScreen.SPLASH) {
         BackHandler {
-            if (currentScreen == AppScreen.LEVEL_EXAM) {
-                currentScreen = AppScreen.LEVELS
-            } else {
-                currentScreen = AppScreen.HOME
-            }
+            screen = if (screen == AppScreen.LEVEL_EXAM) AppScreen.LEVELS else AppScreen.HOME
         }
     }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            if (currentScreen != AppScreen.SPLASH && currentScreen != AppScreen.LEVEL_EXAM && currentScreen != AppScreen.CHAT) {
-                PuffyBottomNavBar(
-                    currentScreen = currentScreen,
-                    onTabSelected = { screen ->
-                        currentScreen = screen
-                    }
-                )
+            if (screen != AppScreen.SPLASH && screen != AppScreen.LEVEL_EXAM) {
+                PuffyBottomNavBar(screen) { screen = it }
             }
         }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
+    ) { padding ->
+        Box(Modifier.fillMaxSize().padding(padding)) {
             AnimatedContent(
-                targetState = currentScreen,
+                targetState = screen,
                 transitionSpec = { fadeIn() togetherWith fadeOut() },
-                label = "screen_transition"
-            ) { screen ->
-                when (screen) {
-                    AppScreen.SPLASH -> {
-                        SplashScreen(
-                            onEnterApp = { currentScreen = AppScreen.HOME }
-                        )
-                    }
-
-                    AppScreen.HOME -> {
-                        HomeScreen(
-                            userProgressManager = userProgressManager,
-                            ttsHelper = ttsHelper,
-                            onNavigateToLevels = {
-                                activeClassroomFilter = null
-                                currentScreen = AppScreen.LEVELS
-                            },
-                            onNavigateToChat = { currentScreen = AppScreen.CHAT },
-                            onNavigateToSpeakingDrill = { currentScreen = AppScreen.SPEAKING },
-                            onNavigateToWordGame = { currentScreen = AppScreen.GAME },
-                            onNavigateToCalendar = { currentScreen = AppScreen.CALENDAR },
-                            onNavigateToSettings = { currentScreen = AppScreen.SETTINGS },
-                            onNavigateToProfile = { currentScreen = AppScreen.PROFILE },
-                            onSelectClassroom = { classroom ->
-                                activeClassroomFilter = classroom
-                                currentScreen = AppScreen.LEVELS
-                            }
-                        )
-                    }
-
-                    AppScreen.PROFILE -> {
-                        PuffyProfileScreen(
-                            userProgressManager = userProgressManager,
-                            onNavigateToSettings = { currentScreen = AppScreen.SETTINGS },
-                            onBack = { currentScreen = AppScreen.HOME }
-                        )
-                    }
-
-                    AppScreen.LEVELS -> {
-                        LearningLevelsScreen(
-                            userProgressManager = userProgressManager,
-                            ttsHelper = ttsHelper,
-                            initialClassroomFilter = activeClassroomFilter,
-                            onOpenExam = { levelId ->
-                                activeExamLevel = levels.firstOrNull { it.id == levelId }
-                                currentScreen = AppScreen.LEVEL_EXAM
-                            },
-                            onBack = { currentScreen = AppScreen.HOME }
-                        )
-                    }
-
-                    AppScreen.LEVEL_EXAM -> {
-                        val level = activeExamLevel ?: levels.first()
-                        LevelExamScreen(
-                            level = level,
-                            userProgressManager = userProgressManager,
-                            ttsHelper = ttsHelper,
-                            onExamFinished = { currentScreen = AppScreen.LEVELS },
-                            onBack = { currentScreen = AppScreen.LEVELS }
-                        )
-                    }
-
-                    AppScreen.CHAT -> {
-                        MasterGohariChatScreen(
-                            userProgressManager = userProgressManager,
-                            ttsHelper = ttsHelper,
-                            onBack = { currentScreen = AppScreen.HOME }
-                        )
-                    }
-
-                    AppScreen.SPEAKING -> {
-                        SpeakingPracticeScreen(
-                            userProgressManager = userProgressManager,
-                            ttsHelper = ttsHelper,
-                            onBack = { currentScreen = AppScreen.HOME }
-                        )
-                    }
-
-                    AppScreen.GAME -> {
-                        WordGameScreen(
-                            userProgressManager = userProgressManager,
-                            ttsHelper = ttsHelper,
-                            onBack = { currentScreen = AppScreen.HOME }
-                        )
-                    }
-
-                    AppScreen.CALENDAR -> {
-                        DiaryCalendarScreen(
-                            userProgressManager = userProgressManager,
-                            onBack = { currentScreen = AppScreen.HOME }
-                        )
-                    }
-
-                    AppScreen.SETTINGS -> {
-                        SettingsAndThemeScreen(
-                            userProgressManager = userProgressManager,
-                            onBack = { currentScreen = AppScreen.HOME }
-                        )
-                    }
+                label = "academy_screen_transition"
+            ) { target ->
+                when (target) {
+                    AppScreen.SPLASH -> SplashScreen { screen = AppScreen.HOME }
+                    AppScreen.HOME -> HomeScreen(
+                        userProgressManager = userProgressManager, ttsHelper = ttsHelper,
+                        onNavigateToLevels = { classroom = null; screen = AppScreen.LEVELS },
+                        onNavigateToSpeakingDrill = { screen = AppScreen.SPEAKING },
+                        onNavigateToWordGame = { screen = AppScreen.GAME },
+                        onNavigateToCalendar = { screen = AppScreen.CALENDAR },
+                        onNavigateToSettings = { screen = AppScreen.SETTINGS },
+                        onNavigateToProfile = { screen = AppScreen.PROFILE },
+                        onSelectClassroom = { classroom = it; screen = AppScreen.LEVELS }
+                    )
+                    AppScreen.PROFILE -> PuffyProfileScreen(userProgressManager, { screen = AppScreen.SETTINGS }) { screen = AppScreen.HOME }
+                    AppScreen.LEVELS -> LearningLevelsScreen(
+                        userProgressManager, ttsHelper, classroom,
+                        onOpenExam = { id -> examLevel = levels.firstOrNull { it.id == id }; screen = AppScreen.LEVEL_EXAM },
+                        onBack = { screen = AppScreen.HOME }
+                    )
+                    AppScreen.LEVEL_EXAM -> LevelExamScreen(
+                        level = examLevel ?: levels.first(), userProgressManager = userProgressManager,
+                        ttsHelper = ttsHelper, onExamFinished = { screen = AppScreen.LEVELS },
+                        onBack = { screen = AppScreen.LEVELS }
+                    )
+                    AppScreen.SPEAKING -> SpeakingPracticeScreen(userProgressManager, ttsHelper) { screen = AppScreen.HOME }
+                    AppScreen.GAME -> WordGameScreen(userProgressManager, ttsHelper) { screen = AppScreen.HOME }
+                    AppScreen.CALENDAR -> DiaryCalendarScreen(userProgressManager) { screen = AppScreen.HOME }
+                    AppScreen.SETTINGS -> SettingsAndThemeScreen(userProgressManager) { screen = AppScreen.HOME }
                 }
             }
         }
@@ -273,110 +159,38 @@ fun MainAppContent(
 }
 
 @Composable
-fun PuffyBottomNavBar(
-    currentScreen: AppScreen,
-    onTabSelected: (AppScreen) -> Unit
-) {
+fun PuffyBottomNavBar(currentScreen: AppScreen, onTabSelected: (AppScreen) -> Unit) {
     val theme = LocalZahraTheme.current.currentTheme
-
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .navigationBarsPadding()
+        modifier = Modifier.fillMaxWidth().navigationBarsPadding()
             .padding(horizontal = 12.dp, vertical = 6.dp)
-            .shadow(
-                elevation = 10.dp,
-                shape = RoundedCornerShape(26.dp),
-                ambientColor = theme.primaryColor.copy(alpha = 0.22f),
-                spotColor = theme.buttonBevel.copy(alpha = 0.35f)
-            )
-            .clip(RoundedCornerShape(26.dp))
-            .background(Color.White)
-            .border(1.5.dp, theme.primaryColor.copy(alpha = 0.28f), RoundedCornerShape(26.dp))
-            .padding(horizontal = 6.dp, vertical = 6.dp)
+            .shadow(10.dp, RoundedCornerShape(26.dp), ambientColor = theme.primaryColor.copy(alpha = .22f))
+            .clip(RoundedCornerShape(26.dp)).background(Color.White)
+            .border(1.5.dp, theme.primaryColor.copy(alpha = .28f), RoundedCornerShape(26.dp))
+            .padding(horizontal = 4.dp, vertical = 6.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            NavBarItem(
-                label = "خانه",
-                icon = Icons.Default.Home,
-                isSelected = currentScreen == AppScreen.HOME,
-                onClick = { onTabSelected(AppScreen.HOME) },
-                testTag = "nav_home"
-            )
-            NavBarItem(
-                label = "سطوح A1-Z9",
-                icon = Icons.Default.School,
-                isSelected = currentScreen == AppScreen.LEVELS,
-                onClick = { onTabSelected(AppScreen.LEVELS) },
-                testTag = "nav_levels"
-            )
-            NavBarItem(
-                label = "معلم هوشمند",
-                icon = Icons.Default.ChatBubble,
-                isSelected = currentScreen == AppScreen.CHAT,
-                onClick = { onTabSelected(AppScreen.CHAT) },
-                testTag = "nav_chat"
-            )
-            NavBarItem(
-                label = "بازی ۳۰ مرحله",
-                icon = Icons.Default.Gamepad,
-                isSelected = currentScreen == AppScreen.GAME,
-                onClick = { onTabSelected(AppScreen.GAME) },
-                testTag = "nav_game"
-            )
-            NavBarItem(
-                label = "پروفایل",
-                icon = Icons.Default.AccountCircle,
-                isSelected = currentScreen == AppScreen.PROFILE,
-                onClick = { onTabSelected(AppScreen.PROFILE) },
-                testTag = "nav_profile"
-            )
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround, verticalAlignment = Alignment.CenterVertically) {
+            NavBarItem("خانه", Icons.Default.Home, currentScreen == AppScreen.HOME, { onTabSelected(AppScreen.HOME) }, "nav_home")
+            NavBarItem("آموزش", Icons.Default.School, currentScreen == AppScreen.LEVELS, { onTabSelected(AppScreen.LEVELS) }, "nav_learning")
+            NavBarItem("بازی‌ها", Icons.Default.Gamepad, currentScreen == AppScreen.GAME, { onTabSelected(AppScreen.GAME) }, "nav_games")
+            NavBarItem("تقویم", Icons.Default.CalendarMonth, currentScreen == AppScreen.CALENDAR, { onTabSelected(AppScreen.CALENDAR) }, "nav_calendar")
+            NavBarItem("پروفایل", Icons.Default.AccountCircle, currentScreen == AppScreen.PROFILE, { onTabSelected(AppScreen.PROFILE) }, "nav_profile")
         }
     }
 }
 
 @Composable
-fun NavBarItem(
-    label: String,
-    icon: ImageVector,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    testTag: String
-) {
+fun NavBarItem(label: String, icon: ImageVector, isSelected: Boolean, onClick: () -> Unit, testTag: String) {
     val theme = LocalZahraTheme.current.currentTheme
-
     Box(
-        modifier = Modifier
-            .testTag(testTag)
-            .clip(RoundedCornerShape(16.dp))
+        modifier = Modifier.testTag(testTag).clip(RoundedCornerShape(16.dp))
             .background(if (isSelected) theme.primaryColor else Color.Transparent)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 6.dp),
+            .clickable(onClick = onClick).padding(horizontal = 8.dp, vertical = 7.dp),
         contentAlignment = Alignment.Center
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = if (isSelected) Color.White else Color.Gray,
-                modifier = Modifier.size(19.dp)
-            )
-            if (isSelected) {
-                Text(
-                    text = label,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
-            }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+            Icon(icon, contentDescription = label, tint = if (isSelected) Color.White else Color.Gray, modifier = Modifier.size(19.dp))
+            if (isSelected) Text(label, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White, modifier = Modifier.padding(start = 4.dp))
         }
     }
 }
