@@ -88,6 +88,9 @@ abstract class AcademyDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun saveVocabulary(word: VocabularyEntity)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    abstract suspend fun insertVocabularyIfMissing(word: VocabularyEntity)
+
     @Query("SELECT * FROM vocabulary WHERE profileId = :profileId ORDER BY english COLLATE NOCASE")
     abstract fun observeVocabulary(profileId: String = "primary"): Flow<List<VocabularyEntity>>
 
