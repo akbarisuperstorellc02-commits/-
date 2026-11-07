@@ -23,4 +23,5 @@ import kotlinx.coroutines.flow.Flow
  @Insert(onConflict=OnConflictStrategy.REPLACE) abstract suspend fun saveDailyGoal(goal:DailyGoalEntity)
  @Insert(onConflict=OnConflictStrategy.REPLACE) abstract suspend fun saveReminder(reminder:ReminderEntity)
  @Query("SELECT * FROM reminders WHERE profileId=:profileId ORDER BY hour,minute") abstract fun observeReminders(profileId:String="primary"):Flow<List<ReminderEntity>>
+ @Query("DELETE FROM reminders WHERE reminderId=:reminderId") abstract suspend fun deleteReminder(reminderId:String)
 }
