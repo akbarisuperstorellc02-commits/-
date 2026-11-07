@@ -1,11 +1,11 @@
-# خودسازی آکادمی — Self-Growth Academy
+# آکادمی خودسازی Learning — Self-Growth Learning Academy
 
 Offline-first Android app for English learning and personal growth.
 
 ## App identity
 
-- Display name: خودسازی آکادمی
-- English name: Self-Growth Academy
+- Display name: آکادمی خودسازی Learning
+- English name: Self-Growth Learning Academy
 - Application ID: `com.bh.personalacademy`
 - Default profile: زهرا
 - Default locale: Afghan Dari (`fa-AF`)
@@ -28,7 +28,7 @@ Offline-first Android app for English learning and personal growth.
 
 - Compose app shell with home, learning, games, progress and profile navigation, plus study tools, vocabulary and calendar pages.
 - Multiple local profiles with creation and switching; each profile has independent settings, avatar, locale, font, themes, wallet and learning records.
-- Eight learning stages from Pre-A1 through C2, followed by a Specialized English track; current lesson catalog contains 62 lesson entries across general and professional English; 8 graded stories in the story library.
+- Eight learning stages from Pre-A1 through C2, followed by a Specialized English track; current lesson catalog contains 71 lesson entries across general and professional English, including a multilingual 15-animal vocabulary lesson; 8 graded stories in the story library.
 - Lesson completion, level unlock rules and one-time reward ledger.
 - 26 educational game modes in the current game catalog. Regression checks now cover hidden missing-word answers and valid letter scrambling; several named modes still need dedicated mechanics and full manual QA.
 - Mixed quiz formats, saved quiz attempts and incorrect-question history.
@@ -69,10 +69,8 @@ GitHub Actions uploads the debug APK as the `self-growth-academy-debug-apk` arti
 
 ## Current validation
 
-- GitHub Actions run #213 completed successfully for commit `39bd8030d976ad67ca7f4b3aca924dadbb60397c`.
-- Unit tests, debug APK build and artifact upload all passed in that run.
-- The uploaded artifact contains `app-debug.apk` (20,878,505 bytes).
-- Speaking practice includes Android speech recognition, text-to-speech prompts, word-level transcript similarity scoring, saved attempts and one-time rewards. It is not phoneme-level pronunciation assessment, and recognition availability/offline support depends on the Android speech service and installed language pack. Automated CI does not prove physical-device behavior or release readiness.
+- The latest CI validation for each change is recorded in GitHub Actions; only successful runs are treated as build validation.
+- Speaking practice includes Android speech recognition, Android system speech-input fallback, text-to-speech prompts, word-level transcript similarity scoring, saved attempts and one-time rewards. Physical-device validation is still required. It is not phoneme-level pronunciation assessment, and recognition availability/offline support depends on the Android speech service and installed language pack. Automated CI does not prove physical-device behavior or release readiness.
 
 ## Known incomplete work before release
 
@@ -94,4 +92,4 @@ The profile page can create a versioned JSON backup and restore it. Restore merg
 The development branch is `feature/bh-personal-academy-rebuild`. The default `main` branch is intentionally not modified.
 
 
-Recent update: the learning catalog now contains 70 lessons across all eight bands. Game selection cards use illustrated emoji artwork and each vocabulary round includes a visual clue. Lesson and level locks now follow the immediately preceding lesson / final lesson of the previous band. The adaptive launcher foreground is scaled into Android's safe zone.
+Recent update: the learning catalog now contains 71 lessons across all eight bands. Game selection cards use illustrated emoji artwork and each vocabulary round includes a visual clue. Lesson and level locks now follow the immediately preceding lesson / final lesson of the previous band. The adaptive launcher foreground is scaled into Android's safe zone.
