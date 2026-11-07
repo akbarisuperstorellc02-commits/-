@@ -46,6 +46,20 @@ class ExampleUnitTest {
     }
 
     @Test
+    fun advancedStagesExtendTheOriginalCurriculumWithoutChangingItsIds() {
+        val allLevels = CurriculumData.levels + com.example.data.AdvancedCurriculumLevels.levels
+        assertEquals(45, allLevels.size)
+        assertEquals((1..45).toList(), allLevels.map { it.id })
+        assertEquals("A1", allLevels.first().levelCode)
+        assertEquals("Z24", allLevels.last().levelCode)
+        allLevels.forEach { level ->
+            assertTrue(level.items.size >= 3)
+            assertTrue(level.examQuestions.size >= 3)
+        }
+        assertEquals((1..60).toList(), (CurriculumData.wordGameStages + AdvancedWordGameStages.stages).map { it.stageNumber })
+    }
+
+    @Test
     fun testSpeechEvaluatorSloganMatch() {
         val target = "Start from zero, continue until absolute mastery!"
         val spoken = "Start from zero continue until absolute mastery"
