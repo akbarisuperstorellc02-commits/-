@@ -19,7 +19,7 @@ enum class AcademyThemeId {
 
 enum class AcademyFontId { SANS_SERIF, SERIF, CURSIVE }
 
-enum class LearningBand { PRE_A1, A1, A2, B1, B2, C1 }
+enum class LearningBand { PRE_A1, A1, A2, B1, B2, C1, C2 }
 
 data class UserProfile(
     val profileId: String = "primary",
