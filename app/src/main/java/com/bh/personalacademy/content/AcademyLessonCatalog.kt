@@ -26,7 +26,7 @@ data class LessonWord(
     val emoji: String = ""
 ) {
     fun meaningFor(locale: AcademyLocale): String = when (locale) {
-        AcademyLocale.ENGLISH_US -> english
+        AcademyLocale.ENGLISH_US -> dari
         AcademyLocale.DARI_AF -> dari
         AcademyLocale.PASHTO_AF -> pashto
         AcademyLocale.ARABIC -> arabic
