@@ -566,6 +566,8 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
 
 @Composable
 private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedLessonIds: Set<String>, select: (LearningBand?) -> Unit, vocabulary: () -> Unit, grammar: () -> Unit, openSpeaking: (String) -> Unit, complete: (String) -> Unit, saveStudySession: (String, Long, Long) -> Unit, quiz: () -> Unit) {
+    var optimisticCompletedIds by remember(selected) { mutableStateOf(emptySet<String>()) }
+    val progressIds = completedLessonIds + optimisticCompletedIds
     val names = when (locale) {
         AcademyLocale.ENGLISH_US -> listOf("Pre-A1", "A1", "A2", "B1", "B2", "C1", "C2", "Specialized")
         AcademyLocale.DARI_AF -> listOf("پیش از A1", "A1", "A2", "B1", "B2", "C1", "C2", "تخصصی")
@@ -580,7 +582,7 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
         if (selected == null) {
             Text(tr(locale, "chooseLevel"))
             LearningBand.values().forEachIndexed { i, level ->
-                val unlocked = AcademyLessonCatalog.isBandUnlocked(level, completedLessonIds)
+                val unlocked = AcademyLessonCatalog.isBandUnlocked(level, progressIds)
                 AcademyCard {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(names[i], style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
@@ -597,8 +599,8 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
                 TextButton(onClick = { select(null) }) { Text(tr(locale, "allLevels")) }
             }
             lessons.forEachIndexed { index, lesson ->
-                val isCompleted = lesson.id in completedLessonIds
-                val lessonUnlocked = AcademyLessonCatalog.isLessonUnlocked(selected, index, completedLessonIds)
+                val isCompleted = lesson.id in progressIds
+                val lessonUnlocked = AcademyLessonCatalog.isLessonUnlocked(selected, index, progressIds)
                 var expanded by remember(lesson.id) { mutableStateOf(false) }
                 AcademyCard {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -637,7 +639,7 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
                         )
                     }
                     Button(
-                        onClick = { complete(lesson.id) },
+                        onClick = { optimisticCompletedIds = optimisticCompletedIds + lesson.id; complete(lesson.id) },
                         enabled = lessonUnlocked && !isCompleted,
                         modifier = Modifier.fillMaxWidth()
                     ) {
