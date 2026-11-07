@@ -83,6 +83,9 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
     val gameAttempts by dao.observeGameAttempts().collectAsStateWithLifecycle(initialValue = emptyList())
     val todayRange = remember { val start = Calendar.getInstance().apply { set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0) }; val end = (start.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, 1) }; start.timeInMillis to end.timeInMillis }
     val todayStudyMillis by dao.observeStudyMillis(todayRange.first, todayRange.second).collectAsStateWithLifecycle(initialValue = 0L)
+    val todayLessonCount by dao.observeCompletedLessonCount(todayRange.first, todayRange.second).collectAsStateWithLifecycle(initialValue = 0)
+    val todayQuizCount by dao.observeQuizCount(todayRange.first, todayRange.second).collectAsStateWithLifecycle(initialValue = 0)
+    val todayWordCount by dao.observeWordsPractisedCount(todayRange.first, todayRange.second).collectAsStateWithLifecycle(initialValue = 0)
     val weekRange = remember {
         val start = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
@@ -140,6 +143,7 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
                 Box(Modifier.fillMaxSize().padding(padding)) {
                     when (tab) {
                         AcademyTab.HOME -> HomePage(profile, wallet, lessons.size, attempts.size, (todayStudyMillis / 60000L).toInt(),
+                            todayLessonCount, todayWordCount, todayQuizCount,
                             { tab = AcademyTab.LEARN }, { tab = AcademyTab.GAMES }, { tab = AcademyTab.PROFILE }, { tab = AcademyTab.TOOLS }, { tab = AcademyTab.CALENDAR })
                         AcademyTab.LEARN -> LearnPage(profile.locale, band, lessons.map { it.lessonId }.toSet(),
                             { band = it },
@@ -217,7 +221,7 @@ private fun AcademyCard(content: @Composable ColumnScope.() -> Unit) {
     }
 }
 @Composable
-private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, studyMinutes: Int, learn: () -> Unit, games: () -> Unit, profile: () -> Unit, tools: () -> Unit, calendar: () -> Unit) {
+private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, studyMinutes: Int, todayLessons: Int, todayWords: Int, todayQuizzes: Int, learn: () -> Unit, games: () -> Unit, profile: () -> Unit, tools: () -> Unit, calendar: () -> Unit) {
     Page {
         Text(tr(p.locale, "greeting", p.displayName), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Text(tr(p.locale, "welcome"), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .65f))
@@ -242,6 +246,61 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
             LinearProgressIndicator(progress = { goalProgress }, modifier = Modifier.fillMaxWidth())
             Text("${AsciiDigits.normalize(studyMinutes.toString())} / ${AsciiDigits.normalize(p.dailyStudyGoalMinutes.toString())} ${tr(p.locale, "minutes")}", fontSize = 12.sp)
             Text(tr(p.locale, "goalHint"), fontSize = 12.sp)
+        }
+        AcademyCard {
+            Text(
+                when (p.locale) {
+                    AcademyLocale.ENGLISH_US -> "Today's learning targets"
+                    AcademyLocale.DARI_AF -> "هدف‌های یادگیری امروز"
+                    AcademyLocale.PASHTO_AF -> "د نن ورځې د زده کړې موخې"
+                    AcademyLocale.ARABIC -> "أهداف التعلم اليوم"
+                },
+                style = MaterialTheme.typography.titleMedium
+            )
+            val targets = listOf(
+                Triple(
+                    when (p.locale) {
+                        AcademyLocale.ENGLISH_US -> "Lessons"
+                        AcademyLocale.DARI_AF -> "درس‌ها"
+                        AcademyLocale.PASHTO_AF -> "درسونه"
+                        AcademyLocale.ARABIC -> "الدروس"
+                    },
+                    todayLessons,
+                    p.dailyGoalLessons
+                ),
+                Triple(
+                    when (p.locale) {
+                        AcademyLocale.ENGLISH_US -> "Words practised"
+                        AcademyLocale.DARI_AF -> "واژه‌های تمرین‌شده"
+                        AcademyLocale.PASHTO_AF -> "تمرین شوې کلمې"
+                        AcademyLocale.ARABIC -> "الكلمات المتدرّب عليها"
+                    },
+                    todayWords,
+                    p.dailyGoalWords
+                ),
+                Triple(
+                    when (p.locale) {
+                        AcademyLocale.ENGLISH_US -> "Quizzes"
+                        AcademyLocale.DARI_AF -> "آزمون‌ها"
+                        AcademyLocale.PASHTO_AF -> "ازموینې"
+                        AcademyLocale.ARABIC -> "الاختبارات"
+                    },
+                    todayQuizzes,
+                    p.dailyGoalQuizzes
+                )
+            )
+            targets.forEach { (label, current, target) ->
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        "$label · ${AsciiDigits.normalize(current.toString())}/${AsciiDigits.normalize(target.toString())}",
+                        fontSize = 12.sp
+                    )
+                    LinearProgressIndicator(
+                        progress = { (current.toFloat() / target.coerceAtLeast(1)).coerceIn(0f, 1f) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             MiniStat(tr(p.locale, "lessons"), "${done}", Modifier.weight(1f))
