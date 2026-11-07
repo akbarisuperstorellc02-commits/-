@@ -686,7 +686,6 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
     }
 }
 
-@Composable
 private data class ConversationScenario(
     val title: LocalizedText,
     val setting: LocalizedText,
@@ -702,40 +701,40 @@ private fun ConversationPage(locale: AcademyLocale, onPractice: (String) -> Unit
             t("First meeting", "نخستین دیدار", "لومړۍ پېژندنه", "اللقاء الأول"),
             t("At a new class or event", "در صنف یا محفل تازه", "په نوي ټولګي یا غونډه کې", "في صف أو مناسبة جديدة"),
             listOf(
-                t("A: Hello! My name is Sara.", "الف: سلام! نام من سارا است.", "الف: سلام! زما نوم سارا دی.", "أ: مرحباً! اسمي سارة.") to t("B: Hi, I'm Adam. Nice to meet you.", "ب: سلام، من آدم هستم. از دیدنت خوش شدم.", "ب: سلام، زه آدم یم. په لیدو دې خوښ شوم.", "ب: أهلاً، أنا آدم. سعيد بلقائك."),
-                t("A: Nice to meet you too.", "الف: من هم از دیدنت خوش شدم.", "الف: زه هم په لیدو دې خوښ شوم.", "أ: وأنا سعيد بلقائك أيضاً.")
+                t("A: Hello! My name is Sara.", "الف: سلام! نام من سارا است.", "الف: سلام! زما نوم سارا دی.", "أ: مرحباً! اسمي سارة."), t("B: Hi, I'm Adam. Nice to meet you.", "ب: سلام، من آدم هستم. از دیدنت خوش شدم.", "ب: سلام، زه آدم یم. په لیدو دې خوښ شوم.", "ب: أهلاً، أنا آدم. سعيد بلقائك."),
+                Pair(t("A: Nice to meet you too.", "الف: من هم از دیدنت خوش شدم.", "الف: زه هم په لیدو دې خوښ شوم.", "أ: وأنا سعيد بلقائك أيضاً."), t("B: Where are you from?", "ب: اهل کجا هستی؟", "ب: د کوم ځای یې؟", "ب: من أين أنت؟"))
             ), "Hello! My name is Sara. Nice to meet you."
         ),
         ConversationScenario(
             t("Greetings and feelings", "سلام و احوال‌پرسی", "سلام او پوښتنه", "التحية والسؤال عن الحال"),
             t("Meeting a friend in the morning", "دیدن یک دوست در صبح", "سهار له ملګري سره لیدل", "لقاء صديق في الصباح"),
             listOf(
-                t("A: Good morning! How are you?", "الف: صبح بخیر! حالت چطور است؟", "الف: سهار مو پخیر! څنګه یاست؟", "أ: صباح الخير! كيف حالك؟") to t("B: I'm fine, thanks. And you?", "ب: خوب هستم، تشکر. تو چطور؟", "ب: ښه یم، مننه. تاسو څنګه یاست؟", "ب: أنا بخير، شكراً. وأنت؟"),
-                t("A: I'm great today.", "الف: امروز بسیار خوب هستم.", "الف: نن ډېر ښه یم.", "أ: أنا بخير جداً اليوم.")
+                t("A: Good morning! How are you?", "الف: صبح بخیر! حالت چطور است؟", "الف: سهار مو پخیر! څنګه یاست؟", "أ: صباح الخير! كيف حالك؟"), t("B: I'm fine, thanks. And you?", "ب: خوب هستم، تشکر. تو چطور؟", "ب: ښه یم، مننه. تاسو څنګه یاست؟", "ب: أنا بخير، شكراً. وأنت؟"),
+                Pair(t("A: I'm great today.", "الف: امروز بسیار خوب هستم.", "الف: نن ډېر ښه یم.", "أ: أنا بخير جداً اليوم."), t("B: That's wonderful!", "ب: عالی است!", "ب: دا ډېره ښه ده!", "ب: هذا رائع!"))
             ), "Good morning! How are you? I'm fine, thank you."
         ),
         ConversationScenario(
             t("Asking someone's name", "پرسیدن نام", "د نوم پوښتنه", "السؤال عن الاسم"),
             t("When you meet someone", "هنگام آشنایی با کسی", "کله چې له چا سره اشنا کېږئ", "عندما تتعرف إلى شخص"),
             listOf(
-                t("A: What's your name?", "الف: نامت چیست؟", "الف: ستاسو نوم څه دی؟", "أ: ما اسمك؟") to t("B: My name is Maryam. What's yours?", "ب: نام من مریم است. نام تو چیست؟", "ب: زما نوم مریم دی. ستاسو نوم څه دی؟", "ب: اسمي مريم. وما اسمك؟"),
-                t("A: I'm Ali. Where are you from?", "الف: من علی هستم. اهل کجا هستی؟", "الف: زه علي یم. د کوم ځای یاست؟", "أ: أنا علي. من أين أنت؟")
+                t("A: What's your name?", "الف: نامت چیست؟", "الف: ستاسو نوم څه دی؟", "أ: ما اسمك؟"), t("B: My name is Maryam. What's yours?", "ب: نام من مریم است. نام تو چیست؟", "ب: زما نوم مریم دی. ستاسو نوم څه دی؟", "ب: اسمي مريم. وما اسمك؟"),
+                Pair(t("A: I'm Ali. Where are you from?", "الف: من علی هستم. اهل کجا هستی؟", "الف: زه علي یم. د کوم ځای یاست؟", "أ: أنا علي. من أين أنت؟"), t("B: I'm from Afghanistan.", "ب: من اهل افغانستان هستم.", "ب: زه د افغانستان یم.", "ب: أنا من أفغانستان."))
             ), "What's your name? My name is Maryam."
         ),
         ConversationScenario(
             t("At a café", "در کافه", "په کافې کې", "في المقهى"),
             t("Ordering a drink politely", "سفارش مؤدبانه نوشیدنی", "په ادب د څښاک غوښتل", "طلب مشروب بأدب"),
             listOf(
-                t("A: Good afternoon. Can I have a tea, please?", "الف: عصر بخیر. لطفاً یک چای می‌خواهم.", "الف: ماسپښین مو پخیر. مهرباني، یو چای راکړئ.", "أ: مساء الخير. هل يمكنني الحصول على شاي من فضلك؟") to t("B: Of course. Anything else?", "ب: البته. چیز دیگری؟", "ب: هو، بل څه هم غواړئ؟", "ب: بالتأكيد. هل تريد شيئاً آخر؟"),
-                t("A: No, thank you. How much is it?", "الف: نه، تشکر. قیمتش چند است؟", "الف: نه، مننه. بیه یې څو ده؟", "أ: لا، شكراً. كم ثمنه؟")
+                t("A: Good afternoon. Can I have a tea, please?", "الف: عصر بخیر. لطفاً یک چای می‌خواهم.", "الف: ماسپښین مو پخیر. مهرباني، یو چای راکړئ.", "أ: مساء الخير. هل يمكنني الحصول على شاي من فضلك؟"), t("B: Of course. Anything else?", "ب: البته. چیز دیگری؟", "ب: هو، بل څه هم غواړئ؟", "ب: بالتأكيد. هل تريد شيئاً آخر؟"),
+                Pair(t("A: No, thank you. How much is it?", "الف: نه، تشکر. قیمتش چند است؟", "الف: نه، مننه. بیه یې څو ده؟", "أ: لا، شكراً. كم ثمنه؟"), t("B: It is two dollars.", "ب: دو دالر است.", "ب: دوه ډالره دي.", "ب: ثمنه دولاران."))
             ), "Can I have a tea, please? How much is it?"
         ),
         ConversationScenario(
             t("Saying goodbye", "خداحافظی", "خدای پاماني", "الوداع"),
             t("Ending a friendly conversation", "پایان یک گفت‌وگوی دوستانه", "د دوستانه خبرو پای", "إنهاء محادثة ودية"),
             listOf(
-                t("A: It was nice talking to you.", "الف: از صحبت با تو خوش شدم.", "الف: له تاسو سره خبرې کول ښه وو.", "أ: سررت بالحديث معك.") to t("B: You too. See you tomorrow!", "ب: من هم همین‌طور. فردا می‌بینمت!", "ب: زه هم. سبا به سره ګورو!", "ب: وأنا كذلك. أراك غداً!"),
-                t("A: Take care. Bye!", "الف: مراقب خودت باش. خداحافظ!", "الف: ځان ساتئ. خدای پامان!", "أ: اعتنِ بنفسك. إلى اللقاء!")
+                t("A: It was nice talking to you.", "الف: از صحبت با تو خوش شدم.", "الف: له تاسو سره خبرې کول ښه وو.", "أ: سررت بالحديث معك."), t("B: You too. See you tomorrow!", "ب: من هم همین‌طور. فردا می‌بینمت!", "ب: زه هم. سبا به سره ګورو!", "ب: وأنا كذلك. أراك غداً!"),
+                Pair(t("A: Take care. Bye!", "الف: مراقب خودت باش. خداحافظ!", "الف: ځان ساتئ. خدای پامان!", "أ: اعتنِ بنفسك. إلى اللقاء!"), t("B: Goodbye!", "ب: خداحافظ!", "ب: خدای پامان!", "ب: وداعاً!"))
             ), "It was nice talking to you. See you tomorrow!"
         )
     )
@@ -773,6 +772,7 @@ private fun ConversationPage(locale: AcademyLocale, onPractice: (String) -> Unit
     }
 }
 
+@Composable
 private fun GrammarPage(locale: AcademyLocale, onBack: () -> Unit) {
     var selectedBand by remember { mutableStateOf<LearningBand?>(null) }
     Page {
