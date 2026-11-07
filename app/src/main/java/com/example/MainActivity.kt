@@ -656,6 +656,32 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "language" to "اللغة", "theme" to "السمة", "font" to "الخط", "minutes" to "دقيقة", "studyTools" to "أدوات الدراسة", "timer" to "مؤقت الدراسة", "startTimer" to "ابدأ", "pauseTimer" to "إيقاف مؤقت", "finishTimer" to "إنهاء الجلسة", "timerSaved" to "تم حفظ جلسة الدراسة.", "reminders" to "التذكيرات والمنبهات", "reminderTitle" to "عنوان التذكير", "timeHHMM" to "الوقت (HH:MM)", "dailyReminder" to "التكرار يومياً", "scheduleReminder" to "جدولة التذكير", "reminderSaved" to "تمت جدولة التذكير.", "invalidTime" to "أدخل عنواناً ووقتاً صحيحاً مثل 19:30.", "permissionNeeded" to "اسمح بالإشعارات من إعدادات Android لاستلام التذكيرات.", "noReminders" to "لا توجد تذكيرات مجدولة بعد.",
         "DARI_AF" to "الداري الأفغانية", "PASHTO_AF" to "البشتوية الأفغانية", "ARABIC" to "العربية", "ENGLISH_US" to "الإنجليزية",
         "SANS_SERIF" to "Sans Serif", "SERIF" to "Serif", "CURSIVE" to "Cursive")
-    val selected = when(locale) { AcademyLocale.ENGLISH_US -> en; AcademyLocale.DARI_AF -> fa; AcademyLocale.PASHTO_AF -> ps; AcademyLocale.ARABIC -> ar }
-    return selected[key] ?: en[key] ?: key
+    val psComplete = ps + mapOf(
+        "journeySub" to "هره نوې کلمه مو موخې ته نږدې کوي.", "goalMins" to "$arg دقیقې", "goalHint" to "د مطالعې وخت ثبتولو لپاره درس پیل کړئ.",
+        "continue" to "راتلونکي ګام ته چمتو یاست؟", "chooseLesson" to "کچه وټاکئ او زده کړه روانه وساتئ.", "openLessons" to "درسونه پرانیزئ",
+        "myProfile" to "زما پروفایل", "bandSub" to "د $arg لپاره منظم درسونه", "lessonDetails" to "درس پرانیزئ", "hideDetails" to "جزئیات پټ کړئ",
+        "newWords" to "نوې کلمې", "completeLesson" to "درس بشپړ کړئ · XP ترلاسه کړئ", "quizReview" to "ازموینې بیا وګورئ",
+        "wordChallenge" to "د کلمې د مانا لوبه", "chooseMeaning" to "د APPLE پښتو/دري مانا وټاکئ", "hintText" to "لارښوونه: دا یوه مېوه ده.",
+        "coinBalance" to "ستاسې سکې: $arg", "newRound" to "نوی پړاو", "gameRoadmap" to "نورې د لغت، املا او حافظې لوبې به وروسته ورزیاتې شي.",
+        "summary" to "د زده کړې لنډیز", "average" to "د ازموینو منځنۍ نمره", "quizHistory" to "د ازموینو تاریخچه", "noHistory" to "تر اوسه ازموینه نه ده شوې.",
+        "questionProgress" to "پوښتنه $arg"
+    )
+    val arComplete = ar + mapOf(
+        "journeySub" to "كل كلمة جديدة تقرّبك من هدفك.", "goalMins" to "$arg دقيقة", "goalHint" to "ابدأ درساً لتسجيل وقت الدراسة الفعلي.",
+        "continue" to "هل أنت مستعد للخطوة التالية؟", "chooseLesson" to "اختر مستوى وتابع التعلم.", "openLessons" to "افتح الدروس",
+        "myProfile" to "ملفي الشخصي", "bandSub" to "دروس منظمة للمستوى $arg", "lessonDetails" to "افتح الدرس", "hideDetails" to "إخفاء التفاصيل",
+        "newWords" to "مفردات جديدة", "completeLesson" to "أكمل الدرس · اكسب XP", "quizReview" to "مراجعة الاختبارات",
+        "wordChallenge" to "تحدي معنى الكلمة", "chooseMeaning" to "اختر معنى APPLE باللغة الدارية", "hintText" to "تلميح: إنها فاكهة.",
+        "coinBalance" to "عملاتك: $arg", "newRound" to "جولة جديدة", "gameRoadmap" to "ستضاف ألعاب المفردات والإملاء والذاكرة في مرحلة المحتوى التالية.",
+        "summary" to "ملخص التعلم", "average" to "متوسط نتيجة الاختبارات", "quizHistory" to "سجل الاختبارات", "noHistory" to "لم تُجرَ أي اختبارات بعد.",
+        "questionProgress" to "السؤال $arg"
+    )
+    val themeLabels = when (locale) {
+        AcademyLocale.ENGLISH_US -> mapOf("SOFT_PINK" to "Soft pink", "PINK_PURPLE" to "Pink & purple", "LILAC_WHITE" to "Lilac & white", "PASTEL" to "Pastel", "FLORAL" to "Floral", "NAVY_BLUE" to "Navy blue", "BLUE_GRAY" to "Blue & grey", "GREEN_BLACK" to "Green & black", "SPORT" to "Sport", "SPACE" to "Space", "BLACK_GOLD" to "Black & gold", "WHITE_GOLD" to "White & gold", "ROYAL_PURPLE" to "Royal purple", "NIGHT" to "Night", "LIGHT" to "Light", "DARK" to "Dark")
+        AcademyLocale.DARI_AF -> mapOf("SOFT_PINK" to "صورتی ملایم", "PINK_PURPLE" to "صورتی و بنفش", "LILAC_WHITE" to "یاسی و سفید", "PASTEL" to "پاستلی", "FLORAL" to "گل‌گلی", "NAVY_BLUE" to "آبی سرمه‌ای", "BLUE_GRAY" to "آبی و خاکستری", "GREEN_BLACK" to "سبز و سیاه", "SPORT" to "اسپرت", "SPACE" to "فضایی", "BLACK_GOLD" to "سیاه و طلایی", "WHITE_GOLD" to "سفید و طلایی", "ROYAL_PURPLE" to "بنفش سلطنتی", "NIGHT" to "شب", "LIGHT" to "روشن", "DARK" to "تاریک")
+        AcademyLocale.PASHTO_AF -> mapOf("SOFT_PINK" to "نرمه ګلابي", "PINK_PURPLE" to "ګلابي او ارغواني", "LILAC_WHITE" to "یاسي او سپین", "PASTEL" to "پاستلي", "FLORAL" to "ګلدار", "NAVY_BLUE" to "تیاره آبي", "BLUE_GRAY" to "آبي او خړ", "GREEN_BLACK" to "شنه او تور", "SPORT" to "سپورتي", "SPACE" to "فضايي", "BLACK_GOLD" to "تور او زرین", "WHITE_GOLD" to "سپین او زرین", "ROYAL_PURPLE" to "شاهي ارغواني", "NIGHT" to "شپه", "LIGHT" to "روښانه", "DARK" to "تیاره")
+        AcademyLocale.ARABIC -> mapOf("SOFT_PINK" to "وردي ناعم", "PINK_PURPLE" to "وردي وبنفسجي", "LILAC_WHITE" to "ليلكي وأبيض", "PASTEL" to "باستيل", "FLORAL" to "زهري", "NAVY_BLUE" to "أزرق داكن", "BLUE_GRAY" to "أزرق ورمادي", "GREEN_BLACK" to "أخضر وأسود", "SPORT" to "رياضي", "SPACE" to "فضائي", "BLACK_GOLD" to "أسود وذهبي", "WHITE_GOLD" to "أبيض وذهبي", "ROYAL_PURPLE" to "بنفسجي ملكي", "NIGHT" to "ليلي", "LIGHT" to "فاتح", "DARK" to "داكن")
+    }
+    val selected = when(locale) { AcademyLocale.ENGLISH_US -> en; AcademyLocale.DARI_AF -> fa; AcademyLocale.PASHTO_AF -> psComplete; AcademyLocale.ARABIC -> arComplete }
+    return selected[key] ?: themeLabels[key] ?: en[key] ?: key
 }
