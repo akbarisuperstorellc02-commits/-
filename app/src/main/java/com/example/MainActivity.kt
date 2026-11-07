@@ -461,15 +461,15 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
         AcademyCard {
             Text(tr(p.locale, "continue"), style = MaterialTheme.typography.titleLarge)
             Text(tr(p.locale, "chooseLesson"))
-            Button(onClick = learn, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.MenuBook, null); Spacer(Modifier.width(8.dp)); Text(tr(p.locale, "openLessons")) }
+            Button(onClick = learn, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Icon(Icons.Default.MenuBook, null); Spacer(Modifier.width(8.dp)); Text(tr(p.locale, "openLessons")) }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = games, modifier = Modifier.weight(1f)) { Text(tr(p.locale, "games")) }
-            OutlinedButton(onClick = profile, modifier = Modifier.weight(1f)) { Text(tr(p.locale, "myProfile")) }
+            OutlinedButton(onClick = games, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(p.locale, "games")) }
+            OutlinedButton(onClick = profile, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(p.locale, "myProfile")) }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = tools, modifier = Modifier.weight(1f)) { Icon(Icons.Default.Alarm, null); Spacer(Modifier.width(6.dp)); Text(tr(p.locale, "studyTools")) }
-            OutlinedButton(onClick = calendar, modifier = Modifier.weight(1f)) {
+            OutlinedButton(onClick = tools, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Icon(Icons.Default.Alarm, null); Spacer(Modifier.width(6.dp)); Text(tr(p.locale, "studyTools")) }
+            OutlinedButton(onClick = calendar, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                 Icon(Icons.Default.CalendarMonth, null); Spacer(Modifier.width(6.dp))
                 Text(when (p.locale) {
                     AcademyLocale.ENGLISH_US -> "Calendar"
@@ -516,7 +516,7 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
     val lessons = selected?.let { AcademyLessonCatalog.forBand(it) }.orEmpty()
     Page {
         Text(tr(locale, "learningPath"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        OutlinedButton(onClick = vocabulary, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.Bookmarks, null); Spacer(Modifier.width(8.dp)); Text(tr(locale, "vocabulary")) }
+        OutlinedButton(onClick = vocabulary, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Icon(Icons.Default.Bookmarks, null); Spacer(Modifier.width(8.dp)); Text(tr(locale, "vocabulary")) }
         if (selected == null) {
             Text(tr(locale, "chooseLevel"))
             LearningBand.values().forEachIndexed { i, level ->
@@ -528,13 +528,13 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
                     }
                     Text(tr(locale, "bandSub", names[i]))
                     if (!unlocked) Text(tr(locale, "levelLocked"), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = .6f))
-                    Button(onClick = { select(level) }, enabled = unlocked, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "viewLessons")) }
+                    Button(onClick = { select(level) }, enabled = unlocked, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(locale, "viewLessons")) }
                 }
             }
         } else {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(selected.name.replace("_", "-"), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
-                TextButton(onClick = { select(null) }) { Text(tr(locale, "allLevels")) }
+                TextButton(onClick = { select(null) }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(locale, "allLevels")) }
             }
             lessons.forEachIndexed { index, lesson ->
                 val isCompleted = lesson.id in completedLessonIds
@@ -549,7 +549,7 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
                     Text(AsciiDigits.normalize(lesson.localizedObjective.forLocale(locale)), fontSize = 13.sp)
                     if (isCompleted) Text(tr(locale, "lessonDone"), color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
                     if (!lessonUnlocked) Text(tr(locale, "lessonLocked"), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-                    TextButton(onClick = { expanded = !expanded }, enabled = lessonUnlocked || isCompleted) {
+                    TextButton(onClick = { expanded = !expanded }, enabled = lessonUnlocked || isCompleted, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                         Text(if (expanded) tr(locale, "hideDetails") else tr(locale, "lessonDetails"))
                     }
                     if (expanded) {
@@ -572,14 +572,14 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
                         onClick = { complete(lesson.id) },
                         enabled = lessonUnlocked && !isCompleted,
                         modifier = Modifier.fillMaxWidth()
-                    ) {
+                    , shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                         Icon(Icons.Default.CheckCircle, null)
                         Spacer(Modifier.width(6.dp))
                         Text(tr(locale, if (isCompleted) "lessonDone" else "completeLesson"))
                     }
                 }
             }
-            OutlinedButton(onClick = quiz, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "quizReview")) }
+            OutlinedButton(onClick = quiz, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(locale, "quizReview")) }
         }
     }
 }
@@ -619,7 +619,7 @@ private fun VocabularyPage(locale: AcademyLocale, dao: AcademyDao) {
                     }
                     IconButton(onClick = {
                         scope.launch { dao.saveVocabulary(word.copy(favourite = !word.favourite)) }
-                    }) { Icon(if (word.favourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder, contentDescription = null) }
+                    }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Icon(if (word.favourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder, contentDescription = null) }
                 }
                 Text(word.exampleEnglish, fontWeight = FontWeight.SemiBold)
                 Text(word.exampleDari, fontSize = 13.sp)
@@ -641,7 +641,7 @@ private fun VocabularyPage(locale: AcademyLocale, dao: AcademyDao) {
                                 lastPractisedAt = System.currentTimeMillis()
                             ))
                         }
-                    }) {
+                    }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                         Text(when (locale) {
                             AcademyLocale.ENGLISH_US -> "Practised"
                             AcademyLocale.DARI_AF -> "تمرین شد"
@@ -736,7 +736,7 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.weight(1f)
                         )
-                        Button(onClick = { selectedGameId = mode.id }) {
+                        Button(onClick = { selectedGameId = mode.id }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                             Text(
                                 when (locale) {
                                     AcademyLocale.ENGLISH_US -> "Play"
@@ -775,7 +775,7 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
                         AcademyLocale.ARABIC -> "تم حفظ نتيجة اللعبة."
                     }
                 )
-                Button(onClick = { selectedGameId = null }, modifier = Modifier.fillMaxWidth()) {
+                Button(onClick = { selectedGameId = null }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                     Text(
                         when (locale) {
                             AcademyLocale.ENGLISH_US -> "Back to games"
@@ -850,7 +850,7 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
                         },
                         enabled = !answered,
                         modifier = Modifier.fillMaxWidth()
-                    ) {
+                    , shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                         Text(option.forLocale(locale))
                     }
                 }
@@ -886,7 +886,7 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
                         },
                         enabled = hintCount < question.answer.length && !hintPending,
                         modifier = Modifier.fillMaxWidth()
-                    ) {
+                    , shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                         Text(
                             when (locale) {
                                 AcademyLocale.ENGLISH_US -> "Hint · 6 coins"
@@ -902,7 +902,7 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
                             if (round == 4) gameFinished = true else round += 1
                         },
                         modifier = Modifier.fillMaxWidth()
-                    ) {
+                    , shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                         Text(
                             when (locale) {
                                 AcademyLocale.ENGLISH_US -> if (round == 4) "Finish game" else "Next question"
@@ -914,7 +914,7 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
                     }
                 }
                 Text(tr(locale, "coinBalance", AsciiDigits.normalize("$coins")), fontSize = 12.sp)
-                TextButton(onClick = { selectedGameId = null }) {
+                TextButton(onClick = { selectedGameId = null }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                     Text(
                         when (locale) {
                             AcademyLocale.ENGLISH_US -> "Exit game"
@@ -1025,7 +1025,7 @@ private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> U
                 Text(tr(locale, "quizComplete"), style = MaterialTheme.typography.titleLarge)
                 Text("${AsciiDigits.normalize(score.toString())}/${quizQuestions.size}", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
                 Text(tr(locale, "quizSaved"))
-                Button(onClick = onFinished, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "seeProgress")) }
+                Button(onClick = onFinished, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(locale, "seeProgress")) }
             } else {
                 val question = quizQuestions[index]
                 Text(tr(locale, "questionProgress", "${index + 1}/${quizQuestions.size}"))
@@ -1043,14 +1043,14 @@ private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> U
                         },
                         enabled = selectedAnswer == -1,
                         modifier = Modifier.fillMaxWidth()
-                    ) { Text(option.forLocale(locale)) }
+                    , shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(option.forLocale(locale)) }
                 }
                 if (explanation.isNotEmpty()) {
                     Text(explanation, color = MaterialTheme.colorScheme.primary)
                     Button(onClick = {
                         if (index == quizQuestions.lastIndex) finished = true
                         else { index += 1; selectedAnswer = -1; explanation = "" }
-                    }, modifier = Modifier.fillMaxWidth()) {
+                    }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                         Text(if (index == quizQuestions.lastIndex) tr(locale, "finishQuiz") else tr(locale, "nextQuestion"))
                     }
                 }
@@ -1152,13 +1152,13 @@ private fun CalendarPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> U
     Page {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-            TextButton(onClick = onBack) { Text(tr(locale, "home")) }
+            TextButton(onClick = onBack, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(locale, "home")) }
         }
         AcademyCard {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { monthOffset -= 1 }) { Icon(Icons.Default.ChevronLeft, contentDescription = "Previous month") }
+                IconButton(onClick = { monthOffset -= 1 }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Icon(Icons.Default.ChevronLeft, contentDescription = "Previous month") }
                 Text(monthTitle, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                IconButton(onClick = { monthOffset += 1 }) { Icon(Icons.Default.ChevronRight, contentDescription = "Next month") }
+                IconButton(onClick = { monthOffset += 1 }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Icon(Icons.Default.ChevronRight, contentDescription = "Next month") }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                 dayHeaders.forEach { day ->
@@ -1328,7 +1328,7 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
     Page {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(tr(locale, "studyTools"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-            TextButton(onClick = onBack) { Text(tr(locale, "home")) }
+            TextButton(onClick = onBack, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(locale, "home")) }
         }
         AcademyCard {
             Text(tr(locale, "timer"), style = MaterialTheme.typography.titleLarge)
@@ -1343,8 +1343,8 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
                         if (sessionStart == 0L) sessionStart = System.currentTimeMillis()
                         running = true
                     }
-                }, enabled = !running, modifier = Modifier.weight(1f)) { Text(tr(locale, "startTimer")) }
-                OutlinedButton(onClick = { running = false }, enabled = running, modifier = Modifier.weight(1f)) { Text(tr(locale, "pauseTimer")) }
+                }, enabled = !running, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(locale, "startTimer")) }
+                OutlinedButton(onClick = { running = false }, enabled = running, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(locale, "pauseTimer")) }
             }
             Button(onClick = {
                 running = false
@@ -1361,7 +1361,7 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
                 elapsedSeconds = 0L
                 sessionStart = 0L
                 sessionId = UUID.randomUUID().toString()
-            }, enabled = elapsedSeconds > 0L, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "finishTimer")) }
+            }, enabled = elapsedSeconds > 0L, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(locale, "finishTimer")) }
             if (feedback.isNotEmpty()) Text(feedback, color = MaterialTheme.colorScheme.primary)
         }
         AcademyCard {
@@ -1427,7 +1427,7 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
                     }
                     schedule()
                 }
-            }, modifier = Modifier.fillMaxWidth()) {
+            }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                 Text(tr(locale, if (editingReminderId == null) "scheduleReminder" else "updateReminder"))
             }
             if (editingReminderId != null) {
@@ -1436,7 +1436,7 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
                     reminderTitle = ""
                     reminderTime = "19:00"
                     repeatDaysMask = 127
-                }) { Text(tr(locale, "cancel")) }
+                }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(locale, "cancel")) }
             }
             if (reminders.isEmpty()) Text(tr(locale, "noReminders"))
             reminders.forEach { reminder ->
@@ -1461,7 +1461,7 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
                         reminderTitle = reminder.title
                         reminderTime = "%02d:%02d".format(reminder.hour, reminder.minute)
                         repeatDaysMask = reminder.repeatDaysMask
-                    }) { Icon(Icons.Default.Edit, contentDescription = "Edit reminder") }
+                    }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Icon(Icons.Default.Edit, contentDescription = "Edit reminder") }
                     IconButton(onClick = {
                         scope.launch { dao.deleteReminder(reminder.reminderId) }
                         ReminderScheduler.cancel(context, reminder.reminderId)
@@ -1471,7 +1471,7 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
                             reminderTime = "19:00"
                             repeatDaysMask = 127
                         }
-                    }) { Icon(Icons.Default.Delete, contentDescription = "Delete reminder") }
+                    }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Icon(Icons.Default.Delete, contentDescription = "Delete reminder") }
                 }
             }
             if (feedback.isNotEmpty()) Text(feedback, color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
@@ -1520,7 +1520,7 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
                 } else {
                     PuffyAvatar(emoji = "🌸", size = 82)
                 }
-                OutlinedButton(onClick = { avatarPicker.launch(arrayOf("image/*")) }) { Text(tr(profile.locale, "changeAvatar")) }
+                OutlinedButton(onClick = { avatarPicker.launch(arrayOf("image/*")) }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(profile.locale, "changeAvatar")) }
             }
             Text(profile.displayName, style = MaterialTheme.typography.titleLarge)
             Text(when (profile.locale) {
@@ -1551,7 +1551,7 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
             }
             OutlinedTextField(displayName, { displayName = it }, modifier = Modifier.fillMaxWidth(), label = { Text(tr(profile.locale, "displayName")) }, singleLine = true)
             OutlinedTextField(username, { username = it }, modifier = Modifier.fillMaxWidth(), label = { Text(tr(profile.locale, "username")) }, singleLine = true)
-            Button(onClick = { scope.launch { prefs.updateDisplayName(displayName); prefs.updateUsername(username) } }, modifier = Modifier.fillMaxWidth()) { Text(tr(profile.locale, "save")) }
+            Button(onClick = { scope.launch { prefs.updateDisplayName(displayName); prefs.updateUsername(username) } }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(profile.locale, "save")) }
         }
         AcademyCard {
             Text(
@@ -1587,7 +1587,7 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
         AcademyCard {
             Text(tr(profile.locale, "language"), style = MaterialTheme.typography.titleMedium)
             AcademyLocale.values().forEach { option ->
-                OutlinedButton(onClick = { scope.launch { prefs.updateLocale(option) } }, modifier = Modifier.fillMaxWidth()) {
+                OutlinedButton(onClick = { scope.launch { prefs.updateLocale(option) } }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                     Text(if (profile.locale == option) "✓  ${tr(profile.locale, option.name)}" else tr(profile.locale, option.name))
                 }
             }
@@ -1597,7 +1597,7 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
             AcademyThemeId.values().toList().chunked(2).forEach { pair ->
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     pair.forEach { option ->
-                        OutlinedButton(onClick = { scope.launch { prefs.updateTheme(option) } }, modifier = Modifier.weight(1f)) {
+                        OutlinedButton(onClick = { scope.launch { prefs.updateTheme(option) } }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                             Text(tr(profile.locale, option.name), fontSize = 9.sp, maxLines = 1)
                         }
                     }
@@ -1607,21 +1607,21 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
         }
         AcademyCard {
             Text(tr(profile.locale, "backupRestore"), style = MaterialTheme.typography.titleMedium)
-            OutlinedButton(onClick = { exportLauncher.launch("bh-personal-academy-backup.json") }, modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(onClick = { exportLauncher.launch("bh-personal-academy-backup.json") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                 Icon(Icons.Default.CloudDownload, null); Spacer(Modifier.width(8.dp)); Text(tr(profile.locale, "createBackup"))
             }
-            OutlinedButton(onClick = { importLauncher.launch(arrayOf("application/json", "text/json")) }, modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(onClick = { importLauncher.launch(arrayOf("application/json", "text/json")) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                 Icon(Icons.Default.CloudUpload, null); Spacer(Modifier.width(8.dp)); Text(tr(profile.locale, "restoreBackup"))
             }
             Text(tr(profile.locale, "backupMergeNote"), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = .65f))
-            OutlinedButton(onClick = { resetStep = 1 }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
+            OutlinedButton(onClick = { resetStep = 1 }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
                 Icon(Icons.Default.DeleteForever, null); Spacer(Modifier.width(8.dp)); Text(tr(profile.locale, "resetData"))
             }
         }
         AcademyCard {
             Text(tr(profile.locale, "font"), style = MaterialTheme.typography.titleMedium)
             AcademyFontId.values().forEach { option ->
-                OutlinedButton(onClick = { scope.launch { prefs.updateFont(option) } }, modifier = Modifier.fillMaxWidth()) { Text(tr(profile.locale, option.name)) }
+                OutlinedButton(onClick = { scope.launch { prefs.updateFont(option) } }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(profile.locale, option.name)) }
             }
             Text(tr(profile.locale, "dailyGoal"), style = MaterialTheme.typography.titleMedium)
             var goal by remember(profile.dailyStudyGoalMinutes) { mutableFloatStateOf(profile.dailyStudyGoalMinutes.toFloat()) }
@@ -1671,9 +1671,9 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
                             .onSuccess { Toast.makeText(context, tr(profile.locale, "restoreSuccess"), Toast.LENGTH_LONG).show() }
                             .onFailure { Toast.makeText(context, tr(profile.locale, "backupFailed"), Toast.LENGTH_LONG).show() }
                     }
-                }) { Text(tr(profile.locale, "confirmRestore")) }
+                }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(profile.locale, "confirmRestore")) }
             },
-            dismissButton = { TextButton(onClick = { pendingImportUri = null }) { Text(tr(profile.locale, "cancel")) } }
+            dismissButton = { TextButton(onClick = { pendingImportUri = null }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(profile.locale, "cancel")) } }
         )
     }
     if (resetStep == 1) {
@@ -1681,8 +1681,8 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
             onDismissRequest = { resetStep = 0 },
             title = { Text(tr(profile.locale, "resetData")) },
             text = { Text(tr(profile.locale, "resetWarning")) },
-            confirmButton = { Button(onClick = { resetStep = 2 }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) { Text(tr(profile.locale, "continueReset")) } },
-            dismissButton = { TextButton(onClick = { resetStep = 0 }) { Text(tr(profile.locale, "cancel")) } }
+            confirmButton = { Button(onClick = { resetStep = 2 }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(profile.locale, "continueReset")) } },
+            dismissButton = { TextButton(onClick = { resetStep = 0 }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(profile.locale, "cancel")) } }
         )
     }
     if (resetStep == 2) {
@@ -1705,9 +1705,9 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
                             Toast.makeText(context, tr(profile.locale, "backupFailed"), Toast.LENGTH_LONG).show()
                         }
                     }
-                }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) { Text(tr(profile.locale, "finalResetButton")) }
+                }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(profile.locale, "finalResetButton")) }
             },
-            dismissButton = { TextButton(onClick = { resetStep = 0 }) { Text(tr(profile.locale, "cancel")) } }
+            dismissButton = { TextButton(onClick = { resetStep = 0 }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(profile.locale, "cancel")) } }
         )
     }
 }
