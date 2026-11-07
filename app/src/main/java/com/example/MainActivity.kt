@@ -61,6 +61,7 @@ import com.example.academy.core.AsciiDigits
 import com.example.academy.domain.model.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -1331,6 +1332,7 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
         }
     }
     var pendingImportUri by remember { mutableStateOf<Uri?>(null) }
+    var resetStep by remember { mutableIntStateOf(0) }
     val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) scope.launch {
             runCatching { AcademyBackupManager.export(context, uri, prefs, dao) }
@@ -1390,6 +1392,9 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
                 Icon(Icons.Default.CloudUpload, null); Spacer(Modifier.width(8.dp)); Text(tr(profile.locale, "restoreBackup"))
             }
             Text(tr(profile.locale, "backupMergeNote"), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = .65f))
+            OutlinedButton(onClick = { resetStep = 1 }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
+                Icon(Icons.Default.DeleteForever, null); Spacer(Modifier.width(8.dp)); Text(tr(profile.locale, "resetData"))
+            }
         }
         AcademyCard {
             Text(tr(profile.locale, "font"), style = MaterialTheme.typography.titleMedium)
@@ -1449,6 +1454,39 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
             dismissButton = { TextButton(onClick = { pendingImportUri = null }) { Text(tr(profile.locale, "cancel")) } }
         )
     }
+    if (resetStep == 1) {
+        AlertDialog(
+            onDismissRequest = { resetStep = 0 },
+            title = { Text(tr(profile.locale, "resetData")) },
+            text = { Text(tr(profile.locale, "resetWarning")) },
+            confirmButton = { Button(onClick = { resetStep = 2 }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) { Text(tr(profile.locale, "continueReset")) } },
+            dismissButton = { TextButton(onClick = { resetStep = 0 }) { Text(tr(profile.locale, "cancel")) } }
+        )
+    }
+    if (resetStep == 2) {
+        AlertDialog(
+            onDismissRequest = { resetStep = 0 },
+            title = { Text(tr(profile.locale, "finalResetTitle")) },
+            text = { Text(tr(profile.locale, "finalResetWarning")) },
+            confirmButton = {
+                Button(onClick = {
+                    resetStep = 0
+                    scope.launch {
+                        runCatching {
+                            dao.observeReminders().first().forEach { ReminderScheduler.cancel(context, it.reminderId) }
+                            dao.clearAllLearningData()
+                            prefs.resetProfile()
+                        }.onSuccess {
+                            Toast.makeText(context, tr(profile.locale, "resetSuccess"), Toast.LENGTH_LONG).show()
+                        }.onFailure {
+                            Toast.makeText(context, tr(profile.locale, "backupFailed"), Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) { Text(tr(profile.locale, "finalResetButton")) }
+            },
+            dismissButton = { TextButton(onClick = { resetStep = 0 }) { Text(tr(profile.locale, "cancel")) } }
+        )
+    }
 }
 
 private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
@@ -1468,7 +1506,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "hintButton" to "Get a hint · 6 coins", "coinBalance" to "Your coins: $arg", "newRound" to "New round",
         "gameRoadmap" to "More vocabulary, spelling and memory games are planned for the next content phase.",
         "summary" to "Learning summary", "badges" to "Achievements", "badgeFirstLesson" to "First lesson completed", "badgeFiveLessons" to "Five lessons completed", "badgeFirstQuiz" to "First quiz completed", "badgeFirstGame" to "First game played", "badgeHour" to "One hour of study", "noBadges" to "Complete lessons, quizzes and games to earn badges.", "studyToday" to "Today", "studyWeek" to "This week", "studyMonth" to "This month", "studyTotal" to "Total study time", "average" to "Average quiz score", "quizHistory" to "Quiz history", "noHistory" to "No quiz attempts yet.", "quizTitle" to "Quick mixed quiz", "nextQuestion" to "Next question", "finishQuiz" to "Finish quiz", "quizComplete" to "Quiz completed!", "quizSaved" to "Your result has been saved to your learning history.", "seeProgress" to "View progress", "questionProgress" to "Question $arg",
-        "displayName" to "Display name", "changeAvatar" to "Change photo", "backupRestore" to "Backup and restore", "createBackup" to "Create backup", "restoreBackup" to "Restore backup", "backupMergeNote" to "Restore merges saved records with this device; it does not erase local data.", "confirmRestore" to "Restore this backup?", "restoreWarning" to "The selected backup will update profile settings and merge saved learning records.", "cancel" to "Cancel", "backupExported" to "Backup saved successfully.", "restoreSuccess" to "Backup restored successfully.", "backupFailed" to "Backup operation failed. Check the selected file and try again.", "username" to "Username", "save" to "Save profile", "language" to "Language", "theme" to "Theme",
+        "displayName" to "Display name", "changeAvatar" to "Change photo", "backupRestore" to "Backup and restore", "resetData" to "Reset all app data", "resetWarning" to "This removes your learning progress, quiz and game history, saved words, reminders and profile settings.", "continueReset" to "Continue", "finalResetTitle" to "Final confirmation", "finalResetWarning" to "This action cannot be undone. Create a backup first if you may need this data.", "finalResetButton" to "Delete all data", "resetSuccess" to "App data has been reset.", "createBackup" to "Create backup", "restoreBackup" to "Restore backup", "backupMergeNote" to "Restore merges saved records with this device; it does not erase local data.", "confirmRestore" to "Restore this backup?", "restoreWarning" to "The selected backup will update profile settings and merge saved learning records.", "cancel" to "Cancel", "backupExported" to "Backup saved successfully.", "restoreSuccess" to "Backup restored successfully.", "backupFailed" to "Backup operation failed. Check the selected file and try again.", "username" to "Username", "save" to "Save profile", "language" to "Language", "theme" to "Theme",
         "font" to "Font", "minutes" to "minutes", "studyTools" to "Study tools", "timer" to "Study timer", "startTimer" to "Start", "pauseTimer" to "Pause", "finishTimer" to "Finish session", "timerSaved" to "Study session saved.", "reminders" to "Reminders and alarms", "reminderTitle" to "Reminder title", "timeHHMM" to "Time (HH:MM)", "dailyReminder" to "Repeat every day", "scheduleReminder" to "Schedule reminder", "reminderSaved" to "Reminder scheduled.", "invalidTime" to "Enter a title and valid time such as 19:30.", "permissionNeeded" to "Allow notifications in Android settings to receive reminders.", "exactAlarmPermission" to "Allow exact alarms in Android settings; otherwise reminders may be delayed.", "noReminders" to "No reminders scheduled yet.", "DARI_AF" to "Afghan Dari", "PASHTO_AF" to "Afghan Pashto", "ARABIC" to "Arabic", "ENGLISH_US" to "English",
         "SANS_SERIF" to "Sans Serif", "SERIF" to "Serif", "CURSIVE" to "Cursive"
     )
@@ -1488,7 +1526,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "hintButton" to "دریافت راهنما · 6 سکه", "coinBalance" to "سکه‌های تو: $arg", "newRound" to "دور تازه",
         "gameRoadmap" to "بازی‌های واژگان، املا و حافظه در مرحله بعدی محتوا اضافه می‌شوند.",
         "summary" to "خلاصه یادگیری تو", "badges" to "افتخارات", "badgeFirstLesson" to "نخستین درس تکمیل شد", "badgeFiveLessons" to "پنج درس تکمیل شد", "badgeFirstQuiz" to "نخستین آزمون انجام شد", "badgeFirstGame" to "نخستین بازی انجام شد", "badgeHour" to "یک ساعت مطالعه", "noBadges" to "برای دریافت مدال، درس‌ها و آزمون‌ها را تکمیل کن.", "studyToday" to "امروز", "studyWeek" to "این هفته", "studyMonth" to "این ماه", "studyTotal" to "مجموع زمان مطالعه", "average" to "میانگین نمره آزمون", "quizHistory" to "تاریخچه آزمون", "noHistory" to "هنوز آزمونی انجام نشده است.", "quizTitle" to "آزمون ترکیبی کوتاه", "nextQuestion" to "پرسش بعدی", "finishQuiz" to "پایان آزمون", "quizComplete" to "آزمون تکمیل شد!", "quizSaved" to "نتیجه در تاریخچه یادگیری ذخیره شد.", "seeProgress" to "دیدن پیشرفت", "questionProgress" to "پرسش $arg",
-        "displayName" to "نام نمایشی", "changeAvatar" to "تغییر عکس", "backupRestore" to "پشتیبان‌گیری و بازیابی", "createBackup" to "ساخت نسخه پشتیبان", "restoreBackup" to "بازیابی نسخه پشتیبان", "backupMergeNote" to "بازیابی، اطلاعات را با داده‌های دستگاه یکجا می‌کند و اطلاعات محلی را پاک نمی‌کند.", "confirmRestore" to "این نسخه پشتیبان بازیابی شود؟", "restoreWarning" to "تنظیمات پروفایل و سوابق آموزشی از فایل انتخاب‌شده وارد می‌شوند.", "cancel" to "لغو", "backupExported" to "نسخه پشتیبان با موفقیت ذخیره شد.", "restoreSuccess" to "نسخه پشتیبان با موفقیت بازیابی شد.", "backupFailed" to "عملیات پشتیبان‌گیری ناکام شد؛ فایل را بررسی کن.", "username" to "نام کاربری", "save" to "ذخیره پروفایل", "language" to "زبان", "theme" to "تم",
+        "displayName" to "نام نمایشی", "changeAvatar" to "تغییر عکس", "backupRestore" to "پشتیبان‌گیری و بازیابی", "resetData" to "بازنشانی تمام اطلاعات برنامه", "resetWarning" to "پیشرفت آموزشی، تاریخچه آزمون و بازی، واژگان ذخیره‌شده، یادآوری‌ها و تنظیمات پروفایل حذف می‌شوند.", "continueReset" to "ادامه", "finalResetTitle" to "تأیید نهایی", "finalResetWarning" to "این کار برگشت‌پذیر نیست. اگر به اطلاعات نیاز داری، نخست نسخه پشتیبان بساز.", "finalResetButton" to "حذف تمام اطلاعات", "resetSuccess" to "اطلاعات برنامه بازنشانی شد.", "createBackup" to "ساخت نسخه پشتیبان", "restoreBackup" to "بازیابی نسخه پشتیبان", "backupMergeNote" to "بازیابی، اطلاعات را با داده‌های دستگاه یکجا می‌کند و اطلاعات محلی را پاک نمی‌کند.", "confirmRestore" to "این نسخه پشتیبان بازیابی شود؟", "restoreWarning" to "تنظیمات پروفایل و سوابق آموزشی از فایل انتخاب‌شده وارد می‌شوند.", "cancel" to "لغو", "backupExported" to "نسخه پشتیبان با موفقیت ذخیره شد.", "restoreSuccess" to "نسخه پشتیبان با موفقیت بازیابی شد.", "backupFailed" to "عملیات پشتیبان‌گیری ناکام شد؛ فایل را بررسی کن.", "username" to "نام کاربری", "save" to "ذخیره پروفایل", "language" to "زبان", "theme" to "تم",
         "font" to "فونت", "minutes" to "دقیقه", "studyTools" to "ابزارهای مطالعه", "timer" to "تایمر مطالعه", "startTimer" to "شروع", "pauseTimer" to "مکث", "finishTimer" to "پایان جلسه", "timerSaved" to "جلسه مطالعه ذخیره شد.", "reminders" to "یادآوری و زنگ", "reminderTitle" to "عنوان یادآوری", "timeHHMM" to "زمان (ساعت:دقیقه)", "dailyReminder" to "تکرار هر روز", "scheduleReminder" to "تنظیم یادآوری", "reminderSaved" to "یادآوری تنظیم شد.", "invalidTime" to "عنوان و زمان درست مانند 19:30 وارد کن.", "permissionNeeded" to "برای دریافت یادآوری، اجازه اعلان‌ها را در اندروید فعال کن.", "exactAlarmPermission" to "برای زنگ دقیق، اجازه زنگ‌های دقیق را در تنظیمات اندروید فعال کن.", "noReminders" to "هنوز یادآوری تنظیم نشده است.", "DARI_AF" to "دری افغانستان", "PASHTO_AF" to "پشتو افغانستان", "ARABIC" to "عربی", "ENGLISH_US" to "انگلیسی",
         "SANS_SERIF" to "سن‌سریف", "SERIF" to "سریف", "CURSIVE" to "دست‌نویس"
     )
@@ -1497,7 +1535,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "level" to "کچه", "coins" to "سکې", "dailyGoal" to "د مطالعې ورځنی هدف", "lessons" to "بشپړ شوي درسونه", "quizzes" to "ازموینې",
         "learningPath" to "د انګلیسي زده کړې لاره", "vocabulary" to "د لغتونو کتابچه", "searchWords" to "د لغت لټون", "wordCount" to "$arg لغتونه", "chooseLevel" to "خپله کچه وټاکئ", "viewLessons" to "درسونه وګورئ", "levelLocked" to "د دې کچې د خلاصولو لپاره مخکینۍ کچه بشپړه کړئ.", "allLevels" to "ټولې کچې",
         "correct" to "ډېر ښه! ځواب سم دی.", "quizTitle" to "لنډه ګډه ازموینه", "nextQuestion" to "بله پوښتنه", "finishQuiz" to "ازموینه پای ته ورسوه", "quizComplete" to "ازموینه بشپړه شوه!", "quizSaved" to "ستاسو پایله د زده کړې په تاریخ کې خوندي شوه.", "seeProgress" to "پرمختګ وګورئ", "wrong" to "بیا هڅه وکړئ.", "hintButton" to "لارښوونه · 6 سکې", "hintPaid" to "لارښوونه فعاله شوه؛ 6 سکې ولګېدې.",
-        "needCoins" to "لږ تر لږه 6 سکې پکار دي.", "displayName" to "ښکاره نوم", "changeAvatar" to "انځور بدل کړئ", "backupRestore" to "بیک اپ او بېرته راګرځول", "createBackup" to "بیک اپ جوړول", "restoreBackup" to "بیک اپ بېرته راګرځول", "backupMergeNote" to "بېرته راګرځول معلومات یوځای کوي او د وسیلې موجود معلومات نه ړنګوي.", "confirmRestore" to "دا بیک اپ بېرته را وګرځوو؟", "restoreWarning" to "د پروفایل تنظیمات او د زده کړې ثبتونه به له ټاکل شوي فایل څخه ورزیات شي.", "cancel" to "لغوه", "backupExported" to "بیک اپ په بریالیتوب خوندي شو.", "restoreSuccess" to "بیک اپ په بریالیتوب بېرته را وګرځېد.", "backupFailed" to "د بیک اپ کار ناکام شو؛ فایل وګورئ او بیا هڅه وکړئ.", "username" to "کارن نوم", "save" to "پروفایل خوندي کړئ",
+        "needCoins" to "لږ تر لږه 6 سکې پکار دي.", "displayName" to "ښکاره نوم", "changeAvatar" to "انځور بدل کړئ", "backupRestore" to "بیک اپ او بېرته راګرځول", "resetData" to "د اپ ټول معلومات بیا تنظیمول", "resetWarning" to "د زده کړې پرمختګ، د ازموینو او لوبو تاریخچه، خوندي لغتونه، یادونې او د پروفایل تنظیمات به ړنګ شي.", "continueReset" to "دوام", "finalResetTitle" to "وروستی تایید", "finalResetWarning" to "دا کار بېرته نه راګرځي. که معلوماتو ته اړتیا لرئ، لومړی بیک اپ جوړ کړئ.", "finalResetButton" to "ټول معلومات ړنګول", "resetSuccess" to "د اپ معلومات بیا تنظیم شول.", "createBackup" to "بیک اپ جوړول", "restoreBackup" to "بیک اپ بېرته راګرځول", "backupMergeNote" to "بېرته راګرځول معلومات یوځای کوي او د وسیلې موجود معلومات نه ړنګوي.", "confirmRestore" to "دا بیک اپ بېرته را وګرځوو؟", "restoreWarning" to "د پروفایل تنظیمات او د زده کړې ثبتونه به له ټاکل شوي فایل څخه ورزیات شي.", "cancel" to "لغوه", "backupExported" to "بیک اپ په بریالیتوب خوندي شو.", "restoreSuccess" to "بیک اپ په بریالیتوب بېرته را وګرځېد.", "backupFailed" to "د بیک اپ کار ناکام شو؛ فایل وګورئ او بیا هڅه وکړئ.", "username" to "کارن نوم", "save" to "پروفایل خوندي کړئ",
         "language" to "ژبه", "theme" to "بڼه", "font" to "لیکبڼه", "minutes" to "دقیقې", "studyTools" to "د مطالعې وسایل", "timer" to "د مطالعې ټایمر", "startTimer" to "پیل", "pauseTimer" to "تم", "finishTimer" to "ناسته پای ته ورسوه", "timerSaved" to "د مطالعې ناسته خوندي شوه.", "reminders" to "یادونې او الارم", "reminderTitle" to "د یادونې سرلیک", "timeHHMM" to "وخت (HH:MM)", "dailyReminder" to "هره ورځ تکرار", "scheduleReminder" to "یادونه تنظیم کړه", "reminderSaved" to "یادونه تنظیم شوه.", "invalidTime" to "سرلیک او سم وخت ولیکئ، لکه 19:30.", "permissionNeeded" to "د یادونو ترلاسه کولو لپاره د Android خبرتیا اجازه ورکړئ.", "exactAlarmPermission" to "دقیق الارم لپاره په Android تنظیماتو کې د دقیقو الارمونو اجازه ورکړئ.", "noReminders" to "تر اوسه یادونه نشته.",
         "DARI_AF" to "افغان دري", "PASHTO_AF" to "افغان پښتو", "ARABIC" to "عربي", "ENGLISH_US" to "انګلیسي",
         "SANS_SERIF" to "سن‌سریف", "SERIF" to "سریف", "CURSIVE" to "لاس لیک")
@@ -1506,7 +1544,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "level" to "المستوى", "coins" to "العملات", "dailyGoal" to "هدف الدراسة اليومي", "lessons" to "الدروس المكتملة", "quizzes" to "الاختبارات",
         "learningPath" to "مسار تعلم الإنجليزية", "vocabulary" to "دفتر المفردات", "searchWords" to "ابحث عن كلمة", "wordCount" to "$arg كلمة", "chooseLevel" to "اختر مستواك", "viewLessons" to "عرض الدروس", "levelLocked" to "أكمل المستوى السابق لفتح هذا المستوى.", "allLevels" to "كل المستويات",
         "correct" to "ممتاز! إجابة صحيحة.", "quizTitle" to "اختبار قصير متنوع", "nextQuestion" to "السؤال التالي", "finishQuiz" to "إنهاء الاختبار", "quizComplete" to "اكتمل الاختبار!", "quizSaved" to "تم حفظ النتيجة في سجل التعلم.", "seeProgress" to "عرض التقدم", "wrong" to "حاول مرة أخرى.", "hintButton" to "تلميح · 6 عملات", "hintPaid" to "تم تفعيل التلميح؛ خُصمت 6 عملات.",
-        "needCoins" to "تحتاج إلى 6 عملات على الأقل.", "displayName" to "الاسم الظاهر", "changeAvatar" to "تغيير الصورة", "backupRestore" to "النسخ الاحتياطي والاستعادة", "createBackup" to "إنشاء نسخة احتياطية", "restoreBackup" to "استعادة نسخة احتياطية", "backupMergeNote" to "تدمج الاستعادة السجلات مع بيانات الجهاز ولا تحذف البيانات المحلية.", "confirmRestore" to "هل تريد استعادة هذه النسخة؟", "restoreWarning" to "سيتم تحديث إعدادات الملف ودمج سجلات التعلم من الملف المحدد.", "cancel" to "إلغاء", "backupExported" to "تم حفظ النسخة الاحتياطية بنجاح.", "restoreSuccess" to "تمت استعادة النسخة الاحتياطية بنجاح.", "backupFailed" to "فشلت عملية النسخ الاحتياطي. تحقق من الملف وحاول مجدداً.", "username" to "اسم المستخدم", "save" to "حفظ الملف",
+        "needCoins" to "تحتاج إلى 6 عملات على الأقل.", "displayName" to "الاسم الظاهر", "changeAvatar" to "تغيير الصورة", "backupRestore" to "النسخ الاحتياطي والاستعادة", "resetData" to "إعادة ضبط جميع بيانات التطبيق", "resetWarning" to "سيؤدي ذلك إلى حذف التقدم وسجل الاختبارات والألعاب والمفردات المحفوظة والتذكيرات وإعدادات الملف.", "continueReset" to "متابعة", "finalResetTitle" to "التأكيد النهائي", "finalResetWarning" to "لا يمكن التراجع عن هذا الإجراء. أنشئ نسخة احتياطية أولاً إذا كنت قد تحتاج إلى هذه البيانات.", "finalResetButton" to "حذف جميع البيانات", "resetSuccess" to "تمت إعادة ضبط بيانات التطبيق.", "createBackup" to "إنشاء نسخة احتياطية", "restoreBackup" to "استعادة نسخة احتياطية", "backupMergeNote" to "تدمج الاستعادة السجلات مع بيانات الجهاز ولا تحذف البيانات المحلية.", "confirmRestore" to "هل تريد استعادة هذه النسخة؟", "restoreWarning" to "سيتم تحديث إعدادات الملف ودمج سجلات التعلم من الملف المحدد.", "cancel" to "إلغاء", "backupExported" to "تم حفظ النسخة الاحتياطية بنجاح.", "restoreSuccess" to "تمت استعادة النسخة الاحتياطية بنجاح.", "backupFailed" to "فشلت عملية النسخ الاحتياطي. تحقق من الملف وحاول مجدداً.", "username" to "اسم المستخدم", "save" to "حفظ الملف",
         "language" to "اللغة", "theme" to "السمة", "font" to "الخط", "minutes" to "دقيقة", "studyTools" to "أدوات الدراسة", "timer" to "مؤقت الدراسة", "startTimer" to "ابدأ", "pauseTimer" to "إيقاف مؤقت", "finishTimer" to "إنهاء الجلسة", "timerSaved" to "تم حفظ جلسة الدراسة.", "reminders" to "التذكيرات والمنبهات", "reminderTitle" to "عنوان التذكير", "timeHHMM" to "الوقت (HH:MM)", "dailyReminder" to "التكرار يومياً", "scheduleReminder" to "جدولة التذكير", "reminderSaved" to "تمت جدولة التذكير.", "invalidTime" to "أدخل عنواناً ووقتاً صحيحاً مثل 19:30.", "permissionNeeded" to "اسمح بالإشعارات من إعدادات Android لاستلام التذكيرات.", "exactAlarmPermission" to "اسمح بالمنبهات الدقيقة من إعدادات Android حتى لا تتأخر التذكيرات.", "noReminders" to "لا توجد تذكيرات مجدولة بعد.",
         "DARI_AF" to "الداري الأفغانية", "PASHTO_AF" to "البشتوية الأفغانية", "ARABIC" to "العربية", "ENGLISH_US" to "الإنجليزية",
         "SANS_SERIF" to "Sans Serif", "SERIF" to "Serif", "CURSIVE" to "Cursive")
