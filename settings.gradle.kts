@@ -25,4 +25,3 @@ dependencyResolutionManagement {
 rootProject.name = "خودسازی زهرا"
 
 include(":app")
-include(":gemma_ai_pack_1", ":gemma_ai_pack_2", ":gemma_ai_pack_3")
