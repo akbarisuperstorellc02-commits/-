@@ -23,6 +23,7 @@ kotlinxCoroutinesCore = "1.10.2"
 moshiKotlin = "1.15.2"
 moshiKotlinCodegen = "1.15.2"
 datastorePreferences = "1.1.7"
+appcompat = "1.7.1"
 robolectric = "4.16.1"
 
 [libraries]
@@ -56,6 +57,7 @@ kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshiKotlin" }
 moshi-kotlin-codegen = { group = "com.squareup.moshi", name = "moshi-kotlin-codegen", version.ref = "moshiKotlinCodegen" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastorePreferences" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 
 [plugins]
