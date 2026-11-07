@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">د ځان‌جوړونې اکاډمي</string><string name="nav_home">کور</string><string name="nav_learning">زده کړه</string><string name="nav_games">لوبې</string><string name="nav_calendar">کلیزه</string><string name="nav_profile">پروفایل</string>
+    <string name="app_name">د ځان‌جوړونې اکاډمي Learning</string><string name="nav_home">کور</string><string name="nav_learning">زده کړه</string><string name="nav_games">لوبې</string><string name="nav_calendar">کلیزه</string><string name="nav_profile">پروفایل</string>
     <string name="greeting">ښه راغلاست</string><string name="settings">امستنې</string><string name="language">د اپ ژبه</string>
     <string name="language_dari">افغان دري</string><string name="language_pashto">افغان پښتو</string><string name="language_arabic">عربي</string><string name="language_english">انګلیسي</string>
     <string name="font_sans">Sans Serif</string><string name="font_serif">Serif</string><string name="font_cursive">Cursive</string><string name="daily_goal">ورځنی هدف</string><string name="minutes">دقیقې</string>
