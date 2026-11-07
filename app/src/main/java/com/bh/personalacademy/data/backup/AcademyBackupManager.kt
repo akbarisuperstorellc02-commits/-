@@ -23,7 +23,7 @@ object AcademyBackupManager {
     private const val FORMAT = "BH_PERSONAL_ACADEMY"
     private const val VERSION = 1
 
-    suspend fun export(context: Context, uri: Uri, preferences: AcademyPreferences, dao: AcademyDao) =
+    suspend fun export(context: Context, uri: Uri, preferences: AcademyPreferences, dao: AcademyDao, profileId: String = "primary") =
         withContext(Dispatchers.IO) {
             val profile = preferences.profile.first()
             val root = JSONObject()
@@ -43,39 +43,39 @@ object AcademyBackupManager {
                     .put("dailyGoalQuizzes", profile.dailyGoalQuizzes))
 
             root.put("lessonProgress", JSONArray().apply {
-                dao.observeLessonProgress().first().forEach { put(JSONObject()
+                dao.observeLessonProgress(profileId).first().forEach { put(JSONObject()
                     .put("profileId", it.profileId).put("lessonId", it.lessonId)
                     .put("completedAt", it.completedAt ?: JSONObject.NULL)
                     .put("bestScore", it.bestScore).put("attempts", it.attempts)) }
             })
             root.put("quizAttempts", JSONArray().apply {
-                dao.observeQuizAttempts().first().forEach { put(JSONObject()
+                dao.observeQuizAttempts(profileId).first().forEach { put(JSONObject()
                     .put("attemptId", it.attemptId).put("profileId", it.profileId).put("quizId", it.quizId)
                     .put("score", it.score).put("totalQuestions", it.totalQuestions).put("completedAt", it.completedAt)
                     .put("incorrectQuestionIds", it.incorrectQuestionIds)) }
             })
             root.put("gameAttempts", JSONArray().apply {
-                dao.observeGameAttempts().first().forEach { put(JSONObject()
+                dao.observeGameAttempts(profileId).first().forEach { put(JSONObject()
                     .put("attemptId", it.attemptId).put("profileId", it.profileId).put("gameId", it.gameId)
                     .put("score", it.score).put("totalQuestions", it.totalQuestions).put("completedAt", it.completedAt)) }
             })
             root.put("studySessions", JSONArray().apply {
-                dao.observeStudySessions().first().forEach { put(JSONObject()
+                dao.observeStudySessions(profileId).first().forEach { put(JSONObject()
                     .put("sessionId", it.sessionId).put("profileId", it.profileId).put("lessonId", it.lessonId)
                     .put("startedAt", it.startedAt).put("durationMillis", it.durationMillis)
                     .put("completedAt", it.completedAt ?: JSONObject.NULL)) }
             })
-            root.put("wallet", dao.observeWallet().first()?.let {
+            root.put("wallet", dao.observeWallet(profileId).first()?.let {
                 JSONObject().put("profileId", it.profileId).put("xp", it.xp).put("coins", it.coins).put("level", it.level)
             } ?: JSONObject.NULL)
             root.put("rewardEvents", JSONArray().apply {
-                dao.observeRewardEvents().first().forEach { put(JSONObject()
+                dao.observeRewardEvents(profileId).first().forEach { put(JSONObject()
                     .put("eventId", it.eventId).put("profileId", it.profileId).put("source", it.source)
                     .put("sourceId", it.sourceId).put("xpDelta", it.xpDelta).put("coinDelta", it.coinDelta)
                     .put("createdAt", it.createdAt)) }
             })
             root.put("vocabulary", JSONArray().apply {
-                dao.observeVocabulary().first().forEach { put(JSONObject()
+                dao.observeVocabulary(profileId).first().forEach { put(JSONObject()
                     .put("wordId", it.wordId).put("profileId", it.profileId).put("english", it.english)
                     .put("dariMeaning", it.dariMeaning).put("pronunciation", it.pronunciation)
                     .put("exampleEnglish", it.exampleEnglish).put("exampleDari", it.exampleDari)
@@ -83,13 +83,13 @@ object AcademyBackupManager {
                     .put("lastPractisedAt", it.lastPractisedAt)) }
             })
             root.put("dailyGoals", JSONArray().apply {
-                dao.observeDailyGoals().first().forEach { put(JSONObject()
+                dao.observeDailyGoals(profileId).first().forEach { put(JSONObject()
                     .put("profileId", it.profileId).put("dateIso", it.dateIso)
                     .put("targetMinutes", it.targetMinutes).put("targetLessons", it.targetLessons)
                     .put("targetWords", it.targetWords).put("targetQuizzes", it.targetQuizzes)) }
             })
             root.put("reminders", JSONArray().apply {
-                dao.observeReminders().first().forEach { put(JSONObject()
+                dao.observeReminders(profileId).first().forEach { put(JSONObject()
                     .put("reminderId", it.reminderId).put("profileId", it.profileId).put("title", it.title)
                     .put("hour", it.hour).put("minute", it.minute).put("repeatDaysMask", it.repeatDaysMask)
                     .put("enabled", it.enabled)) }
@@ -100,7 +100,7 @@ object AcademyBackupManager {
             output.bufferedWriter(Charsets.UTF_8).use { it.write(root.toString(2)) }
         }
 
-    suspend fun restore(context: Context, uri: Uri, preferences: AcademyPreferences, dao: AcademyDao) =
+    suspend fun restore(context: Context, uri: Uri, preferences: AcademyPreferences, dao: AcademyDao, profileId: String = "primary") =
         withContext(Dispatchers.IO) {
             val input = context.contentResolver.openInputStream(uri)
                 ?: throw IOException("Cannot open the selected backup file.")
@@ -125,7 +125,7 @@ object AcademyBackupManager {
 
             root.array("lessonProgress").forEachObject { o ->
                 dao.mergeLessonProgress(LessonProgressEntity(
-                    profileId = o.optString("profileId", "primary"),
+                    profileId = profileId,
                     lessonId = o.getString("lessonId"),
                     completedAt = o.longOrNull("completedAt"),
                     bestScore = o.optInt("bestScore"),
@@ -155,7 +155,7 @@ object AcademyBackupManager {
             }
             if (!root.isNull("wallet")) {
                 val o = root.getJSONObject("wallet")
-                dao.mergeWallet(WalletEntity(o.optString("profileId", "primary"), o.optLong("xp"), o.optLong("coins"), o.optInt("level", 1)))
+                dao.mergeWallet(WalletEntity(profileId, o.optLong("xp"), o.optLong("coins"), o.optInt("level", 1)))
             }
             root.array("rewardEvents").forEachObject { o ->
                 dao.restoreRewardEvent(RewardEventEntity(
