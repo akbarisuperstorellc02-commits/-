@@ -2,11 +2,34 @@ package com.example
 
 import com.example.data.CurriculumData
 import com.example.data.MasterGohariAI
+import com.example.data.calculateStudyTimeProgress
 import com.example.util.SpeechEvaluator
 import org.junit.Assert.*
 import org.junit.Test
 
 class ExampleUnitTest {
+
+    @Test
+    fun studyMinutesAccumulateAcrossShortSessions() {
+        val afterFirstSession = calculateStudyTimeProgress(14, 0, 25)
+        assertEquals(14, afterFirstSession.totalHours)
+        assertEquals(25, afterFirstSession.remainingMinutes)
+
+        val afterSecondSession = calculateStudyTimeProgress(
+            afterFirstSession.totalHours,
+            afterFirstSession.remainingMinutes,
+            35
+        )
+        assertEquals(15, afterSecondSession.totalHours)
+        assertEquals(0, afterSecondSession.remainingMinutes)
+    }
+
+    @Test
+    fun invalidStudyMinutesDoNotReduceProgress() {
+        val progress = calculateStudyTimeProgress(3, 20, -15)
+        assertEquals(3, progress.totalHours)
+        assertEquals(20, progress.remainingMinutes)
+    }
 
     @Test
     fun testZahraAcademyLevelsAndClassrooms() {
