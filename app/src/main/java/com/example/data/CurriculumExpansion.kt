@@ -13,14 +13,25 @@ import com.example.model.QuizQuestion
 fun expandLearningCurriculum(levels: List<Level>): List<Level> = levels.map { level ->
     val additions = supplementalLessons[level.levelCode].orEmpty()
     val extraQuestions = additions.flatMap { item ->
+        val answerIndex = (item.id.hashCode() and Int.MAX_VALUE) % 4
+        val meaningOptions = listOf(
+            "این عبارت درباره زمان گذشته است",
+            "این عبارت یک پرسش درباره قیمت است",
+            "این عبارت یک دستور منفی است"
+        ).toMutableList().apply { add(answerIndex, item.persianTranslation) }
+        val speakingOptions = listOf(
+            "I am learning every day.",
+            "Could you help me, please?",
+            "The weather is beautiful."
+        ).toMutableList().apply { add(answerIndex, item.exampleSentenceEn) }
         listOf(
             QuizQuestion(
                 id = "${item.id}_meaning",
                 type = QuestionType.TRANSLATION,
                 promptEn = "Choose the correct meaning: ${item.englishText}",
                 promptFa = "معنی درست عبارت را انتخاب کن: ${item.englishText}",
-                options = listOf(item.persianTranslation, "این عبارت درباره زمان گذشته است", "این عبارت یک پرسش درباره قیمت است", "این عبارت یک دستور منفی است"),
-                correctIndex = 0,
+                options = meaningOptions,
+                correctIndex = answerIndex,
                 explanationFa = "معنی درست: ${item.persianTranslation}"
             ),
             QuizQuestion(
@@ -28,8 +39,8 @@ fun expandLearningCurriculum(levels: List<Level>): List<Level> = levels.map { le
                 type = QuestionType.SPEAKING,
                 promptEn = "Read aloud: ${item.exampleSentenceEn}",
                 promptFa = "این جمله را با صدای بلند بخوان:",
-                options = listOf(item.exampleSentenceEn, "I am learning every day.", "Could you help me, please?", "The weather is beautiful."),
-                correctIndex = 0,
+                options = speakingOptions,
+                correctIndex = answerIndex,
                 explanationFa = "جمله نمونه را چند بار با تلفظ روشن تکرار کن.",
                 targetSpeechText = item.exampleSentenceEn
             )
@@ -175,7 +186,7 @@ private val supplementalLessons: Map<String, List<LessonItem>> = mapOf(
         lesson("Z6", 2, "Further research is needed to verify the claim", "/ˈfɜːrðər ˈriːsɜːrtʃ ɪz ˈniːdɪd tə ˈvɛrɪfaɪ ðə kleɪm/", "برای تأیید این ادعا به پژوهش بیشتری نیاز است", "Further research is needed to verify the claim.", "برای تأیید این ادعا به پژوهش بیشتری نیاز است.", "🔬", ClassroomType.READING_WRITING, "Verify یعنی راستی‌آزمایی یا تأیید با شواهد.")
     ),
     "Z7" to listOf(
-        lesson("Z7", 1, "A good leader listens before deciding", "/ə ɡʊd ˈliːdər ˈlɪsənz bɪˈfɔːr dɪˈsaɪdɪŋ/", "یک رهبر خوب پیش از تصمیم‌گیری گوش می‌دهد", "A good leader listens before deciding.", "یک رهبر خوب پیش از تصمیم‌گیری گوش می‌دهد.", "🧭", ClassroomType.CONVERSATION, "Listen به حرف اضافه to نیاز دارد، اما در این جمله مفعول مستقیم ندارد."),
+        lesson("Z7", 1, "A good leader listens before deciding", "/ə ɡʊd ˈliːdər ˈlɪsənz bɪˈfɔːr dɪˈsaɪdɪŋ/", "یک رهبر خوب پیش از تصمیم‌گیری گوش می‌دهد", "A good leader listens before deciding.", "یک رهبر خوب پیش از تصمیم‌گیری گوش می‌دهد.", "🧭", ClassroomType.CONVERSATION, "وقتی پس از listen مفعول می‌آید، از حرف اضافه to استفاده می‌کنیم."),
         lesson("Z7", 2, "We should acknowledge different perspectives", "/wiː ʃʊd əkˈnɑːlɪdʒ ˈdɪfərənt pərˈspɛktɪvz/", "باید دیدگاه‌های متفاوت را به رسمیت بشناسیم", "We should acknowledge different perspectives.", "باید دیدگاه‌های متفاوت را به رسمیت بشناسیم.", "🤝", ClassroomType.VOCABULARY, "Acknowledge یعنی پذیرفتن یا به رسمیت شناختن.")
     ),
     "Z8" to listOf(
