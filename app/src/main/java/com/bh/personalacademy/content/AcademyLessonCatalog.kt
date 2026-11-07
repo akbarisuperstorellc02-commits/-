@@ -333,9 +333,64 @@ object AcademyLessonCatalog {
             "Handle bookings, directions and travel problems.", "رزرو، آدرس‌پرسیدن و مشکل‌های سفر را مدیریت کن.", "بکینګ، لارښوونې او د سفر ستونزې اداره کړئ.", "تعامل مع الحجوزات والاتجاهات ومشكلات السفر.",
             "برای درخواست مؤدبانه از Could you tell me…? و I have a reservation under… استفاده کن. شماره اتاق، تاریخ و زمان را واضح تکرار کن.",
             "I have a reservation under the name Zahra for two nights.", "به نام زهرا برای دو شب رزرو دارم.", "در سفر، اطلاعات کلیدی مانند تاریخ، نام و مقصد را دوباره تأیید کن.",
-            LessonWord("reservation","رزرو","/ˌrez.əˈveɪ.ʃən/"), LessonWord("itinerary","برنامه سفر","/aɪˈtɪn.ə.rer.i/"), LessonWord("destination","مقصد","/ˌdes.tɪˈneɪ.ʃən/"))
+            LessonWord("reservation","رزرو","/ˌrez.əˈveɪ.ʃən/"), LessonWord("itinerary","برنامه سفر","/aɪˈtɪn.ə.rer.i/"), LessonWord("destination","مقصد","/ˌdes.tɪˈneɪ.ʃən/")),
+        l("pre_a1_classroom_objects", LearningBand.PRE_A1, "Classroom objects", "وسایل صنف درسی", "د ټولګي توکي", "أدوات الصف",
+            "Name common objects used in a classroom.", "نام وسایل معمول صنف را بگو.", "د ټولګي د عامو توکو نومونه واخلئ.", "سمّ الأدوات الشائعة في الصف.",
+            "برای معرفی یک شیء از This is a… و برای چند شیء از These are… استفاده کن.",
+            "This is my notebook.", "این کتابچه من است.", "This is برای یک شیء نزدیک و These are برای چند شیء نزدیک به‌کار می‌رود.",
+            LessonWord("notebook","کتابچه","/ˈnoʊt.bʊk/"), LessonWord("pencil","پنسل","/ˈpen.səl/"), LessonWord("board","تخته","/bɔːrd/")),
+        l("a1_can_cannot", LearningBand.A1, "Can and cannot", "توانستن با can و cannot", "د can او cannot کارول", "استخدام can و cannot",
+            "Talk about abilities and simple permissions.", "درباره توانایی و اجازه ساده صحبت کن.", "د وړتیا او ساده اجازې په اړه خبرې وکړئ.", "تحدث عن القدرات والأذونات البسيطة.",
+            "پس از can و cannot فعل به شکل ساده می‌آید: She can swim. برای پرسش، can را به آغاز جمله ببر.",
+            "Can you help me?", "آیا می‌توانی به من کمک کنی؟", "پس از can حرف اضافه یا s سوم‌شخص به فعل اضافه نمی‌شود.",
+            LessonWord("ability","توانایی","/əˈbɪl.ə.ti/"), LessonWord("swim","شنا کردن","/swɪm/"), LessonWord("permission","اجازه","/pərˈmɪʃ.ən/")),
+        l("a2_comparatives", LearningBand.A2, "Comparative adjectives", "صفت‌های مقایسه‌ای", "د پرتله کولو صفتونه", "صفات المقارنة",
+            "Compare people, places and things.", "اشخاص، مکان‌ها و چیزها را مقایسه کن.", "خلک، ځایونه او شیان پرتله کړئ.", "قارن بين الأشخاص والأماكن والأشياء.",
+            "برای صفت‌های کوتاه معمولاً er و برای بسیاری از صفت‌های بلندتر more می‌آید؛ than طرف مقایسه را معرفی می‌کند.",
+            "This road is wider than that one.", "این سرک از آن یکی پهن‌تر است.", "برای good از شکل بی‌قاعده better استفاده می‌شود.",
+            LessonWord("wider","پهن‌تر","/ˈwaɪ.dər/"), LessonWord("careful","محتاط","/ˈker.fəl/"), LessonWord("better","بهتر","/ˈbet.ər/")),
+        l("b1_relative_clauses", LearningBand.B1, "Defining relative clauses", "جمله‌واره‌های موصولی ضروری", "اړینې نسبي جملې", "جمل الصلة المحددة",
+            "Give essential information about people and things.", "درباره اشخاص و چیزها معلومات ضروری بده.", "د خلکو او شیانو په اړه اړین معلومات ورکړئ.", "قدّم معلومات أساسية عن الأشخاص والأشياء.",
+            "از who برای اشخاص، which برای اشیا و that برای هر دو در جمله‌واره ضروری استفاده می‌شود.",
+            "The student who won the prize is my friend.", "شاگردی که جایزه را برد، دوست من است.", "در جمله‌واره ضروری معمولاً ویرگول نمی‌گذاریم.",
+            LessonWord("relative","موصولی","/ˈrel.ə.tɪv/"), LessonWord("essential","ضروری","/ɪˈsen.ʃəl/"), LessonWord("describe","توصیف کردن","/dɪˈskraɪb/")),
+        l("b2_advanced_modals", LearningBand.B2, "Advanced modal verbs", "افعال وجهی پیشرفته", "پرمختللي وجهی فعلونه", "الأفعال الناقصة المتقدمة",
+            "Express deduction, probability and criticism.", "احتمال، نتیجه‌گیری و انتقاد را بیان کن.", "اټکل، احتمال او نیوکه څرګنده کړئ.", "عبّر عن الاستنتاج والاحتمال والنقد.",
+            "must have + شکل سوم برای نتیجه‌گیری قوی درباره گذشته، might have برای احتمال و should have برای انتقاد یا فرصت ازدست‌رفته به‌کار می‌رود.",
+            "She must have missed the train.", "حتماً از قطار جا مانده است.", "میزان اطمینان را با must، might و could دقیق تنظیم کن.",
+            LessonWord("deduction","نتیجه‌گیری","/dɪˈdʌk.ʃən/"), LessonWord("possibility","احتمال","/ˌpɒs.əˈbɪl.ə.ti/"), LessonWord("regret","پشیمانی","/rɪˈɡret/")),
+        l("c1_discourse_markers", LearningBand.C1, "Advanced discourse markers", "پیونددهنده‌های پیشرفته گفتار", "د وینا پرمختللي تړونکي", "روابط الخطاب المتقدمة",
+            "Connect complex ideas with precise transitions.", "ایده‌های پیچیده را با پیوندهای دقیق وصل کن.", "پېچلي نظرونه په دقیقو تړونکو سره ونښلوئ.", "اربط الأفكار المعقدة بانتقالات دقيقة.",
+            "عبارت‌هایی مانند nevertheless، consequently و furthermore رابطه تضاد، نتیجه و افزودن دلیل را روشن می‌سازند.",
+            "Nevertheless, the evidence remains inconclusive.", "با این حال، شواهد هنوز نتیجه قطعی نمی‌دهند.", "پیونددهنده باید رابطه منطقی واقعی میان دو جمله را نشان دهد.",
+            LessonWord("nevertheless","با این حال","/ˌnev.ər.ðəˈles/"), LessonWord("consequently","در نتیجه","/ˈkɒn.sɪ.kwənt.li/"), LessonWord("furthermore","علاوه بر این","/ˌfɜːr.ðərˈmɔːr/")),
+        l("c2_irony_and_tone", LearningBand.C2, "Irony, tone and implication", "طعنه، لحن و مفهوم ضمنی", "طنز، لحن او ضمني مانا", "السخرية والنبرة والدلالة الضمنية",
+            "Interpret subtle tone and implied meaning.", "لحن ظریف و معنای غیرمستقیم را تشخیص بده.", "نازک لحن او ضمني مانا وپېژنئ.", "فسّر النبرة الدقيقة والمعنى الضمني.",
+            "معنای جمله فقط از واژه‌ها ساخته نمی‌شود؛ بافت، لحن و فاصله میان گفته و منظور می‌تواند طعنه یا کنایه بسازد.",
+            "That was a brilliant idea — if the goal was to waste time.", "چه فکر درخشانی بود؛ البته اگر هدف، ضایع‌کردن وقت بوده باشد.", "طعنه را بدون بافت تشخیص نده؛ نشانه‌های موقعیت و لحن را نیز بسنج.",
+            LessonWord("irony","طعنه","/ˈaɪ.rə.ni/"), LessonWord("implication","مفهوم ضمنی","/ˌɪm.plɪˈkeɪ.ʃən/"), LessonWord("sarcasm","کنایه تند","/ˈsɑːr.kæz.əm/")),
+        l("specialized_customer_service", LearningBand.SPECIALIZED, "Customer service and problem solving", "خدمات مشتری و حل مشکل", "د پېرودونکو خدمت او د ستونزو حل", "خدمة العملاء وحل المشكلات",
+            "Handle complaints politely and propose practical solutions.", "شکایت را مؤدبانه مدیریت کن و راه‌حل عملی پیشنهاد بده.", "شکایتونه په ادب اداره کړئ او عملي حللارې وړاندې کړئ.", "تعامل مع الشكاوى بأدب واقترح حلولاً عملية.",
+            "ابتدا نگرانی مشتری را تأیید کن، سپس مشکل را روشن ساز و یک راه‌حل همراه با زمان‌بندی پیشنهاد بده.",
+            "I understand your concern, and I will update you by tomorrow.", "نگرانی شما را درک می‌کنم و تا فردا شما را از نتیجه آگاه می‌سازم.", "از عبارت I understand your concern برای همدلی و از I will follow up برای پیگیری استفاده کن.",
+            LessonWord("concern","نگرانی","/kənˈsɜːrn/"), LessonWord("refund","بازپرداخت","/ˈriː.fʌnd/"), LessonWord("resolve","حل کردن","/rɪˈzɒlv/"))
 
     )
 
     fun forBand(band: LearningBand): List<LessonContent> = all.filter { it.band == band }
+
+    fun isLessonUnlocked(band: LearningBand, lessonIndex: Int, completedLessonIds: Set<String>): Boolean {
+        val lessons = forBand(band)
+        if (lessonIndex <= 0) return true
+        val previousLesson = lessons.getOrNull(lessonIndex - 1) ?: return false
+        return previousLesson.id in completedLessonIds
+    }
+
+    fun isBandUnlocked(band: LearningBand, completedLessonIds: Set<String>): Boolean {
+        val index = LearningBand.values().indexOf(band)
+        if (index <= 0) return true
+        val previousBand = LearningBand.values().getOrNull(index - 1) ?: return true
+        val requiredLesson = forBand(previousBand).lastOrNull() ?: return true
+        return requiredLesson.id in completedLessonIds
+    }
 }
