@@ -40,6 +40,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.core.content.ContextCompat
 import com.bh.personalacademy.data.local.*
 import com.bh.personalacademy.content.AcademyLessonCatalog
+import com.bh.personalacademy.content.AcademyGameCatalog
+import com.bh.personalacademy.content.GameMode
 import com.bh.personalacademy.data.preferences.AcademyPreferences
 import com.example.academy.core.AsciiDigits
 import com.example.academy.domain.model.*
@@ -67,6 +69,7 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
     val wallet by dao.observeWallet().collectAsStateWithLifecycle(initialValue = null)
     val lessons by dao.observeLessonProgress().collectAsStateWithLifecycle(initialValue = emptyList())
     val attempts by dao.observeQuizAttempts().collectAsStateWithLifecycle(initialValue = emptyList())
+    val gameAttempts by dao.observeGameAttempts().collectAsStateWithLifecycle(initialValue = emptyList())
     val todayRange = remember { val start = Calendar.getInstance().apply { set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0) }; val end = (start.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, 1) }; start.timeInMillis to end.timeInMillis }
     val todayStudyMillis by dao.observeStudyMillis(todayRange.first, todayRange.second).collectAsStateWithLifecycle(initialValue = 0L)
     val scope = rememberCoroutineScope()
@@ -119,7 +122,7 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
                             } }, { tab = AcademyTab.QUIZ })
                         AcademyTab.QUIZ -> QuizPage(profile.locale, dao) { tab = AcademyTab.PROGRESS }
                         AcademyTab.GAMES -> GamePage(profile.locale, wallet?.coins ?: 0, dao)
-                        AcademyTab.PROGRESS -> ProgressPage(profile.locale, lessons.size, attempts, wallet?.xp ?: 0, wallet?.coins ?: 0)
+                        AcademyTab.PROGRESS -> ProgressPage(profile.locale, lessons.size, attempts, gameAttempts.size, wallet?.xp ?: 0, wallet?.coins ?: 0)
                         AcademyTab.PROFILE -> ProfilePage(profile, preferences)
                         AcademyTab.TOOLS -> ToolsPage(profile.locale, dao) { tab = AcademyTab.HOME }
                         AcademyTab.VOCABULARY -> VocabularyPage(profile.locale, dao)
@@ -309,43 +312,173 @@ private fun VocabularyPage(locale: AcademyLocale, dao: AcademyDao) {
 @Composable
 private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
     val scope = rememberCoroutineScope()
-    var hint by remember { mutableStateOf(false) }
+    var selectedMode by remember { mutableStateOf<GameMode?>(null) }
+    var round by remember { mutableIntStateOf(0) }
+    var score by remember { mutableIntStateOf(0) }
+    var selectedAnswer by remember { mutableIntStateOf(-1) }
+    var hintVisible by remember { mutableStateOf(false) }
     var hintPending by remember { mutableStateOf(false) }
-    var solved by remember { mutableStateOf(false) }
     var feedback by remember { mutableStateOf("") }
-    Page {
-        Text(tr(locale, "games"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        AcademyCard {
-            Text(tr(locale, "wordChallenge"), style = MaterialTheme.typography.titleLarge)
-            Text("APPLE", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.ExtraBold)
-            Text(tr(locale, "chooseMeaning"))
-            listOf("سیب", "کتاب", "آب").forEach { option ->
-                OutlinedButton(onClick = {
-                    if (option == "سیب") {
-                        solved = true; feedback = tr(locale, "correct")
-                        scope.launch { dao.applyRewardOnce(RewardEventEntity(UUID.randomUUID().toString(), source = "GAME", sourceId = "apple_round_01", xpDelta = 15, coinDelta = 3, createdAt = System.currentTimeMillis())) }
-                    } else feedback = tr(locale, "wrong")
-                }, enabled = !solved, modifier = Modifier.fillMaxWidth()) { Text(option) }
+    var finished by remember { mutableStateOf(false) }
+    var secondsLeft by remember { mutableIntStateOf(30) }
+    var resultSaved by remember { mutableStateOf(false) }
+
+    LaunchedEffect(selectedMode?.id, finished) {
+        if (selectedMode?.timed == true && !finished) {
+            while (secondsLeft > 0 && !finished) {
+                delay(1_000L)
+                secondsLeft -= 1
             }
-            if (hint) Text(tr(locale, "hintText"))
-            if (feedback.isNotEmpty()) Text(feedback, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-            OutlinedButton(onClick = {
-                if (!hint && !hintPending && !solved) {
-                    hintPending = true
-                    scope.launch {
-                        if (dao.spendHintCoins() > 0) { hint = true; feedback = tr(locale, "hintPaid") }
-                        else feedback = tr(locale, "needCoins")
-                        hintPending = false
+            if (secondsLeft <= 1) finished = true
+        }
+    }
+
+    LaunchedEffect(finished, selectedMode?.id) {
+        val mode = selectedMode
+        if (finished && mode != null && !resultSaved) {
+            resultSaved = true
+            dao.insertGameAttempt(
+                GameAttemptEntity(
+                    attemptId = UUID.randomUUID().toString(),
+                    gameId = mode.id,
+                    score = score,
+                    totalQuestions = 5,
+                    completedAt = System.currentTimeMillis()
+                )
+            )
+            if (score >= 3) {
+                dao.applyRewardOnce(
+                    RewardEventEntity(
+                        eventId = "game_reward_${mode.id}",
+                        source = "GAME",
+                        sourceId = "${mode.id}_first_completion",
+                        xpDelta = 30,
+                        coinDelta = 8,
+                        createdAt = System.currentTimeMillis()
+                    )
+                )
+            }
+        }
+    }
+
+    fun resetRound(mode: GameMode? = selectedMode) {
+        selectedMode = mode
+        round = 0
+        score = 0
+        selectedAnswer = -1
+        hintVisible = false
+        hintPending = false
+        feedback = ""
+        finished = false
+        secondsLeft = 30
+        resultSaved = false
+    }
+
+    val labels = when (locale) {
+        AcademyLocale.ENGLISH_US -> listOf("Games", "Back to games", "Question", "Next", "Your result", "Correct", "Try again", "Time left", "Hint · 6 coins", "6 coins were spent.", "Not enough coins.", "Play again")
+        AcademyLocale.DARI_AF -> listOf("بازی‌های آموزشی", "بازگشت به بازی‌ها", "پرسش", "بعدی", "نتیجه تو", "درست", "دوباره تلاش کن", "زمان باقی‌مانده", "راهنما · 6 سکه", "6 سکه مصرف شد.", "سکه کافی نداری.", "بازی دوباره")
+        AcademyLocale.PASHTO_AF -> listOf("زده‌کړیزې لوبې", "لوبو ته بېرته", "پوښتنه", "بل", "ستاسو پایله", "سم", "بیا هڅه", "پاتې وخت", "لارښوونه · 6 سکې", "6 سکې ولګېدې.", "کافي سکې نشته.", "بیا لوبه")
+        AcademyLocale.ARABIC -> listOf("الألعاب التعليمية", "العودة إلى الألعاب", "السؤال", "التالي", "نتيجتك", "صحيح", "حاول مجدداً", "الوقت المتبقي", "تلميح · 6 عملات", "تم خصم 6 عملات.", "لا توجد عملات كافية.", "العب مرة أخرى")
+    }
+
+    Page {
+        if (selectedMode == null) {
+            Text(labels[0], style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text(tr(locale, "gameLibrary"), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .7f))
+            AcademyGameCatalog.modes.forEachIndexed { index, mode ->
+                AcademyCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(AsciiDigits.normalize((index + 1).toString()), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(mode.title.forLocale(locale), style = MaterialTheme.typography.titleMedium)
+                            Text(mode.description.forLocale(locale), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = .7f))
+                        }
+                    }
+                    Button(onClick = { resetRound(mode) }, modifier = Modifier.fillMaxWidth()) {
+                        Text(tr(locale, "playGame"))
                     }
                 }
-            }, enabled = !hint && !hintPending && !solved, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "hintButton")) }
-            Text(tr(locale, "coinBalance", AsciiDigits.normalize("$coins")))
-            TextButton(onClick = { hint = false; hintPending = false; solved = false; feedback = "" }) { Text(tr(locale, "newRound")) }
+            }
+        } else {
+            val mode = selectedMode!!
+            val question = AcademyGameCatalog.questionFor(mode, round)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(mode.title.forLocale(locale), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+                TextButton(onClick = { resetRound(null) }) { Text(labels[1]) }
+            }
+            AcademyCard {
+                Text("${labels[2]} ${AsciiDigits.normalize((round + 1).toString())}/5", fontSize = 12.sp)
+                LinearProgressIndicator(progress = { (round + 1) / 5f }, modifier = Modifier.fillMaxWidth())
+                if (mode.timed) Text("${labels[7]}: ${AsciiDigits.normalize(secondsLeft.toString())}s", color = MaterialTheme.colorScheme.error)
+                Text(question.prompt.forLocale(locale), style = MaterialTheme.typography.titleLarge)
+                question.options.forEachIndexed { optionIndex, option ->
+                    OutlinedButton(
+                        onClick = {
+                            if (selectedAnswer == -1 && !finished) {
+                                selectedAnswer = optionIndex
+                                if (optionIndex == question.correctIndex) {
+                                    score += 1
+                                    feedback = labels[5]
+                                } else {
+                                    feedback = labels[6]
+                                }
+                            }
+                        },
+                        enabled = selectedAnswer == -1 && !finished,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(option.forLocale(locale))
+                    }
+                }
+                if (hintVisible) Text(question.hint.forLocale(locale), color = MaterialTheme.colorScheme.primary)
+                if (feedback.isNotEmpty()) Text(feedback, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                if (selectedAnswer != -1) {
+                    Text(question.explanation.forLocale(locale), fontSize = 13.sp)
+                    Button(onClick = {
+                        if (round == 4) finished = true
+                        else {
+                            round += 1
+                            selectedAnswer = -1
+                            hintVisible = false
+                            hintPending = false
+                            feedback = ""
+                        }
+                    }, modifier = Modifier.fillMaxWidth()) { Text(if (round == 4) labels[4] else labels[3]) }
+                } else {
+                    OutlinedButton(
+                        onClick = {
+                            if (!hintVisible && !hintPending) {
+                                hintPending = true
+                                scope.launch {
+                                    if (dao.spendHintCoins() > 0) {
+                                        hintVisible = true
+                                        feedback = labels[8]
+                                    } else {
+                                        feedback = labels[10]
+                                    }
+                                    hintPending = false
+                                }
+                            }
+                        },
+                        enabled = !hintVisible && !hintPending,
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text(labels[8]) }
+                }
+                Text(tr(locale, "coinBalance", AsciiDigits.normalize(coins.toString())), fontSize = 12.sp)
+            }
+            if (finished) {
+                AcademyCard {
+                    Text(labels[4], style = MaterialTheme.typography.titleLarge)
+                    Text("${AsciiDigits.normalize(score.toString())}/5", style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.primary)
+                    Text(if (score >= 3) tr(locale, "gamePassed") else tr(locale, "gameTryAgain"))
+                    Button(onClick = { resetRound(mode) }, modifier = Modifier.fillMaxWidth()) { Text(labels[11]) }
+                    OutlinedButton(onClick = { resetRound(null) }, modifier = Modifier.fillMaxWidth()) { Text(labels[1]) }
+                }
+            }
         }
-        Text(tr(locale, "gameRoadmap"), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .65f))
     }
 }
-
 
 @Composable
 private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> Unit) {
@@ -405,13 +538,14 @@ private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> U
 }
 
 @Composable
-private fun ProgressPage(locale: AcademyLocale, lessons: Int, attempts: List<QuizAttemptEntity>, xp: Long, coins: Long) {
+private fun ProgressPage(locale: AcademyLocale, lessons: Int, attempts: List<QuizAttemptEntity>, games: Int, xp: Long, coins: Long) {
     Page {
         Text(tr(locale, "progress"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         AcademyCard {
             Text(tr(locale, "summary"), style = MaterialTheme.typography.titleLarge)
             Line(tr(locale, "lessons"), "$lessons")
             Line(tr(locale, "quizzes"), "${attempts.size}")
+            Line(tr(locale, "games"), "${games}")
             Line("XP", "$xp")
             Line(tr(locale, "coins"), "$coins")
             val average = if (attempts.isEmpty()) 0 else attempts.map { if (it.totalQuestions == 0) 0 else it.score * 100 / it.totalQuestions }.average().toInt()
