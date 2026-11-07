@@ -70,11 +70,12 @@ class AcademyRepository(
         )
     }
 
-    suspend fun saveStudySession(lessonId: String, startedAt: Long, durationMillis: Long) {
+    suspend fun saveStudySession(lessonId: String, startedAt: Long, durationMillis: Long, profileId: String = "primary") {
         if (durationMillis <= 0L) return
         dao.insertStudySession(
             StudySessionEntity(
                 sessionId = UUID.randomUUID().toString(),
+                profileId = profileId,
                 lessonId = lessonId,
                 startedAt = startedAt,
                 durationMillis = durationMillis,
