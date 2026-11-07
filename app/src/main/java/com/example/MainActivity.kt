@@ -28,6 +28,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -272,14 +273,33 @@ private fun fontFor(font: AcademyFontId) = when(font) {
 
 @Composable
 private fun Page(content: @Composable ColumnScope.() -> Unit) {
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        item { Column(verticalArrangement = Arrangement.spacedBy(14.dp), content = content) }
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+        item { Column(verticalArrangement = Arrangement.spacedBy(18.dp), content = content) }
     }
 }
 @Composable
+private fun PuffyAvatar(emoji: String, size: Int) {
+    Surface(
+        modifier = Modifier.size(size.dp),
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
+        shadowElevation = 7.dp
+    ) {
+        Box(contentAlignment = Alignment.Center) { Text(emoji, fontSize = (size * 0.48f).sp) }
+    }
+}
+
+@Composable
 private fun AcademyCard(content: @Composable ColumnScope.() -> Unit) {
-    Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp), elevation = CardDefaults.cardElevation(3.dp)) {
-        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp), content = content)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(30.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 9.dp, pressedElevation = 4.dp)
+    ) {
+        Column(Modifier.padding(horizontal = 20.dp, vertical = 20.dp), verticalArrangement = Arrangement.spacedBy(12.dp), content = content)
     }
 }
 @Composable
@@ -307,15 +327,17 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
                     Text(tr(p.locale, "journey"), style = MaterialTheme.typography.titleLarge)
                     Text(tr(p.locale, "journeySub"))
                 }
-                if (p.avatarUri != null) {
+                if (p.avatarUri?.startsWith("emoji:") == true) {
+                    PuffyAvatar(emoji = p.avatarUri.removePrefix("emoji:"), size = 66)
+                } else if (p.avatarUri != null) {
                     AsyncImage(
                         model = p.avatarUri,
                         contentDescription = tr(p.locale, "profile"),
-                        modifier = Modifier.size(58.dp).clip(CircleShape),
+                        modifier = Modifier.size(66.dp).clip(CircleShape),
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    Text("🌸", fontSize = 42.sp)
+                    PuffyAvatar(emoji = "🌸", size = 66)
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1452,17 +1474,43 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
         Text(tr(profile.locale, "profile"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         AcademyCard {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                if (profile.avatarUri != null) {
+                if (profile.avatarUri?.startsWith("emoji:") == true) {
+                    PuffyAvatar(emoji = profile.avatarUri.removePrefix("emoji:"), size = 82)
+                } else if (profile.avatarUri != null) {
                     AsyncImage(model = profile.avatarUri, contentDescription = tr(profile.locale, "profile"),
-                        modifier = Modifier.size(76.dp).clip(CircleShape), contentScale = ContentScale.Crop)
+                        modifier = Modifier.size(82.dp).clip(CircleShape), contentScale = ContentScale.Crop)
                 } else {
-                    Box(Modifier.size(76.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) {
-                        Text("🌷", fontSize = 36.sp)
-                    }
+                    PuffyAvatar(emoji = "🌸", size = 82)
                 }
                 OutlinedButton(onClick = { avatarPicker.launch(arrayOf("image/*")) }) { Text(tr(profile.locale, "changeAvatar")) }
             }
             Text(profile.displayName, style = MaterialTheme.typography.titleLarge)
+            Text(when (profile.locale) {
+                AcademyLocale.ENGLISH_US -> "Choose your academy avatar"
+                AcademyLocale.DARI_AF -> "آواتار دلخواهت را انتخاب کن"
+                AcademyLocale.PASHTO_AF -> "خپل خوښ اوتار وټاکئ"
+                AcademyLocale.ARABIC -> "اختر الصورة الرمزية"
+            }, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+            val avatarChoices = listOf("👸", "🌸", "🧚‍♀️", "👩‍🎓", "🦋", "👑", "🧑‍🚀", "🧑‍🎓", "🦸", "⚽", "🚀", "🐯", "🐼", "🦊", "🎮", "🏆")
+            avatarChoices.chunked(4).forEach { row ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    row.forEach { emoji ->
+                        val selected = profile.avatarUri == "emoji:$emoji"
+                        Surface(
+                            modifier = Modifier.weight(1f).clickable { scope.launch { prefs.updateAvatar("emoji:$emoji") } },
+                            shape = RoundedCornerShape(20.dp),
+                            color = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = .18f) else MaterialTheme.colorScheme.surfaceVariant,
+                            border = if (selected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
+                            shadowElevation = if (selected) 5.dp else 1.dp
+                        ) {
+                            Box(Modifier.padding(vertical = 10.dp), contentAlignment = Alignment.Center) {
+                                Text(emoji, fontSize = 28.sp)
+                            }
+                        }
+                    }
+                    repeat(4 - row.size) { Spacer(Modifier.weight(1f)) }
+                }
+            }
             OutlinedTextField(displayName, { displayName = it }, modifier = Modifier.fillMaxWidth(), label = { Text(tr(profile.locale, "displayName")) }, singleLine = true)
             OutlinedTextField(username, { username = it }, modifier = Modifier.fillMaxWidth(), label = { Text(tr(profile.locale, "username")) }, singleLine = true)
             Button(onClick = { scope.launch { prefs.updateDisplayName(displayName); prefs.updateUsername(username) } }, modifier = Modifier.fillMaxWidth()) { Text(tr(profile.locale, "save")) }
