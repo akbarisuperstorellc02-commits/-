@@ -638,7 +638,7 @@ private fun VocabularyPage(locale: AcademyLocale, profileId: String, dao: Academ
     val words by dao.observeVocabulary(profileId).collectAsStateWithLifecycle(initialValue = emptyList())
     val scope = rememberCoroutineScope()
     var search by remember { mutableStateOf("") }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(profileId) {
         AcademyLessonCatalog.all.forEach { lesson ->
             lesson.words.forEach { word ->
                 dao.insertVocabularyIfMissing(VocabularyEntity(
