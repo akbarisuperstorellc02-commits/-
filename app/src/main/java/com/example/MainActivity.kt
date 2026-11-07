@@ -285,7 +285,7 @@ private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> U
                 Button(onClick = onFinished, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "seeProgress")) }
             } else {
                 val question = questions[index]
-                Text(tr(locale, "questionProgress", "${index + 1}", "${questions.size}"))
+                Text(tr(locale, "questionProgress", "${index + 1}/${questions.size}"))
                 LinearProgressIndicator(progress = { (index + 1).toFloat() / questions.size }, modifier = Modifier.fillMaxWidth())
                 Text(question.prompt, style = MaterialTheme.typography.titleLarge)
                 question.options.forEachIndexed { optionIndex, option ->
