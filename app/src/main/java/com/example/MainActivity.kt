@@ -1677,14 +1677,79 @@ private fun CalendarPage(locale: AcademyLocale, profileId: String, dao: AcademyD
                 },
                 style = MaterialTheme.typography.titleMedium
             )
+            val formattedSelectedMinutes = AsciiDigits.normalize(selectedMinutes.toString())
             Text(
                 when (locale) {
-                    AcademyLocale.ENGLISH_US -> "Study time: $selectedMinutes minutes"
-                    AcademyLocale.DARI_AF -> "زمان مطالعه: $selectedMinutes دقیقه"
-                    AcademyLocale.PASHTO_AF -> "د مطالعې وخت: $selectedMinutes دقیقې"
-                    AcademyLocale.ARABIC -> "وقت الدراسة: $selectedMinutes دقيقة"
+                    AcademyLocale.ENGLISH_US -> "Study time: $formattedSelectedMinutes minutes"
+                    AcademyLocale.DARI_AF -> "زمان مطالعه: $formattedSelectedMinutes دقیقه"
+                    AcademyLocale.PASHTO_AF -> "د مطالعې وخت: $formattedSelectedMinutes دقیقې"
+                    AcademyLocale.ARABIC -> "وقت الدراسة: $formattedSelectedMinutes دقيقة"
                 }
             )
+            val dailyCompanion = when {
+                selectedMinutes >= 60L -> "🐢"
+                selectedMinutes >= 30L -> "🦊"
+                selectedMinutes >= 15L -> "🐝"
+                selectedMinutes > 0L -> "🐣"
+                else -> "🌱"
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.48f))
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(dailyCompanion, fontSize = 30.sp)
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        when (locale) {
+                            AcademyLocale.ENGLISH_US -> "Your study companion"
+                            AcademyLocale.DARI_AF -> "همراه مطالعه امروزت"
+                            AcademyLocale.PASHTO_AF -> "ستاسو د مطالعې ملګری"
+                            AcademyLocale.ARABIC -> "رفيق دراستك"
+                        },
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        when {
+                            selectedMinutes >= 60L -> when (locale) {
+                                AcademyLocale.ENGLISH_US -> "A steady hour — just like a turtle."
+                                AcademyLocale.DARI_AF -> "یک ساعت پیوسته؛ مثل لاک‌پشت پرتلاش."
+                                AcademyLocale.PASHTO_AF -> "یو بشپړ ساعت؛ د زیارکښې شمشتۍ په څېر."
+                                AcademyLocale.ARABIC -> "ساعة كاملة من المثابرة، مثل السلحفاة."
+                            }
+                            selectedMinutes >= 30L -> when (locale) {
+                                AcademyLocale.ENGLISH_US -> "Thirty focused minutes — curious like a fox."
+                                AcademyLocale.DARI_AF -> "سی دقیقه تمرکز؛ کنجکاو مثل روباه."
+                                AcademyLocale.PASHTO_AF -> "دېرش دقیقې تمرکز؛ د ځیرک ګیدړ په څېر."
+                                AcademyLocale.ARABIC -> "ثلاثون دقيقة من التركيز، بفضول الثعلب."
+                            }
+                            selectedMinutes >= 15L -> when (locale) {
+                                AcademyLocale.ENGLISH_US -> "Fifteen minutes of effort — busy as a bee."
+                                AcademyLocale.DARI_AF -> "پانزده دقیقه تلاش؛ پرتلاش مثل زنبور."
+                                AcademyLocale.PASHTO_AF -> "پنځلس دقیقې هڅه؛ د زیارکښې مچۍ په څېر."
+                                AcademyLocale.ARABIC -> "خمس عشرة دقيقة من الاجتهاد، مثل النحلة."
+                            }
+                            selectedMinutes > 0L -> when (locale) {
+                                AcademyLocale.ENGLISH_US -> "Every beginning counts. Keep growing!"
+                                AcademyLocale.DARI_AF -> "هر آغاز ارزش دارد؛ به رشد ادامه بده!"
+                                AcademyLocale.PASHTO_AF -> "هر پیل ارزښت لري؛ پرمختګ ته دوام ورکړئ!"
+                                AcademyLocale.ARABIC -> "كل بداية مهمة، واصل التقدم!"
+                            }
+                            else -> when (locale) {
+                                AcademyLocale.ENGLISH_US -> "Start a short session to meet your first companion."
+                                AcademyLocale.DARI_AF -> "یک جلسه کوتاه آغاز کن تا نخستین همراهت را ببینی."
+                                AcademyLocale.PASHTO_AF -> "یوه لنډه ناسته پیل کړئ، څو خپل لومړی ملګری ووینئ."
+                                AcademyLocale.ARABIC -> "ابدأ جلسة قصيرة لتتعرف على رفيقك الأول."
+                            }
+                        },
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
             if (selectedSessions.isEmpty()) {
                 Text(
                     when (locale) {
