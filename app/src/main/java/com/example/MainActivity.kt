@@ -932,10 +932,11 @@ private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> U
                 incorrectQuestionIds = incorrectIds.joinToString(",")
             ))
             if (score >= 3) {
+                val rewardDate = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
                 dao.applyRewardOnce(RewardEventEntity(
                     eventId = UUID.randomUUID().toString(),
                     source = "QUIZ",
-                    sourceId = "starter_mixed_quiz_first_reward",
+                    sourceId = "starter_mixed_quiz_$rewardDate",
                     xpDelta = 30,
                     coinDelta = 6,
                     createdAt = System.currentTimeMillis()
