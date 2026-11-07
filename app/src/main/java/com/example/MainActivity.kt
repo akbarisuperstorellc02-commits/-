@@ -1864,6 +1864,7 @@ private fun SpeakingPage(locale: AcademyLocale, dao: AcademyDao) {
         if (!granted) status = "Microphone permission is needed to practise speaking."
     }
     val prompt = speakingPrompts[promptIndex]
+    val currentPrompt by rememberUpdatedState(prompt)
     val recognizer = remember {
         if (SpeechRecognizer.isRecognitionAvailable(context)) SpeechRecognizer.createSpeechRecognizer(context) else null
     }
@@ -1884,14 +1885,16 @@ private fun SpeakingPage(locale: AcademyLocale, dao: AcademyDao) {
                 listening = false
                 val spoken = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty()
                 transcript = spoken
-                score = speechAccuracy(prompt.text, spoken)
+                val evaluatedPrompt = currentPrompt
+                val computedScore = speechAccuracy(evaluatedPrompt.text, spoken)
+                score = computedScore
                 status = "Score compares recognized words; it is not phoneme-level accent analysis."
                 if (spoken.isNotBlank()) {
-                    val earned = score
+                    val earned = computedScore
                     scope.launch {
                         dao.insertGameAttempt(GameAttemptEntity(
                             attemptId = UUID.randomUUID().toString(),
-                            gameId = "speaking_" + prompt.id,
+                            gameId = "speaking_" + evaluatedPrompt.id,
                             score = earned,
                             totalQuestions = 100,
                             completedAt = System.currentTimeMillis()
@@ -1901,7 +1904,7 @@ private fun SpeakingPage(locale: AcademyLocale, dao: AcademyDao) {
                             dao.applyRewardOnce(RewardEventEntity(
                                 eventId = UUID.randomUUID().toString(),
                                 source = "SPEAKING",
-                                sourceId = prompt.id + "_" + day,
+                                sourceId = evaluatedPrompt.id + "_" + day,
                                 xpDelta = 10,
                                 coinDelta = 2,
                                 createdAt = System.currentTimeMillis()
