@@ -30,6 +30,8 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -63,6 +65,9 @@ import com.example.ui.components.SpeakingEvaluationDialog
 import com.example.ui.theme.LocalZahraTheme
 import com.example.util.TextToSpeechHelper
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun MasterGohariChatScreen(
@@ -85,18 +90,55 @@ fun MasterGohariChatScreen(
     var aiErrorMessage by remember { mutableStateOf<String?>(null) }
     var inputText by remember { mutableStateOf("") }
     var speakingPracticeSentence by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var downloadStatus by remember { mutableStateOf(com.example.data.GemmaDownloadProgress(com.example.data.GemmaDownloadProgress.State.NOT_DOWNLOADED)) }
 
     DisposableEffect(offlineAiService) {
         onDispose { offlineAiService.closeAsync() }
     }
 
     LaunchedEffect(offlineAiService) {
-        isModelInitializing = true
-        isAiGenerating = true
-        aiErrorMessage = offlineAiService.initialize()
-        isModelReady = aiErrorMessage == null
-        isModelInitializing = false
-        isAiGenerating = false
+        var ready = withContext(Dispatchers.IO) {
+            com.example.data.GemmaModelDownloader.status(context).state ==
+                com.example.data.GemmaDownloadProgress.State.READY
+        }
+        if (ready) {
+            isModelInitializing = true
+            isAiGenerating = true
+            aiErrorMessage = offlineAiService.initialize()
+            isModelReady = aiErrorMessage == null
+            isModelInitializing = false
+            isAiGenerating = false
+        } else {
+            isModelInitializing = false
+            isModelReady = false
+        }
+
+        while (!ready) {
+            val current = withContext(Dispatchers.IO) {
+                com.example.data.GemmaModelDownloader.status(context)
+            }
+            downloadStatus = current
+            if (current.state == com.example.data.GemmaModelDownloadProgress.State.VERIFYING) {
+                val verified = withContext(Dispatchers.IO) {
+                    com.example.data.GemmaModelDownloader.verifyCompleted(context)
+                }
+                if (verified) {
+                    ready = true
+                    isModelInitializing = true
+                    isAiGenerating = true
+                    aiErrorMessage = offlineAiService.initialize()
+                    isModelReady = aiErrorMessage == null
+                    isModelInitializing = false
+                    isAiGenerating = false
+                } else {
+                    downloadStatus = com.example.data.GemmaDownloadProgress(
+                        com.example.data.GemmaDownloadProgress.State.FAILED,
+                        message = "بررسی فایل مدل ناموفق بود؛ دانلود را دوباره آغاز کنید."
+                    )
+                }
+            }
+            delay(1000)
+        }
     }
 
     val currentActiveLevelCode = levels.firstOrNull { it.isUnlocked && !it.isMastered }?.levelCode ?: "A1"
@@ -224,6 +266,67 @@ fun MasterGohariChatScreen(
                     )
                 }
 
+            }
+        }
+
+        if (!isModelReady) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(Color(0xFF1B1B22))
+                    .border(1.dp, theme.primaryColor.copy(alpha = 0.55f), RoundedCornerShape(18.dp))
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "برای فعال‌شدن استاد گوهری، مدل Gemma را یک‌بار دانلود کنید.",
+                    color = Color.White,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = when (downloadStatus.state) {
+                        com.example.data.GemmaDownloadProgress.State.QUEUED -> "در صف دانلود..."
+                        com.example.data.GemmaDownloadProgress.State.DOWNLOADING -> "در حال دانلود: ${downloadStatus.percent}%"
+                        com.example.data.GemmaDownloadProgress.State.PAUSED -> "دانلود مکث شده؛ با اتصال دوباره ادامه می‌یابد."
+                        com.example.data.GemmaDownloadProgress.State.VERIFYING -> "دانلود تمام شد؛ بررسی سلامت مدل..."
+                        com.example.data.GemmaDownloadProgress.State.FAILED -> downloadStatus.message ?: "دانلود ناموفق بود."
+                        else -> "حجم مدل حدود ۲٫۶ گیگابایت است. اینترنت و فضای خالی کافی لازم است."
+                    },
+                    color = Color(0xFFCCCCCC),
+                    fontSize = 11.sp
+                )
+                if (downloadStatus.totalBytes > 0L) {
+                    LinearProgressIndicator(
+                        progress = { downloadStatus.percent / 100f },
+                        modifier = Modifier.fillMaxWidth(),
+                        color = theme.primaryColor
+                    )
+                    Text(
+                        text = "${downloadStatus.downloadedBytes / (1024 * 1024)} MB از ${downloadStatus.totalBytes / (1024 * 1024)} MB",
+                        color = Color.LightGray,
+                        fontSize = 10.sp
+                    )
+                }
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            withContext(Dispatchers.IO) {
+                                com.example.data.GemmaModelDownloader.enqueue(context)
+                            }
+                            downloadStatus = withContext(Dispatchers.IO) {
+                                com.example.data.GemmaModelDownloader.status(context)
+                            }
+                        }
+                    },
+                    enabled = downloadStatus.state != com.example.data.GemmaDownloadProgress.State.DOWNLOADING &&
+                        downloadStatus.state != com.example.data.GemmaDownloadProgress.State.QUEUED &&
+                        downloadStatus.state != com.example.data.GemmaDownloadProgress.State.VERIFYING
+                ) {
+                    Text(if (downloadStatus.state == com.example.data.GemmaDownloadProgress.State.FAILED) "تلاش دوباره برای دانلود" else "دانلود مدل هوش مصنوعی")
+                }
             }
         }
 
