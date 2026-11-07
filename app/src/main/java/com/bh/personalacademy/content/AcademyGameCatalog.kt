@@ -96,9 +96,12 @@ object AcademyGameCatalog {
         val wordIndex = (round * 3 + modeIndex) % words.size
         val word = words[wordIndex]
         val distractors = listOf(words[(wordIndex + 3) % words.size], words[(wordIndex + 7) % words.size])
-        val scrambled = if (word.english.length > 2) {
-            word.english.last() + word.english.drop(1).dropLast(1) + word.english.first()
-        } else word.english
+        // Rotate the complete word deterministically so every letter remains present.
+        // For short words, reverse the word; for longer words, rotate by a stable offset.
+        val scrambled = when {
+            word.english.length <= 2 -> word.english.reversed()
+            else -> word.english.drop(2) + word.english.take(2)
+        }
         val options = when (mode.style) {
             GameStyle.ODD_ONE_OUT -> listOf(
                 t("apple", "سیب", "مڼه", "تفاحة"),
@@ -138,7 +141,7 @@ object AcademyGameCatalog {
             GameStyle.ODD_ONE_OUT ->
                 t("Which word is different from the others?", "کدام واژه با دو واژه دیگر فرق دارد؟", "کومه کلمه له نورو سره توپیر لري؟", "أي كلمة تختلف عن الكلمتين الأخريين؟")
             GameStyle.MISSING_WORD ->
-                t("Complete the phrase: “I need ${word.english}.”", "جمله را کامل کن: «I need ${word.english}.»", "جمله بشپړه کړئ: «I need ${word.english}.»", "أكمل العبارة: «I need ${word.english}.»")
+                t("Complete the phrase: “I need ____.”", "جمله را کامل کن: «I need ____.»", "دا جمله بشپړه کړئ: «I need _____.»", "أكمل العبارة: «I need _____.»")
             GameStyle.SENTENCE ->
                 t("Choose the sentence that uses “${word.english}” correctly.", "جمله‌ای را انتخاب کن که «${word.english}» را درست به‌کار برده باشد.", "هغه جمله وټاکئ چې «${word.english}» پکې سمه کارېدلې وي.", "اختر الجملة التي تستخدم «${word.english}» بشكل صحيح.")
             GameStyle.WORD_ORDER ->
