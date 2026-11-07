@@ -20,6 +20,7 @@ data class GameQuestion(
     val prompt: LocalizedText,
     val options: List<LocalizedText>,
     val correctIndex: Int,
+    val answer: String,
     val hint: LocalizedText,
     val explanation: LocalizedText
 )
@@ -88,7 +89,24 @@ object AcademyGameCatalog {
         val word = words[wordIndex]
         val distractors = listOf(words[(wordIndex + 3) % words.size], words[(wordIndex + 7) % words.size])
         val useMeaningOptions = mode.style in setOf(GameStyle.MEANING, GameStyle.MATCHING, GameStyle.MEMORY, GameStyle.MISTAKE_REVIEW)
-        val options = (listOf(word) + distractors).map { if (useMeaningOptions) it.meaning() else it.englishWord() }
+        val options = when (mode.style) {
+            GameStyle.ODD_ONE_OUT -> listOf(
+                t("apple", "سیب", "مڼه", "تفاحة"),
+                t("banana", "کیله", "کېله", "موز"),
+                t("book", "کتاب", "کتاب", "كتاب")
+            )
+            GameStyle.WORD_ORDER -> listOf(
+                t("I read a book.", "من یک کتاب می‌خوانم.", "زه یو کتاب لولم.", "أنا أقرأ كتاباً."),
+                t("Read I book a.", "می‌خوانم من کتاب یک.", "لولم زه کتاب یو.", "أقرأ أنا كتاباً."),
+                t("A book read I.", "یک کتاب می‌خوانم من.", "یو کتاب لولم زه.", "كتاباً أقرأ أنا.")
+            )
+            GameStyle.SENTENCE -> listOf(
+                t("I have a book.", "من یک کتاب دارم.", "زه یو کتاب لرم.", "لدي كتاب."),
+                t("I a book have.", "من یک کتاب دارم است.", "زه یو کتاب لرم دی.", "أنا كتاب لدي."),
+                t("Have book I a.", "دارم کتاب من یک.", "لرم کتاب زه یو.", "لدي كتاب أنا.")
+            )
+            else -> (listOf(word) + distractors).map { if (useMeaningOptions) it.meaning() else it.englishWord() }
+        }
         val prompt = when (mode.style) {
             GameStyle.MEANING, GameStyle.MATCHING, GameStyle.MEMORY, GameStyle.MISTAKE_REVIEW ->
                 t("Choose the meaning of “${word.english}”.", "معنی «${word.english}» را انتخاب کن.", "د «${word.english}» مانا وټاکئ.", "اختر معنى «${word.english}».")
@@ -113,6 +131,7 @@ object AcademyGameCatalog {
         }
         val hint = t("First letter: ${word.english.first()}", "حرف نخست: ${word.english.first()}", "لومړی توری: ${word.english.first()}", "الحرف الأول: ${word.english.first()}")
         val explanation = t("${word.english} means ${word.fa}.", "واژه ${word.english} به معنی ${word.fa} است.", "${word.english} د ${word.ps} مانا لري.", "${word.english} تعني ${word.ar}.")
-        return GameQuestion(prompt, options, 0, hint, explanation)
+        val correctIndex = if (mode.style == GameStyle.ODD_ONE_OUT) 2 else 0
+        return GameQuestion(prompt, options, correctIndex, word.english, hint, explanation)
     }
 }
