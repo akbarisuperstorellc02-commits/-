@@ -2596,6 +2596,18 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
             AcademyLocale.PASHTO_AF -> "د وینا پېژندنې خدمت ونښلېد؛ اړیکه وګورئ یا د وسیلې دننه پېژندنه فعاله کړئ."
             AcademyLocale.ARABIC -> "تعذر الاتصال بخدمة التعرف على الكلام. تحقق من الاتصال أو استخدم التعرف على الجهاز."
         }
+        SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED, SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE -> when (locale) {
+            AcademyLocale.ENGLISH_US -> "English speech data is unavailable. Install English recognition data in your phone's speech settings."
+            AcademyLocale.DARI_AF -> "بسته تشخیص گفتار انگلیسی در گوشی موجود نیست؛ زبان انگلیسی را در تنظیمات سرویس گفتار نصب کن."
+            AcademyLocale.PASHTO_AF -> "د انګلیسي وینا پېژندنې ژبنیز معلومات نشته؛ د وینا په امستنو کې یې نصب کړئ."
+            AcademyLocale.ARABIC -> "بيانات التعرف على الكلام باللغة الإنجليزية غير متاحة. ثبّتها من إعدادات خدمة الكلام."
+        }
+        SpeechRecognizer.ERROR_TOO_MANY_REQUESTS -> when (locale) {
+            AcademyLocale.ENGLISH_US -> "Too many speech requests. Wait a few seconds and try again."
+            AcademyLocale.DARI_AF -> "درخواست‌های تشخیص گفتار زیاد شده؛ چند ثانیه صبر کن و دوباره کوشش کن."
+            AcademyLocale.PASHTO_AF -> "د وینا پېژندنې غوښتنې ډېرې شوې؛ څو شېبې تم شئ او بیا هڅه وکړئ."
+            AcademyLocale.ARABIC -> "طلبات التعرف على الكلام كثيرة. انتظر بضع ثوانٍ ثم حاول مجدداً."
+        }
         SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> when (locale) {
             AcademyLocale.ENGLISH_US -> "The microphone is busy. Wait a moment and try again."
             AcademyLocale.DARI_AF -> "میکروفون مصروف است؛ لحظه‌ای صبر کن و دوباره کوشش کن."
@@ -2609,10 +2621,61 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
             AcademyLocale.ARABIC -> "لم يتم التعرف على كلام واضح. تحدث بصوت أوضح وحاول مجدداً."
         }
         else -> when (locale) {
-            AcademyLocale.ENGLISH_US -> "Speech recognition failed. Please try again."
-            AcademyLocale.DARI_AF -> "تشخیص گفتار انجام نشد؛ دوباره کوشش کن."
-            AcademyLocale.PASHTO_AF -> "وینا ونه پېژندل شوه؛ بیا هڅه وکړئ."
-            AcademyLocale.ARABIC -> "فشل التعرف على الكلام. حاول مجدداً."
+            AcademyLocale.ENGLISH_US -> "Speech recognition failed (error $error). Check that your phone's speech service is enabled, then try again."
+            AcademyLocale.DARI_AF -> "تشخیص گفتار با خطای $error روبه‌رو شد؛ فعال‌بودن سرویس گفتار گوشی را بررسی و دوباره کوشش کن."
+            AcademyLocale.PASHTO_AF -> "د وینا پېژندنه له $error تېروتنې سره مخ شوه؛ د وسیلې د وینا خدمت فعالوالی وګورئ او بیا هڅه وکړئ."
+            AcademyLocale.ARABIC -> "فشل التعرف على الكلام (الخطأ $error). تحقق من تفعيل خدمة الكلام في الهاتف ثم حاول مجدداً."
+        }
+    }
+    fun applySpeechCandidates(candidates: List<String>) {
+        listening = false
+        val evaluatedPrompt = currentPrompt
+        val best = candidates.filter { it.isNotBlank() }
+            .maxByOrNull { speechAccuracy(evaluatedPrompt.text, it) }
+        if (best == null) {
+            transcript = ""
+            score = -1
+            status = localizedSpeechError(SpeechRecognizer.ERROR_NO_MATCH)
+            return
+        }
+        transcript = best
+        val computedScore = speechAccuracy(evaluatedPrompt.text, best)
+        score = computedScore
+        status = when (locale) {
+            AcademyLocale.ENGLISH_US -> "Score is based on recognized words, not detailed accent or phoneme analysis."
+            AcademyLocale.DARI_AF -> "امتیاز بر اساس واژه‌های تشخیص‌شده است، نه تحلیل دقیق لهجه و آواها."
+            AcademyLocale.PASHTO_AF -> "نمره د پېژندل شویو کلمو پر بنسټ ده، نه د لهجې او غږونو بشپړ تحلیل."
+            AcademyLocale.ARABIC -> "تعتمد الدرجة على الكلمات المتعرف عليها، وليس على تحليل دقيق للهجة أو الأصوات."
+        }
+        scope.launch {
+            dao.insertGameAttempt(GameAttemptEntity(
+                attemptId = UUID.randomUUID().toString(),
+                profileId = profileId,
+                gameId = "speaking_" + evaluatedPrompt.id,
+                score = computedScore,
+                totalQuestions = 100,
+                completedAt = System.currentTimeMillis()
+            ))
+            if (computedScore >= 70) {
+                val day = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                dao.applyRewardOnce(RewardEventEntity(
+                    eventId = "speaking_${profileId}_${evaluatedPrompt.id}_$day",
+                    profileId = profileId,
+                    source = "SPEAKING",
+                    sourceId = evaluatedPrompt.id + "_" + day,
+                    xpDelta = 10,
+                    coinDelta = 2,
+                    createdAt = System.currentTimeMillis()
+                ))
+            }
+        }
+    }
+    val fallbackSpeechLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            applySpeechCandidates(result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).orEmpty())
+        } else {
+            listening = false
+            status = localizedSpeechError(SpeechRecognizer.ERROR_NO_MATCH)
         }
     }
     DisposableEffect(recognizer) {
@@ -2623,53 +2686,40 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
             override fun onBufferReceived(buffer: ByteArray?) {}
             // Keep the button disabled until final results or an error arrive.
             override fun onEndOfSpeech() { listening = true }
-            override fun onError(error: Int) { listening = false; status = localizedSpeechError(error) }
-            override fun onResults(results: Bundle?) {
+            override fun onError(error: Int) {
                 listening = false
-                val evaluatedPrompt = currentPrompt
-                val candidates = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).orEmpty()
-                    .filter { it.isNotBlank() }
-                val best = candidates.maxByOrNull { speechAccuracy(evaluatedPrompt.text, it) }
-                if (best == null) {
-                    transcript = ""
-                    score = -1
-                    status = localizedSpeechError(SpeechRecognizer.ERROR_NO_MATCH)
-                    return
-                }
-                transcript = best
-                val computedScore = speechAccuracy(evaluatedPrompt.text, best)
-                score = computedScore
-                status = when (locale) {
-                    AcademyLocale.ENGLISH_US -> "Score is based on recognized words, not detailed accent or phoneme analysis."
-                    AcademyLocale.DARI_AF -> "امتیاز بر اساس واژه‌های تشخیص‌شده است، نه تحلیل دقیق لهجه و آواها."
-                    AcademyLocale.PASHTO_AF -> "نمره د پېژندل شویو کلمو پر بنسټ ده، نه د لهجې او غږونو بشپړ تحلیل."
-                    AcademyLocale.ARABIC -> "تعتمد الدرجة على الكلمات المتعرف عليها، وليس على تحليل دقيق للهجة أو الأصوات."
-                }
-                if (best.isNotBlank()) {
-                    val earned = computedScore
-                    scope.launch {
-                        dao.insertGameAttempt(GameAttemptEntity(
-                            attemptId = UUID.randomUUID().toString(),
-                            profileId = profileId,
-                            gameId = "speaking_" + evaluatedPrompt.id,
-                            score = earned,
-                            totalQuestions = 100,
-                            completedAt = System.currentTimeMillis()
-                        ))
-                        if (earned >= 70) {
-                            val day = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-                            dao.applyRewardOnce(RewardEventEntity(
-                                eventId = "speaking_${profileId}_${evaluatedPrompt.id}_$day",
-                                profileId = profileId,
-                                source = "SPEAKING",
-                                sourceId = evaluatedPrompt.id + "_" + day,
-                                xpDelta = 10,
-                                coinDelta = 2,
-                                createdAt = System.currentTimeMillis()
-                            ))
+                if (error == SpeechRecognizer.ERROR_CLIENT ||
+                    error == SpeechRecognizer.ERROR_SERVER ||
+                    (Build.VERSION.SDK_INT >= 31 && error == SpeechRecognizer.ERROR_SERVER_DISCONNECTED)) {
+                    try {
+                        val fallbackIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
+                            putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "en-US")
+                            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
+                            putExtra(RecognizerIntent.EXTRA_PROMPT, when (locale) {
+                                AcademyLocale.ENGLISH_US -> "Speak the English sentence"
+                                AcademyLocale.DARI_AF -> "جمله انگلیسی را با صدای بلند بگو"
+                                AcademyLocale.PASHTO_AF -> "انګلیسي جمله په لوړ غږ ووایئ"
+                                AcademyLocale.ARABIC -> "انطق الجملة الإنجليزية بصوت واضح"
+                            })
                         }
+                        fallbackSpeechLauncher.launch(fallbackIntent)
+                        status = when (locale) {
+                            AcademyLocale.ENGLISH_US -> "Opening your phone's alternative speech input…"
+                            AcademyLocale.DARI_AF -> "سرویس مستقیم گفتار پاسخ نداد؛ ورودی گفتار جایگزین گوشی باز می‌شود…"
+                            AcademyLocale.PASHTO_AF -> "د وینا اصلي خدمت ځواب ورنه کړ؛ د وسیلې بدیل غږیز داخلول پرانیستل کېږي…"
+                            AcademyLocale.ARABIC -> "لم تستجب خدمة الكلام المباشرة؛ جارٍ فتح الإدخال الصوتي البديل في الهاتف…"
+                        }
+                    } catch (_: ActivityNotFoundException) {
+                        status = localizedSpeechError(error)
                     }
+                } else {
+                    status = localizedSpeechError(error)
                 }
+            }
+            override fun onResults(results: Bundle?) {
+                applySpeechCandidates(results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).orEmpty())
             }
             override fun onPartialResults(partialResults: Bundle?) {}
             override fun onEvent(eventType: Int, params: Bundle?) {}
