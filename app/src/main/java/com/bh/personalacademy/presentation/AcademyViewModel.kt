@@ -51,8 +51,8 @@ class AcademyViewModel(
         viewModelScope.launch { repository.completeLesson(lessonId, score, profileId) }
     }
 
-    fun saveStudySession(lessonId: String, startedAt: Long, durationMillis: Long) {
-        viewModelScope.launch { repository.saveStudySession(lessonId, startedAt, durationMillis) }
+    fun saveStudySession(lessonId: String, startedAt: Long, durationMillis: Long, profileId: String = "primary") {
+        viewModelScope.launch { repository.saveStudySession(lessonId, startedAt, durationMillis, profileId) }
     }
 
     fun practiseWord(word: VocabularyEntity) {
