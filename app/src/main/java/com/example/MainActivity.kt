@@ -1,6 +1,9 @@
 package com.bh.personalacademy
 
 import android.os.Bundle
+import android.app.AlarmManager
+import android.net.Uri
+import android.provider.Settings
 import android.content.Intent
 import android.Manifest
 import android.content.pm.PackageManager
@@ -667,6 +670,16 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
                         notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
                         feedback = tr(locale, "permissionNeeded")
                     }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                        if (!alarmManager.canScheduleExactAlarms()) {
+                            feedback = tr(locale, "exactAlarmPermission")
+                            runCatching {
+                                context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                                    Uri.parse("package:${context.packageName}")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                            }
+                        }
+                    }
                     schedule()
                 }
             }, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "scheduleReminder")) }
@@ -772,7 +785,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "gameRoadmap" to "More vocabulary, spelling and memory games are planned for the next content phase.",
         "summary" to "Learning summary", "average" to "Average quiz score", "quizHistory" to "Quiz history", "noHistory" to "No quiz attempts yet.", "quizTitle" to "Quick mixed quiz", "quizComplete" to "Quiz completed!", "quizSaved" to "Your result has been saved to your learning history.", "seeProgress" to "View progress", "questionProgress" to "Question $arg",
         "displayName" to "Display name", "changeAvatar" to "Change photo", "username" to "Username", "save" to "Save profile", "language" to "Language", "theme" to "Theme",
-        "font" to "Font", "minutes" to "minutes", "studyTools" to "Study tools", "timer" to "Study timer", "startTimer" to "Start", "pauseTimer" to "Pause", "finishTimer" to "Finish session", "timerSaved" to "Study session saved.", "reminders" to "Reminders and alarms", "reminderTitle" to "Reminder title", "timeHHMM" to "Time (HH:MM)", "dailyReminder" to "Repeat every day", "scheduleReminder" to "Schedule reminder", "reminderSaved" to "Reminder scheduled.", "invalidTime" to "Enter a title and valid time such as 19:30.", "permissionNeeded" to "Allow notifications in Android settings to receive reminders.", "noReminders" to "No reminders scheduled yet.", "DARI_AF" to "Afghan Dari", "PASHTO_AF" to "Afghan Pashto", "ARABIC" to "Arabic", "ENGLISH_US" to "English",
+        "font" to "Font", "minutes" to "minutes", "studyTools" to "Study tools", "timer" to "Study timer", "startTimer" to "Start", "pauseTimer" to "Pause", "finishTimer" to "Finish session", "timerSaved" to "Study session saved.", "reminders" to "Reminders and alarms", "reminderTitle" to "Reminder title", "timeHHMM" to "Time (HH:MM)", "dailyReminder" to "Repeat every day", "scheduleReminder" to "Schedule reminder", "reminderSaved" to "Reminder scheduled.", "invalidTime" to "Enter a title and valid time such as 19:30.", "permissionNeeded" to "Allow notifications in Android settings to receive reminders.", "exactAlarmPermission" to "Allow exact alarms in Android settings; otherwise reminders may be delayed.", "noReminders" to "No reminders scheduled yet.", "DARI_AF" to "Afghan Dari", "PASHTO_AF" to "Afghan Pashto", "ARABIC" to "Arabic", "ENGLISH_US" to "English",
         "SANS_SERIF" to "Sans Serif", "SERIF" to "Serif", "CURSIVE" to "Cursive"
     )
     val fa = mapOf(
@@ -792,7 +805,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "gameRoadmap" to "بازی‌های واژگان، املا و حافظه در مرحله بعدی محتوا اضافه می‌شوند.",
         "summary" to "خلاصه یادگیری تو", "average" to "میانگین نمره آزمون", "quizHistory" to "تاریخچه آزمون", "noHistory" to "هنوز آزمونی انجام نشده است.", "quizTitle" to "آزمون ترکیبی کوتاه", "quizComplete" to "آزمون تکمیل شد!", "quizSaved" to "نتیجه در تاریخچه یادگیری ذخیره شد.", "seeProgress" to "دیدن پیشرفت", "questionProgress" to "پرسش $arg",
         "displayName" to "نام نمایشی", "changeAvatar" to "تغییر عکس", "username" to "نام کاربری", "save" to "ذخیره پروفایل", "language" to "زبان", "theme" to "تم",
-        "font" to "فونت", "minutes" to "دقیقه", "studyTools" to "ابزارهای مطالعه", "timer" to "تایمر مطالعه", "startTimer" to "شروع", "pauseTimer" to "مکث", "finishTimer" to "پایان جلسه", "timerSaved" to "جلسه مطالعه ذخیره شد.", "reminders" to "یادآوری و زنگ", "reminderTitle" to "عنوان یادآوری", "timeHHMM" to "زمان (ساعت:دقیقه)", "dailyReminder" to "تکرار هر روز", "scheduleReminder" to "تنظیم یادآوری", "reminderSaved" to "یادآوری تنظیم شد.", "invalidTime" to "عنوان و زمان درست مانند 19:30 وارد کن.", "permissionNeeded" to "برای دریافت یادآوری، اجازه اعلان‌ها را در اندروید فعال کن.", "noReminders" to "هنوز یادآوری تنظیم نشده است.", "DARI_AF" to "دری افغانستان", "PASHTO_AF" to "پشتو افغانستان", "ARABIC" to "عربی", "ENGLISH_US" to "انگلیسی",
+        "font" to "فونت", "minutes" to "دقیقه", "studyTools" to "ابزارهای مطالعه", "timer" to "تایمر مطالعه", "startTimer" to "شروع", "pauseTimer" to "مکث", "finishTimer" to "پایان جلسه", "timerSaved" to "جلسه مطالعه ذخیره شد.", "reminders" to "یادآوری و زنگ", "reminderTitle" to "عنوان یادآوری", "timeHHMM" to "زمان (ساعت:دقیقه)", "dailyReminder" to "تکرار هر روز", "scheduleReminder" to "تنظیم یادآوری", "reminderSaved" to "یادآوری تنظیم شد.", "invalidTime" to "عنوان و زمان درست مانند 19:30 وارد کن.", "permissionNeeded" to "برای دریافت یادآوری، اجازه اعلان‌ها را در اندروید فعال کن.", "exactAlarmPermission" to "برای زنگ دقیق، اجازه زنگ‌های دقیق را در تنظیمات اندروید فعال کن.", "noReminders" to "هنوز یادآوری تنظیم نشده است.", "DARI_AF" to "دری افغانستان", "PASHTO_AF" to "پشتو افغانستان", "ARABIC" to "عربی", "ENGLISH_US" to "انگلیسی",
         "SANS_SERIF" to "سن‌سریف", "SERIF" to "سریف", "CURSIVE" to "دست‌نویس"
     )
     val ps = mapOf("home" to "کور", "learn" to "زده کړه", "games" to "لوبې", "progress" to "پرمختګ", "profile" to "پروفایل",
@@ -801,7 +814,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "learningPath" to "د انګلیسي زده کړې لاره", "vocabulary" to "د لغتونو کتابچه", "searchWords" to "د لغت لټون", "wordCount" to "$arg لغتونه", "chooseLevel" to "خپله کچه وټاکئ", "viewLessons" to "درسونه وګورئ", "allLevels" to "ټولې کچې",
         "correct" to "ډېر ښه! ځواب سم دی.", "quizTitle" to "لنډه ګډه ازموینه", "quizComplete" to "ازموینه بشپړه شوه!", "quizSaved" to "ستاسو پایله د زده کړې په تاریخ کې خوندي شوه.", "seeProgress" to "پرمختګ وګورئ", "wrong" to "بیا هڅه وکړئ.", "hintButton" to "لارښوونه · 6 سکې", "hintPaid" to "لارښوونه فعاله شوه؛ 6 سکې ولګېدې.",
         "needCoins" to "لږ تر لږه 6 سکې پکار دي.", "displayName" to "ښکاره نوم", "changeAvatar" to "انځور بدل کړئ", "username" to "کارن نوم", "save" to "پروفایل خوندي کړئ",
-        "language" to "ژبه", "theme" to "بڼه", "font" to "لیکبڼه", "minutes" to "دقیقې", "studyTools" to "د مطالعې وسایل", "timer" to "د مطالعې ټایمر", "startTimer" to "پیل", "pauseTimer" to "تم", "finishTimer" to "ناسته پای ته ورسوه", "timerSaved" to "د مطالعې ناسته خوندي شوه.", "reminders" to "یادونې او الارم", "reminderTitle" to "د یادونې سرلیک", "timeHHMM" to "وخت (HH:MM)", "dailyReminder" to "هره ورځ تکرار", "scheduleReminder" to "یادونه تنظیم کړه", "reminderSaved" to "یادونه تنظیم شوه.", "invalidTime" to "سرلیک او سم وخت ولیکئ، لکه 19:30.", "permissionNeeded" to "د یادونو ترلاسه کولو لپاره د Android خبرتیا اجازه ورکړئ.", "noReminders" to "تر اوسه یادونه نشته.",
+        "language" to "ژبه", "theme" to "بڼه", "font" to "لیکبڼه", "minutes" to "دقیقې", "studyTools" to "د مطالعې وسایل", "timer" to "د مطالعې ټایمر", "startTimer" to "پیل", "pauseTimer" to "تم", "finishTimer" to "ناسته پای ته ورسوه", "timerSaved" to "د مطالعې ناسته خوندي شوه.", "reminders" to "یادونې او الارم", "reminderTitle" to "د یادونې سرلیک", "timeHHMM" to "وخت (HH:MM)", "dailyReminder" to "هره ورځ تکرار", "scheduleReminder" to "یادونه تنظیم کړه", "reminderSaved" to "یادونه تنظیم شوه.", "invalidTime" to "سرلیک او سم وخت ولیکئ، لکه 19:30.", "permissionNeeded" to "د یادونو ترلاسه کولو لپاره د Android خبرتیا اجازه ورکړئ.", "exactAlarmPermission" to "دقیق الارم لپاره په Android تنظیماتو کې د دقیقو الارمونو اجازه ورکړئ.", "noReminders" to "تر اوسه یادونه نشته.",
         "DARI_AF" to "افغان دري", "PASHTO_AF" to "افغان پښتو", "ARABIC" to "عربي", "ENGLISH_US" to "انګلیسي",
         "SANS_SERIF" to "سن‌سریف", "SERIF" to "سریف", "CURSIVE" to "لاس لیک")
     val ar = mapOf("home" to "الرئيسية", "learn" to "التعلم", "games" to "الألعاب", "progress" to "التقدم", "profile" to "الملف الشخصي",
@@ -810,7 +823,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "learningPath" to "مسار تعلم الإنجليزية", "vocabulary" to "دفتر المفردات", "searchWords" to "ابحث عن كلمة", "wordCount" to "$arg كلمة", "chooseLevel" to "اختر مستواك", "viewLessons" to "عرض الدروس", "allLevels" to "كل المستويات",
         "correct" to "ممتاز! إجابة صحيحة.", "quizTitle" to "اختبار قصير متنوع", "quizComplete" to "اكتمل الاختبار!", "quizSaved" to "تم حفظ النتيجة في سجل التعلم.", "seeProgress" to "عرض التقدم", "wrong" to "حاول مرة أخرى.", "hintButton" to "تلميح · 6 عملات", "hintPaid" to "تم تفعيل التلميح؛ خُصمت 6 عملات.",
         "needCoins" to "تحتاج إلى 6 عملات على الأقل.", "displayName" to "الاسم الظاهر", "changeAvatar" to "تغيير الصورة", "username" to "اسم المستخدم", "save" to "حفظ الملف",
-        "language" to "اللغة", "theme" to "السمة", "font" to "الخط", "minutes" to "دقيقة", "studyTools" to "أدوات الدراسة", "timer" to "مؤقت الدراسة", "startTimer" to "ابدأ", "pauseTimer" to "إيقاف مؤقت", "finishTimer" to "إنهاء الجلسة", "timerSaved" to "تم حفظ جلسة الدراسة.", "reminders" to "التذكيرات والمنبهات", "reminderTitle" to "عنوان التذكير", "timeHHMM" to "الوقت (HH:MM)", "dailyReminder" to "التكرار يومياً", "scheduleReminder" to "جدولة التذكير", "reminderSaved" to "تمت جدولة التذكير.", "invalidTime" to "أدخل عنواناً ووقتاً صحيحاً مثل 19:30.", "permissionNeeded" to "اسمح بالإشعارات من إعدادات Android لاستلام التذكيرات.", "noReminders" to "لا توجد تذكيرات مجدولة بعد.",
+        "language" to "اللغة", "theme" to "السمة", "font" to "الخط", "minutes" to "دقيقة", "studyTools" to "أدوات الدراسة", "timer" to "مؤقت الدراسة", "startTimer" to "ابدأ", "pauseTimer" to "إيقاف مؤقت", "finishTimer" to "إنهاء الجلسة", "timerSaved" to "تم حفظ جلسة الدراسة.", "reminders" to "التذكيرات والمنبهات", "reminderTitle" to "عنوان التذكير", "timeHHMM" to "الوقت (HH:MM)", "dailyReminder" to "التكرار يومياً", "scheduleReminder" to "جدولة التذكير", "reminderSaved" to "تمت جدولة التذكير.", "invalidTime" to "أدخل عنواناً ووقتاً صحيحاً مثل 19:30.", "permissionNeeded" to "اسمح بالإشعارات من إعدادات Android لاستلام التذكيرات.", "exactAlarmPermission" to "اسمح بالمنبهات الدقيقة من إعدادات Android حتى لا تتأخر التذكيرات.", "noReminders" to "لا توجد تذكيرات مجدولة بعد.",
         "DARI_AF" to "الداري الأفغانية", "PASHTO_AF" to "البشتوية الأفغانية", "ARABIC" to "العربية", "ENGLISH_US" to "الإنجليزية",
         "SANS_SERIF" to "Sans Serif", "SERIF" to "Serif", "CURSIVE" to "Cursive")
     val psComplete = ps + mapOf(
