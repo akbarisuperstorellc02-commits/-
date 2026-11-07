@@ -14,7 +14,7 @@ class ReminderBootReceiver : BroadcastReceiver() {
         val pending = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val reminders = AcademyDatabase.getInstance(context).academyDao().getEnabledReminders()
+                val reminders = AcademyDatabase.getInstance(context).academyDao().getAllEnabledReminders()
                 reminders.forEach { reminder ->
                     ReminderScheduler.schedule(
                         context = context,
