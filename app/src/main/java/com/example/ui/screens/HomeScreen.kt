@@ -243,7 +243,7 @@ fun HomeScreen(
                             color = theme.buttonBevel
                         )
                         Text(
-                            text = "آموزش‌های گسترده و پیوسته از الفبای A1 تا قله تسلط مطلق Z9 با معلم هوشمند صبور",
+                            text = "آموزش‌های گسترده و پیوسته از الفبای A1 تا مرحله پیشرفته Z24 با تمرین و آزمون‌های مرحله‌ای",
                             fontSize = 11.sp,
                             color = Color.DarkGray,
                             modifier = Modifier.padding(vertical = 4.dp),
