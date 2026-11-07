@@ -17,6 +17,7 @@ data class GrammarLesson(
 
 object AcademyGrammarCatalog {
     private fun t(en: String, fa: String, ps: String, ar: String) = LocalizedText(en, fa, ps, ar)
+    private fun t(fa: String, ps: String, ar: String) = LocalizedText(fa, fa, ps, ar)
     private fun g(id: String, band: LearningBand, title: LocalizedText, explanation: LocalizedText,
         example: String, translation: LocalizedText, question: LocalizedText,
         options: List<LocalizedText>, answer: Int) =
