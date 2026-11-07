@@ -314,6 +314,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                     }
                 }
             }
+            if (splashVisible) AcademySplashOverlay(profile.locale, splashMessage) { splashVisible = false }
         }
     }
 }
@@ -2344,7 +2345,8 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "font" to "فونت", "minutes" to "دقیقه", "studyTools" to "ابزارهای مطالعه", "timer" to "تایمر مطالعه", "startTimer" to "شروع", "pauseTimer" to "مکث", "finishTimer" to "پایان جلسه", "timerSaved" to "جلسه مطالعه ذخیره شد.", "reminders" to "یادآوری و زنگ", "reminderTitle" to "عنوان یادآوری", "timeHHMM" to "زمان (ساعت:دقیقه)", "dailyReminder" to "تکرار هر روز", "repeatDays" to "روزهای تکرار", "oneTimeReminder" to "اگر روزی انتخاب نشود، یادآوری فقط یک‌بار اجرا می‌شود.", "scheduleReminder" to "تنظیم یادآوری", "reminderSaved" to "یادآوری تنظیم شد.", "reminderUpdated" to "یادآوری به‌روزرسانی شد.", "updateReminder" to "به‌روزرسانی یادآوری", "invalidTime" to "عنوان و زمان درست مانند 19:30 وارد کن.", "permissionNeeded" to "برای دریافت یادآوری، اجازه اعلان‌ها را در اندروید فعال کن.", "exactAlarmPermission" to "برای زنگ دقیق، اجازه زنگ‌های دقیق را در تنظیمات اندروید فعال کن.", "noReminders" to "هنوز یادآوری تنظیم نشده است.", "DARI_AF" to "دری افغانستان", "PASHTO_AF" to "پشتو افغانستان", "ARABIC" to "عربی", "ENGLISH_US" to "انگلیسی",
         "SANS_SERIF" to "سن‌سریف", "SERIF" to "سریف", "CURSIVE" to "دست‌نویس", "VAZIRMATN" to "وزیرمتن", "SAHEL" to "ساحل"
     )
-    val ps = mapOf("home" to "کور", "learn" to "زده کړه", "games" to "لوبې", "progress" to "پرمختګ", "profile" to "پروفایل",
+    val ps = mapOf(
+        "conversationSection" to "مکالمه او روغبړ","home" to "کور", "learn" to "زده کړه", "games" to "لوبې", "progress" to "پرمختګ", "profile" to "پروفایل",
         "greeting" to "سلام، $arg!", "welcome" to "هره ورځ لږ پرمختګ، لویه لاسته راوړنه.", "journey" to "ستاسو د زده کړې سفر",
         "level" to "کچه", "coins" to "سکې", "dailyGoal" to "د مطالعې ورځنی هدف", "lessons" to "بشپړ شوي درسونه", "quizzes" to "ازموینې",
         "learningPath" to "د انګلیسي زده کړې لاره", "vocabulary" to "د لغتونو کتابچه", "searchWords" to "د لغت لټون", "wordCount" to "$arg لغتونه", "chooseLevel" to "خپله کچه وټاکئ", "viewLessons" to "درسونه وګورئ", "levelLocked" to "د دې کچې د خلاصولو لپاره مخکینۍ کچه بشپړه کړئ.", "allLevels" to "ټولې کچې",
@@ -2353,7 +2355,8 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "language" to "ژبه", "theme" to "بڼه", "font" to "لیکبڼه", "minutes" to "دقیقې", "studyTools" to "د مطالعې وسایل", "timer" to "د مطالعې ټایمر", "startTimer" to "پیل", "pauseTimer" to "تم", "finishTimer" to "ناسته پای ته ورسوه", "timerSaved" to "د مطالعې ناسته خوندي شوه.", "reminders" to "یادونې او الارم", "reminderTitle" to "د یادونې سرلیک", "timeHHMM" to "وخت (HH:MM)", "dailyReminder" to "هره ورځ تکرار", "repeatDays" to "د تکرار ورځې", "scheduleReminder" to "یادونه تنظیم کړه", "reminderSaved" to "یادونه تنظیم شوه.", "reminderUpdated" to "یادونه تازه شوه.", "updateReminder" to "یادونه تازه کول", "repeatDays" to "د تکرار ورځې", "oneTimeReminder" to "که کومه ورځ و نه ټاکل شي، یادونه یوازې یو ځل کېږي.", "invalidTime" to "سرلیک او سم وخت ولیکئ، لکه 19:30.", "permissionNeeded" to "د یادونو ترلاسه کولو لپاره د Android خبرتیا اجازه ورکړئ.", "exactAlarmPermission" to "دقیق الارم لپاره په Android تنظیماتو کې د دقیقو الارمونو اجازه ورکړئ.", "noReminders" to "تر اوسه یادونه نشته.",
         "DARI_AF" to "افغان دري", "PASHTO_AF" to "افغان پښتو", "ARABIC" to "عربي", "ENGLISH_US" to "انګلیسي",
         "SANS_SERIF" to "سن‌سریف", "SERIF" to "سریف", "CURSIVE" to "لاس لیک", "VAZIRMATN" to "وزیرمتن", "SAHEL" to "ساحل")
-    val ar = mapOf("home" to "الرئيسية", "learn" to "التعلم", "games" to "الألعاب", "progress" to "التقدم", "profile" to "الملف الشخصي",
+    val ar = mapOf(
+        "conversationSection" to "المحادثة والتحية","home" to "الرئيسية", "learn" to "التعلم", "games" to "الألعاب", "progress" to "التقدم", "profile" to "الملف الشخصي",
         "greeting" to "مرحباً، $arg!", "welcome" to "خطوة صغيرة كل يوم تصنع إنجازاً كبيراً.", "journey" to "رحلة التعلم",
         "level" to "المستوى", "coins" to "العملات", "dailyGoal" to "هدف الدراسة اليومي", "lessons" to "الدروس المكتملة", "quizzes" to "الاختبارات",
         "learningPath" to "مسار تعلم الإنجليزية", "vocabulary" to "دفتر المفردات", "searchWords" to "ابحث عن كلمة", "wordCount" to "$arg كلمة", "chooseLevel" to "اختر مستواك", "viewLessons" to "عرض الدروس", "levelLocked" to "أكمل المستوى السابق لفتح هذا المستوى.", "allLevels" to "كل المستويات",
