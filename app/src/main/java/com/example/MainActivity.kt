@@ -45,6 +45,9 @@ import com.bh.personalacademy.data.local.*
 import com.bh.personalacademy.content.AcademyLessonCatalog
 import com.bh.personalacademy.content.AcademyGameCatalog
 import com.bh.personalacademy.content.GameMode
+import com.bh.personalacademy.content.GameStyle
+import com.bh.personalacademy.content.AcademyGameCatalog
+import com.bh.personalacademy.content.GameMode
 import com.bh.personalacademy.data.preferences.AcademyPreferences
 import com.example.academy.core.AsciiDigits
 import com.example.academy.domain.model.*
@@ -315,31 +318,39 @@ private fun VocabularyPage(locale: AcademyLocale, dao: AcademyDao) {
 @Composable
 private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
     val scope = rememberCoroutineScope()
-    var selectedMode by remember { mutableStateOf<GameMode?>(null) }
-    var round by remember { mutableIntStateOf(0) }
-    var score by remember { mutableIntStateOf(0) }
-    var selectedAnswer by remember { mutableIntStateOf(-1) }
-    var hintVisible by remember { mutableStateOf(false) }
-    var hintPending by remember { mutableStateOf(false) }
-    var feedback by remember { mutableStateOf("") }
-    var finished by remember { mutableStateOf(false) }
-    var secondsLeft by remember { mutableIntStateOf(30) }
-    var resultSaved by remember { mutableStateOf(false) }
+    var selectedGameId by remember { mutableStateOf<String?>(null) }
+    val selectedMode = AcademyGameCatalog.modes.firstOrNull { it.id == selectedGameId }
+    var round by remember(selectedGameId) { mutableIntStateOf(0) }
+    var score by remember(selectedGameId) { mutableIntStateOf(0) }
+    var answered by remember(selectedGameId, round) { mutableStateOf(false) }
+    var hint by remember(selectedGameId, round) { mutableStateOf(false) }
+    var hintPending by remember(selectedGameId, round) { mutableStateOf(false) }
+    var feedback by remember(selectedGameId, round) { mutableStateOf("") }
+    var gameFinished by remember(selectedGameId) { mutableStateOf(false) }
+    var secondsLeft by remember(selectedGameId, round) { mutableIntStateOf(20) }
+    val question = selectedMode?.let { AcademyGameCatalog.questionFor(it, round) }
 
-    LaunchedEffect(selectedMode?.id, finished) {
-        if (selectedMode?.timed == true && !finished) {
-            while (secondsLeft > 0 && !finished) {
+    LaunchedEffect(selectedGameId, round, answered) {
+        if (selectedMode?.timed == true && !answered && !gameFinished) {
+            while (secondsLeft > 0) {
                 delay(1_000L)
                 secondsLeft -= 1
             }
-            if (secondsLeft <= 1) finished = true
+            if (!answered && secondsLeft == 0) {
+                answered = true
+                feedback = when (locale) {
+                    AcademyLocale.ENGLISH_US -> "Time is up. Review the answer and continue."
+                    AcademyLocale.DARI_AF -> "زمان تمام شد. پاسخ را مرور کن و ادامه بده."
+                    AcademyLocale.PASHTO_AF -> "وخت پای ته ورسېد. ځواب وګورئ او دوام ورکړئ."
+                    AcademyLocale.ARABIC -> "انتهى الوقت. راجع الإجابة ثم تابع."
+                }
+            }
         }
     }
 
-    LaunchedEffect(finished, selectedMode?.id) {
+    LaunchedEffect(gameFinished) {
         val mode = selectedMode
-        if (finished && mode != null && !resultSaved) {
-            resultSaved = true
+        if (gameFinished && mode != null) {
             dao.insertGameAttempt(
                 GameAttemptEntity(
                     attemptId = UUID.randomUUID().toString(),
@@ -349,139 +360,228 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
                     completedAt = System.currentTimeMillis()
                 )
             )
-            if (score >= 3) {
-                dao.applyRewardOnce(
-                    RewardEventEntity(
-                        eventId = "game_reward_${mode.id}",
-                        source = "GAME",
-                        sourceId = "${mode.id}_first_completion",
-                        xpDelta = 30,
-                        coinDelta = 8,
-                        createdAt = System.currentTimeMillis()
-                    )
-                )
-            }
         }
     }
 
-    fun resetRound(mode: GameMode? = selectedMode) {
-        selectedMode = mode
-        round = 0
-        score = 0
-        selectedAnswer = -1
-        hintVisible = false
-        hintPending = false
-        feedback = ""
-        finished = false
-        secondsLeft = 30
-        resultSaved = false
-    }
-
-    val labels = when (locale) {
-        AcademyLocale.ENGLISH_US -> listOf("Games", "Back to games", "Question", "Next", "Your result", "Correct", "Try again", "Time left", "Hint · 6 coins", "6 coins were spent.", "Not enough coins.", "Play again")
-        AcademyLocale.DARI_AF -> listOf("بازی‌های آموزشی", "بازگشت به بازی‌ها", "پرسش", "بعدی", "نتیجه تو", "درست", "دوباره تلاش کن", "زمان باقی‌مانده", "راهنما · 6 سکه", "6 سکه مصرف شد.", "سکه کافی نداری.", "بازی دوباره")
-        AcademyLocale.PASHTO_AF -> listOf("زده‌کړیزې لوبې", "لوبو ته بېرته", "پوښتنه", "بل", "ستاسو پایله", "سم", "بیا هڅه", "پاتې وخت", "لارښوونه · 6 سکې", "6 سکې ولګېدې.", "کافي سکې نشته.", "بیا لوبه")
-        AcademyLocale.ARABIC -> listOf("الألعاب التعليمية", "العودة إلى الألعاب", "السؤال", "التالي", "نتيجتك", "صحيح", "حاول مجدداً", "الوقت المتبقي", "تلميح · 6 عملات", "تم خصم 6 عملات.", "لا توجد عملات كافية.", "العب مرة أخرى")
-    }
-
     Page {
+        Text(tr(locale, "games"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         if (selectedMode == null) {
-            Text(labels[0], style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            Text(tr(locale, "gameLibrary"), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .7f))
-            AcademyGameCatalog.modes.forEachIndexed { index, mode ->
+            Text(
+                when (locale) {
+                    AcademyLocale.ENGLISH_US -> "Choose a mini-game to practise English."
+                    AcademyLocale.DARI_AF -> "یک بازی را انتخاب کن و انگلیسی را با سرگرمی تمرین کن."
+                    AcademyLocale.PASHTO_AF -> "د انګلیسي تمرین لپاره یوه لوبه وټاکئ."
+                    AcademyLocale.ARABIC -> "اختر لعبة قصيرة لممارسة الإنجليزية."
+                },
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = .7f)
+            )
+            AcademyGameCatalog.modes.forEach { mode ->
                 AcademyCard {
+                    Text(mode.title.forLocale(locale), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(mode.description.forLocale(locale), fontSize = 13.sp)
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(AsciiDigits.normalize((index + 1).toString()), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                        Spacer(Modifier.width(10.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(mode.title.forLocale(locale), style = MaterialTheme.typography.titleMedium)
-                            Text(mode.description.forLocale(locale), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = .7f))
+                        Text(
+                            if (mode.timed) when (locale) {
+                                AcademyLocale.ENGLISH_US -> "Timed · 20 sec"
+                                AcademyLocale.DARI_AF -> "زمان‌دار · 20 ثانیه"
+                                AcademyLocale.PASHTO_AF -> "وخت لرونکی · 20 ثانیې"
+                                AcademyLocale.ARABIC -> "مؤقت · 20 ثانية"
+                            } else when (locale) {
+                                AcademyLocale.ENGLISH_US -> "5 questions"
+                                AcademyLocale.DARI_AF -> "5 پرسش"
+                                AcademyLocale.PASHTO_AF -> "5 پوښتنې"
+                                AcademyLocale.ARABIC -> "5 أسئلة"
+                            },
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Button(onClick = { selectedGameId = mode.id }) {
+                            Text(
+                                when (locale) {
+                                    AcademyLocale.ENGLISH_US -> "Play"
+                                    AcademyLocale.DARI_AF -> "بازی"
+                                    AcademyLocale.PASHTO_AF -> "لوبه"
+                                    AcademyLocale.ARABIC -> "ابدأ"
+                                }
+                            )
                         }
-                    }
-                    Button(onClick = { resetRound(mode) }, modifier = Modifier.fillMaxWidth()) {
-                        Text(tr(locale, "playGame"))
                     }
                 }
             }
-        } else {
-            val mode = selectedMode!!
-            val question = AcademyGameCatalog.questionFor(mode, round)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(mode.title.forLocale(locale), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
-                TextButton(onClick = { resetRound(null) }) { Text(labels[1]) }
-            }
+        } else if (gameFinished) {
             AcademyCard {
-                Text("${labels[2]} ${AsciiDigits.normalize((round + 1).toString())}/5", fontSize = 12.sp)
-                LinearProgressIndicator(progress = { (round + 1) / 5f }, modifier = Modifier.fillMaxWidth())
-                if (mode.timed) Text("${labels[7]}: ${AsciiDigits.normalize(secondsLeft.toString())}s", color = MaterialTheme.colorScheme.error)
-                Text(question.prompt.forLocale(locale), style = MaterialTheme.typography.titleLarge)
+                Text(selectedMode.title.forLocale(locale), style = MaterialTheme.typography.titleLarge)
+                Text(
+                    when (locale) {
+                        AcademyLocale.ENGLISH_US -> "Game complete"
+                        AcademyLocale.DARI_AF -> "بازی تکمیل شد"
+                        AcademyLocale.PASHTO_AF -> "لوبه بشپړه شوه"
+                        AcademyLocale.ARABIC -> "اكتملت اللعبة"
+                    },
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                Text(
+                    AsciiDigits.normalize("$score / 5"),
+                    style = MaterialTheme.typography.displayMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    when (locale) {
+                        AcademyLocale.ENGLISH_US -> "Your result has been saved."
+                        AcademyLocale.DARI_AF -> "نتیجه بازی در تاریخچه ذخیره شد."
+                        AcademyLocale.PASHTO_AF -> "د لوبې پایله خوندي شوه."
+                        AcademyLocale.ARABIC -> "تم حفظ نتيجة اللعبة."
+                    }
+                )
+                Button(onClick = { selectedGameId = null }, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        when (locale) {
+                            AcademyLocale.ENGLISH_US -> "Back to games"
+                            AcademyLocale.DARI_AF -> "بازگشت به بازی‌ها"
+                            AcademyLocale.PASHTO_AF -> "لوبو ته بېرته"
+                            AcademyLocale.ARABIC -> "العودة إلى الألعاب"
+                        }
+                    )
+                }
+            }
+        } else if (question != null) {
+            AcademyCard {
+                Text(selectedMode.title.forLocale(locale), style = MaterialTheme.typography.titleLarge)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(AsciiDigits.normalize("Question ${round + 1} / 5"), modifier = Modifier.weight(1f), fontSize = 12.sp)
+                    if (selectedMode.timed) {
+                        Text(
+                            AsciiDigits.normalize("${secondsLeft}s"),
+                            color = if (secondsLeft <= 5) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                LinearProgressIndicator(
+                    progress = { (round + 1) / 5f },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text(question.prompt.forLocale(locale), style = MaterialTheme.typography.titleMedium)
+                if (selectedMode.style == GameStyle.WORD_BUILD) {
+                    val scrambled = question.hint.forLocale(locale)
+                    Text(scrambled, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                    Text(
+                        when (locale) {
+                            AcademyLocale.ENGLISH_US -> "Use the letter clue and choose the correct spelling below."
+                            AcademyLocale.DARI_AF -> "با استفاده از راهنمای حرف، املای درست را از گزینه‌ها انتخاب کن."
+                            AcademyLocale.PASHTO_AF -> "د توري له نښې ګټه واخلئ او سمه املا وټاکئ."
+                            AcademyLocale.ARABIC -> "استخدم تلميح الحرف واختر التهجئة الصحيحة."
+                        },
+                        fontSize = 12.sp
+                    )
+                }
                 question.options.forEachIndexed { optionIndex, option ->
                     OutlinedButton(
                         onClick = {
-                            if (selectedAnswer == -1 && !finished) {
-                                selectedAnswer = optionIndex
-                                if (optionIndex == question.correctIndex) {
+                            if (!answered) {
+                                answered = true
+                                val isCorrect = optionIndex == question.correctIndex
+                                if (isCorrect) {
                                     score += 1
-                                    feedback = labels[5]
+                                    feedback = question.explanation.forLocale(locale)
+                                    scope.launch {
+                                        dao.applyRewardOnce(
+                                            RewardEventEntity(
+                                                eventId = UUID.randomUUID().toString(),
+                                                source = "GAME",
+                                                sourceId = "${selectedMode.id}_round_${round}",
+                                                xpDelta = 10,
+                                                coinDelta = 2,
+                                                createdAt = System.currentTimeMillis()
+                                            )
+                                        )
+                                    }
                                 } else {
-                                    feedback = labels[6]
+                                    feedback = when (locale) {
+                                        AcademyLocale.ENGLISH_US -> "Not quite. "
+                                        AcademyLocale.DARI_AF -> "این پاسخ درست نیست. "
+                                        AcademyLocale.PASHTO_AF -> "دا ځواب سم نه دی. "
+                                        AcademyLocale.ARABIC -> "ليست هذه الإجابة الصحيحة. "
+                                    } + question.explanation.forLocale(locale)
                                 }
                             }
                         },
-                        enabled = selectedAnswer == -1 && !finished,
+                        enabled = !answered,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(option.forLocale(locale))
                     }
                 }
-                if (hintVisible) Text(question.hint.forLocale(locale), color = MaterialTheme.colorScheme.primary)
-                if (feedback.isNotEmpty()) Text(feedback, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                if (selectedAnswer != -1) {
-                    Text(question.explanation.forLocale(locale), fontSize = 13.sp)
-                    Button(onClick = {
-                        if (round == 4) finished = true
-                        else {
-                            round += 1
-                            selectedAnswer = -1
-                            hintVisible = false
-                            hintPending = false
-                            feedback = ""
-                        }
-                    }, modifier = Modifier.fillMaxWidth()) { Text(if (round == 4) labels[4] else labels[3]) }
-                } else {
+                if (hint) Text(question.hint.forLocale(locale), color = MaterialTheme.colorScheme.primary)
+                if (feedback.isNotEmpty()) Text(feedback, fontWeight = FontWeight.SemiBold)
+                if (!answered) {
                     OutlinedButton(
                         onClick = {
-                            if (!hintVisible && !hintPending) {
+                            if (!hint && !hintPending) {
                                 hintPending = true
                                 scope.launch {
                                     if (dao.spendHintCoins() > 0) {
-                                        hintVisible = true
-                                        feedback = labels[8]
+                                        hint = true
+                                        feedback = when (locale) {
+                                            AcademyLocale.ENGLISH_US -> "Hint unlocked. Exactly 6 coins spent."
+                                            AcademyLocale.DARI_AF -> "راهنما فعال شد؛ دقیقاً 6 سکه مصرف شد."
+                                            AcademyLocale.PASHTO_AF -> "لارښوونه فعاله شوه؛ 6 سکې ولګېدې."
+                                            AcademyLocale.ARABIC -> "تم فتح التلميح؛ خُصمت 6 عملات."
+                                        }
                                     } else {
-                                        feedback = labels[10]
+                                        feedback = tr(locale, "needCoins")
                                     }
                                     hintPending = false
                                 }
                             }
                         },
-                        enabled = !hintVisible && !hintPending,
+                        enabled = !hint && !hintPending,
                         modifier = Modifier.fillMaxWidth()
-                    ) { Text(labels[8]) }
+                    ) {
+                        Text(
+                            when (locale) {
+                                AcademyLocale.ENGLISH_US -> "Hint · 6 coins"
+                                AcademyLocale.DARI_AF -> "راهنما · 6 سکه"
+                                AcademyLocale.PASHTO_AF -> "لارښوونه · 6 سکې"
+                                AcademyLocale.ARABIC -> "تلميح · 6 عملات"
+                            }
+                        )
+                    }
+                } else {
+                    Button(
+                        onClick = {
+                            if (round == 4) gameFinished = true else round += 1
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            when (locale) {
+                                AcademyLocale.ENGLISH_US -> if (round == 4) "Finish game" else "Next question"
+                                AcademyLocale.DARI_AF -> if (round == 4) "پایان بازی" else "پرسش بعدی"
+                                AcademyLocale.PASHTO_AF -> if (round == 4) "لوبه پای ته رسول" else "بله پوښتنه"
+                                AcademyLocale.ARABIC -> if (round == 4) "إنهاء اللعبة" else "السؤال التالي"
+                            }
+                        )
+                    }
                 }
-                Text(tr(locale, "coinBalance", AsciiDigits.normalize(coins.toString())), fontSize = 12.sp)
-            }
-            if (finished) {
-                AcademyCard {
-                    Text(labels[4], style = MaterialTheme.typography.titleLarge)
-                    Text("${AsciiDigits.normalize(score.toString())}/5", style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.primary)
-                    Text(if (score >= 3) tr(locale, "gamePassed") else tr(locale, "gameTryAgain"))
-                    Button(onClick = { resetRound(mode) }, modifier = Modifier.fillMaxWidth()) { Text(labels[11]) }
-                    OutlinedButton(onClick = { resetRound(null) }, modifier = Modifier.fillMaxWidth()) { Text(labels[1]) }
+                Text(tr(locale, "coinBalance", AsciiDigits.normalize("$coins")), fontSize = 12.sp)
+                TextButton(onClick = { selectedGameId = null }) {
+                    Text(
+                        when (locale) {
+                            AcademyLocale.ENGLISH_US -> "Exit game"
+                            AcademyLocale.DARI_AF -> "خروج از بازی"
+                            AcademyLocale.PASHTO_AF -> "له لوبې وتل"
+                            AcademyLocale.ARABIC -> "الخروج من اللعبة"
+                        }
+                    )
                 }
             }
         }
     }
 }
+
 
 @Composable
 private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> Unit) {
