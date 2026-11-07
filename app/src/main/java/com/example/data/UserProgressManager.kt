@@ -1,6 +1,7 @@
 package com.example.data
 
 import android.content.Context
+import com.example.academy.domain.model.AcademyLocale
 import com.example.model.DiaryNote
 import com.example.model.GameStage
 import com.example.model.GoldenMedal
@@ -62,6 +63,10 @@ class UserProgressManager(context: Context) {
     val fontStyle: StateFlow<ZahraFontStyle> = _fontStyle.asStateFlow()
     private val _learnerName = MutableStateFlow(prefs.getString("learner_name", "زهرا") ?: "زهرا")
     val learnerName: StateFlow<String> = _learnerName.asStateFlow()
+    private val _currentLocale = MutableStateFlow(
+        AcademyLocale.entries.firstOrNull { it.languageTag == prefs.getString("locale_tag", "fa-AF") } ?: AcademyLocale.DARI_AF
+    )
+    val currentLocale: StateFlow<AcademyLocale> = _currentLocale.asStateFlow()
     private val _totalScore = MutableStateFlow(prefs.getInt("total_score_xp", 0))
     val totalScore: StateFlow<Int> = _totalScore.asStateFlow()
     private val _recentReward = MutableStateFlow<ScoreReward?>(null)
@@ -96,6 +101,11 @@ class UserProgressManager(context: Context) {
         val clean = newName.trim().take(32).ifBlank { "زهرا" }
         _learnerName.value = clean
         prefs.edit().putString("learner_name", clean).apply()
+    }
+
+    fun setLocale(locale: AcademyLocale) {
+        _currentLocale.value = locale
+        prefs.edit().putString("locale_tag", locale.languageTag).apply()
     }
 
     fun setAvatar(avatar: String) {
