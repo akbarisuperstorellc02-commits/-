@@ -9,8 +9,8 @@
 ## Phase 1 — Core architecture
 - Domain models and repository contracts.
 - Room entities/DAOs/database and migrations.
-- DataStore profile/preferences.
-- Profile-scoped progress and reward ledger.
+- DataStore profile/preferences, multiple local profiles and profile switching.
+- Profile-scoped progress, vocabulary, reminders, backups and reward ledger, with Room migrations.
 - Localization resource strategy and ASCII-digit formatter.
 - Theme tokens and typography system.
 
