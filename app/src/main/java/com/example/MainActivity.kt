@@ -1,6 +1,8 @@
 package com.bh.personalacademy
 
 import android.Manifest
+import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
@@ -651,7 +653,7 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
                         Text(AsciiDigits.normalize(lesson.explanation))
                         Text(tr(locale, "newWords"), fontWeight = FontWeight.Bold)
                         lesson.words.forEach { word ->
-                            Text("${word.english} — ${word.dari}  (${word.pronunciation})", fontSize = 13.sp)
+                            Text("${word.emoji}${if (word.emoji.isNotBlank()) " " else ""}${word.english} — ${word.meaningFor(locale)}  (${word.pronunciation})", fontSize = 13.sp)
                         }
                         Text(AsciiDigits.normalize(lesson.example), fontWeight = FontWeight.SemiBold)
                         Text(AsciiDigits.normalize(lesson.translation))
@@ -1434,8 +1436,8 @@ private fun AcademySplashOverlay(locale: AcademyLocale, message: String, onFinis
                     Text("📘", fontSize = 66.sp)
                     Text("✦", fontSize = 26.sp, modifier = Modifier.align(Alignment.TopEnd).padding(12.dp))
                 }
-                Text("خودسازی آکادمی", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
-                Text("Self-Growth Academy", color = Color.White.copy(alpha = 0.86f), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Text("آکادمی خودسازی Learning", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+                Text("Self-Growth Learning Academy", color = Color.White.copy(alpha = 0.86f), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 Surface(color = Color.White.copy(alpha = 0.13f), shape = RoundedCornerShape(26.dp), border = BorderStroke(1.dp, Color.White.copy(alpha = 0.24f))) {
                     Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(when (locale) {
@@ -2565,13 +2567,12 @@ private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyD
     }
     val prompt = promptList[promptIndex.coerceIn(0, promptList.lastIndex)]
     val currentPrompt by rememberUpdatedState(prompt)
+    // Use Android's configured default recognition service first. Some devices report
+    // on-device availability even when the English model is not installed or ready.
     val recognizer = remember {
-        when {
-            !SpeechRecognizer.isRecognitionAvailable(context) -> null
-            Build.VERSION.SDK_INT >= 33 && SpeechRecognizer.isOnDeviceRecognitionAvailable(context) ->
-                SpeechRecognizer.createOnDeviceSpeechRecognizer(context)
-            else -> SpeechRecognizer.createSpeechRecognizer(context)
-        }
+        if (SpeechRecognizer.isRecognitionAvailable(context)) {
+            SpeechRecognizer.createSpeechRecognizer(context)
+        } else null
     }
     val speechEngine = remember {
         TextToSpeech(context) { result -> ttsReady = result == TextToSpeech.SUCCESS }
