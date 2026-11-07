@@ -269,7 +269,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                         AcademyTab.HOME -> HomePage(profile, wallet, lessons.size, attempts.size, todayStudyMillis,
                             todayLessonCount, todayWordCount, todayQuizCount, weekStudyDays, monthStudyDays,
                             { tab = AcademyTab.LEARN }, { tab = AcademyTab.GAMES }, { tab = AcademyTab.PROFILE }, { tab = AcademyTab.TOOLS }, { tab = AcademyTab.CALENDAR })
-                        AcademyTab.LEARN -> LearnPage(profile.locale, profile.profileId, band, lessons.map { it.lessonId }.toSet(),
+                        AcademyTab.LEARN -> LearnPage(profile.locale, band, lessons.map { it.lessonId }.toSet(),
                             { band = it },
                             { tab = AcademyTab.CONVERSATION },
                             { tab = AcademyTab.VOCABULARY },
@@ -597,9 +597,8 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
 }
 
 @Composable
-private fun LearnPage(locale: AcademyLocale, profileId: String, selected: LearningBand?, completedLessonIds: Set<String>, select: (LearningBand?) -> Unit, conversation: () -> Unit, vocabulary: () -> Unit, grammar: () -> Unit, openSpeaking: (String) -> Unit, complete: (String) -> Unit, saveStudySession: (String, Long, Long) -> Unit, quiz: () -> Unit) {
-    var optimisticCompletedIds by remember(profileId, selected) { mutableStateOf(emptySet<String>()) }
-    val progressIds = completedLessonIds + optimisticCompletedIds
+private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedLessonIds: Set<String>, select: (LearningBand?) -> Unit, conversation: () -> Unit, vocabulary: () -> Unit, grammar: () -> Unit, openSpeaking: (String) -> Unit, complete: (String) -> Unit, saveStudySession: (String, Long, Long) -> Unit, quiz: () -> Unit) {
+    val progressIds = completedLessonIds
     val names = when (locale) {
         AcademyLocale.ENGLISH_US -> listOf("Pre-A1", "A1", "A2", "B1", "B2", "C1", "C2", "Specialized")
         AcademyLocale.DARI_AF -> listOf("پیش از A1", "A1", "A2", "B1", "B2", "C1", "C2", "تخصصی")
@@ -672,7 +671,7 @@ private fun LearnPage(locale: AcademyLocale, profileId: String, selected: Learni
                         )
                     }
                     Button(
-                        onClick = { optimisticCompletedIds = optimisticCompletedIds + lesson.id; complete(lesson.id) },
+                        onClick = { complete(lesson.id) },
                         enabled = lessonUnlocked && !isCompleted,
                         modifier = Modifier.fillMaxWidth()
                     ) {
