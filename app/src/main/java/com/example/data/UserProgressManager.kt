@@ -180,15 +180,24 @@ class UserProgressManager(context: Context) {
     }
 
     fun addStudyMinutes(minutes: Int) {
+        // Ignore invalid negative/zero sessions; they must never reduce saved progress.
+        if (minutes <= 0) return
+
         val newToday = _todayStudyMinutes.value + minutes
         _todayStudyMinutes.value = newToday
-        prefs.edit().putInt("today_study_minutes", newToday).apply()
 
-        val newTotalHours = _totalStudyHours.value + (minutes / 60)
-        if (minutes >= 60) {
-            _totalStudyHours.value = newTotalHours
-            prefs.edit().putInt("total_study_hours", newTotalHours).apply()
-        }
+        val progress = calculateStudyTimeProgress(
+            currentHours = _totalStudyHours.value,
+            currentRemainingMinutes = prefs.getInt("total_study_remainder_minutes", 0),
+            sessionMinutes = minutes
+        )
+        _totalStudyHours.value = progress.totalHours
+
+        prefs.edit()
+            .putInt("today_study_minutes", newToday)
+            .putInt("total_study_hours", progress.totalHours)
+            .putInt("total_study_remainder_minutes", progress.remainingMinutes)
+            .apply()
     }
 
     fun setDailyGoal(minutes: Int) {
