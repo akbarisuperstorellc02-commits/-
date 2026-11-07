@@ -1,10 +1,10 @@
 # BH Personal Academy — Product Specification
 
 ## Product identity
-- Persian/Dari name: آکادمی اختصاصی BH
-- English name: BH Personal Academy
+- Persian/Dari name: خودسازی و انگلیسی
+- English name: Self-Growth & English
 - Default display name: زهرا (stored as user data; never hard-coded in UI)
-- Android application; offline-first; single primary profile with profile-scoped data.
+- Android application; offline-first; multiple independent local learner profiles with profile-scoped settings and learning records.
 
 ## Supported locales
 - fa-AF: Afghan Dari (default, RTL)
@@ -24,7 +24,7 @@ All numeric UI output uses ASCII digits 0–9 in every locale.
 
 ## Product modules
 1. Home dashboard and navigation
-2. Learning path: Pre-A1, A1, A2, B1, B2, C1
+2. Learning path: Pre-A1, A1, A2, B1, B2, C1, C2 and Specialized
 3. Lessons with objectives, explanations, vocabulary, Dari meaning, pronunciation, examples, practice and completion rewards
 4. Quiz engine: multiple choice, true/false, fill blank, translation, ordering, sentence building, listening where bundled audio exists
 5. Educational games with difficulty, score, rules and persisted results
@@ -33,7 +33,7 @@ All numeric UI output uses ASCII digits 0–9 in every locale.
 8. Study timer that counts only active lesson time
 9. Calendar, daily goals, challenges and history
 10. Reminder and alarm scheduling using Android APIs with permission-aware fallbacks
-11. Profile, avatar, language, theme and font preferences
+11. Multiple learner profiles, avatar, language, theme and font preferences
 12. Progress analytics derived only from persisted activity records
 13. Backup, restore and guarded reset
 
@@ -45,7 +45,8 @@ Soft, polished, playful/puffy cards; consistent spacing and component sizes; res
 - MVVM / unidirectional UI state
 - Navigation Compose
 - Room for structured learning and activity records
-- DataStore for profile preferences and appearance settings
+- DataStore for per-profile preferences and appearance settings
+- Room profileId scoping for progress, wallets, attempts, reminders and vocabulary; profile-aware migration for composite vocabulary keys
 - WorkManager / AlarmManager only where appropriate
 - Repository layer and versioned backup format
 - Unit tests for progression, rewards, localization digits, study timer and persistence.
