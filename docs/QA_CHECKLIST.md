@@ -1,10 +1,10 @@
 # BH Personal Academy — QA checklist
 
 ## Automated checks
-- [ ] `gradle testDebugUnitTest` passes.
-- [ ] `gradle assembleDebug` succeeds.
-- [ ] APK artifact is uploaded by GitHub Actions.
-- [ ] No AI/chatbot/model/API dependencies or source files remain.
+- [x] `gradle testDebugUnitTest` passes (CI run 42395604417).
+- [x] `gradle assembleDebug` succeeds (CI run 42395604417).
+- [x] APK artifact is uploaded by GitHub Actions (artifact 13583512344).
+- [x] No AI/chatbot/model/API dependencies or source files are included in the active app build; no AI tutor/chat screen is wired into the app navigation.
 - [ ] Manifest has no INTERNET permission.
 
 ## Profile and preferences
@@ -59,6 +59,12 @@
 - [ ] Restore merges by stable IDs and restores enabled reminders.
 - [ ] Reset requires two separate confirmations.
 - [ ] Reset cancels alarms, clears Room/DataStore and recreates the default wallet.
+
+## Source review completed (not a substitute for device QA)
+- [x] Study calendar is wired to saved Room study sessions and shows per-day activity.
+- [x] Calendar animal companion changes according to saved study minutes (0, 15, 30 and 60 minute thresholds).
+- [x] Progress badges are based on saved lesson, quiz, game, study-time and XP records.
+- [x] Four supported app locales are used for the new companion and achievement text.
 
 ## Physical-device checks
 - [ ] Install and launch on a real Android device.
