@@ -222,8 +222,22 @@ private fun AcademyCard(content: @Composable ColumnScope.() -> Unit) {
 }
 @Composable
 private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, studyMinutes: Int, todayLessons: Int, todayWords: Int, todayQuizzes: Int, learn: () -> Unit, games: () -> Unit, profile: () -> Unit, tools: () -> Unit, calendar: () -> Unit) {
+    var currentTimeMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(30_000L)
+            currentTimeMillis = System.currentTimeMillis()
+        }
+    }
+    val dateTimeLabel = remember(currentTimeMillis, p.locale) {
+        AsciiDigits.normalize(
+            SimpleDateFormat("EEEE, d MMMM · HH:mm", Locale.forLanguageTag(p.locale.languageTag))
+                .format(Date(currentTimeMillis))
+        )
+    }
     Page {
         Text(tr(p.locale, "greeting", p.displayName), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(dateTimeLabel, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
         Text(tr(p.locale, "welcome"), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .65f))
         AcademyCard {
             Row(verticalAlignment = Alignment.CenterVertically) {
