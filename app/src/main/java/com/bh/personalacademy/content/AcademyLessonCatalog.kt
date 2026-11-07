@@ -381,6 +381,7 @@ object AcademyLessonCatalog {
             "الف: صبح بخیر! حالت چطور است؟\nب: خوب هستم، تشکر. تو چطور؟\nالف: عالی هستم. از دیدنت خوش شدم!",
             "در گفت‌وگوی طبیعی فقط پاسخ کوتاه نده؛ یک پرسش برگشتی مانند And you? بپرس تا مکالمه ادامه پیدا کند.",
             LessonWord("Good morning","صبح بخیر","/ɡʊd ˈmɔːr.nɪŋ/"), LessonWord("How are you?","حالت چطور است؟","/haʊ ɑːr juː/"), LessonWord("Nice to meet you","از دیدنت خوش شدم","/naɪs tə miːt juː/"))
+    )
 
     fun forBand(band: LearningBand): List<LessonContent> = all.filter { it.band == band }
 
