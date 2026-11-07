@@ -22,6 +22,7 @@ import java.util.UUID
  * Single data boundary for the local-first academy.
  * Compose screens observe repository flows; all writes stay on the repository boundary.
  */
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class AcademyRepository(
     private val preferences: AcademyPreferences,
     private val dao: AcademyDao
