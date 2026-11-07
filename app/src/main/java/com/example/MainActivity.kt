@@ -1,6 +1,7 @@
 package com.bh.personalacademy
 
 import android.os.Bundle
+import android.content.Intent
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -556,10 +557,14 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
 @Composable
 private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     var displayName by remember(profile.displayName) { mutableStateOf(profile.displayName) }
     var username by remember(profile.username) { mutableStateOf(profile.username) }
-    val avatarPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri != null) scope.launch { prefs.updateAvatar(uri.toString()) }
+    val avatarPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            runCatching { context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+            scope.launch { prefs.updateAvatar(uri.toString()) }
+        }
     }
     Page {
         Text(tr(profile.locale, "profile"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
@@ -573,7 +578,7 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences) {
                         Text("🌷", fontSize = 36.sp)
                     }
                 }
-                OutlinedButton(onClick = { avatarPicker.launch("image/*") }) { Text(tr(profile.locale, "changeAvatar")) }
+                OutlinedButton(onClick = { avatarPicker.launch(arrayOf("image/*")) }) { Text(tr(profile.locale, "changeAvatar")) }
             }
             Text(profile.displayName, style = MaterialTheme.typography.titleLarge)
             OutlinedTextField(displayName, { displayName = it }, modifier = Modifier.fillMaxWidth(), label = { Text(tr(profile.locale, "displayName")) }, singleLine = true)
