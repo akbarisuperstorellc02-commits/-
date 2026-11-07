@@ -56,7 +56,7 @@ class ExampleUnitTest {
             assertTrue(level.items.size >= 3)
             assertTrue(level.examQuestions.size >= 3)
         }
-        assertEquals((1..60).toList(), (CurriculumData.wordGameStages + AdvancedWordGameStages.stages).map { it.stageNumber })
+        assertEquals((1..60).toList(), (CurriculumData.wordGameStages + com.example.data.AdvancedWordGameStages.stages).map { it.stageNumber })
     }
 
     @Test
