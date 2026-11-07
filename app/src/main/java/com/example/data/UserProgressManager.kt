@@ -58,7 +58,7 @@ class UserProgressManager(context: Context) {
 
     private val _currentTheme = MutableStateFlow(readEnum("current_theme", ZahraThemeMode.SWEET_SAKURA_PUFFY))
     val currentTheme: StateFlow<ZahraThemeMode> = _currentTheme.asStateFlow()
-    private val _fontStyle = MutableStateFlow(readEnum("font_style", ZahraFontStyle.FANTASY_ROUND))
+    private val _fontStyle = MutableStateFlow(readEnum("font_style", ZahraFontStyle.SYSTEM_SANS))
     val fontStyle: StateFlow<ZahraFontStyle> = _fontStyle.asStateFlow()
     private val _learnerName = MutableStateFlow(prefs.getString("learner_name", "زهرا") ?: "زهرا")
     val learnerName: StateFlow<String> = _learnerName.asStateFlow()
