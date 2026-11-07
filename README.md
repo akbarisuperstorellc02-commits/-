@@ -92,3 +92,6 @@ GitHub Actions uploads the debug APK as the `bh-personal-academy-debug-apk` arti
 The profile page can create a versioned JSON backup and restore it. Restore merges records by stable IDs; it does not silently erase local records. Full reset is a separate confirmation flow.
 
 The development branch is `feature/bh-personal-academy-rebuild`. The default `main` branch is intentionally not modified.
+
+
+Recent update: the learning catalog now contains 70 lessons across all eight bands. Game selection cards use illustrated emoji artwork and each vocabulary round includes a visual clue. Lesson and level locks now follow the immediately preceding lesson / final lesson of the previous band. The adaptive launcher foreground is scaled into Android's safe zone.
