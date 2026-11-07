@@ -37,11 +37,17 @@ abstract class AcademyDao {
     @Query("SELECT * FROM lesson_progress WHERE profileId = :profileId")
     abstract fun observeLessonProgress(profileId: String = "primary"): Flow<List<LessonProgressEntity>>
 
+    @Query("SELECT COUNT(*) FROM lesson_progress WHERE profileId = :profileId AND completedAt >= :fromMillis AND completedAt < :untilMillis")
+    abstract fun observeCompletedLessonCount(fromMillis: Long, untilMillis: Long, profileId: String = "primary"): Flow<Int>
+
     @Insert
     abstract suspend fun insertQuizAttempt(attempt: QuizAttemptEntity)
 
     @Query("SELECT * FROM quiz_attempts WHERE profileId = :profileId ORDER BY completedAt DESC")
     abstract fun observeQuizAttempts(profileId: String = "primary"): Flow<List<QuizAttemptEntity>>
+
+    @Query("SELECT COUNT(*) FROM quiz_attempts WHERE profileId = :profileId AND completedAt >= :fromMillis AND completedAt < :untilMillis")
+    abstract fun observeQuizCount(fromMillis: Long, untilMillis: Long, profileId: String = "primary"): Flow<Int>
 
     @Insert
     abstract suspend fun insertGameAttempt(attempt: GameAttemptEntity)
@@ -110,8 +116,14 @@ abstract class AcademyDao {
     @Query("SELECT * FROM vocabulary WHERE profileId = :profileId ORDER BY english COLLATE NOCASE")
     abstract fun observeVocabulary(profileId: String = "primary"): Flow<List<VocabularyEntity>>
 
+    @Query("SELECT COUNT(*) FROM vocabulary WHERE profileId = :profileId AND lastPractisedAt >= :fromMillis AND lastPractisedAt < :untilMillis")
+    abstract fun observeWordsPractisedCount(fromMillis: Long, untilMillis: Long, profileId: String = "primary"): Flow<Int>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun saveDailyGoal(goal: DailyGoalEntity)
+
+    @Query("SELECT * FROM daily_goals WHERE profileId = :profileId AND dateIso = :dateIso LIMIT 1")
+    abstract fun observeDailyGoal(dateIso: String, profileId: String = "primary"): Flow<DailyGoalEntity?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun saveReminder(reminder: ReminderEntity)
