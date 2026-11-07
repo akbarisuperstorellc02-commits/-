@@ -47,11 +47,12 @@ class AcademyRepository(
         dao.insertWallet(WalletEntity(profileId = "primary", coins = 30))
     }
 
-    suspend fun completeLesson(lessonId: String, score: Int = 100) {
-        dao.recordLessonCompletion(lessonId, System.currentTimeMillis(), score)
+    suspend fun completeLesson(lessonId: String, score: Int = 100, profileId: String = "primary") {
+        dao.recordLessonCompletion(lessonId, System.currentTimeMillis(), score, profileId)
         dao.applyRewardOnce(
             RewardEventEntity(
-                eventId = UUID.randomUUID().toString(),
+                eventId = RewardEventIds.lessonCompletion(profileId, lessonId),
+                profileId = profileId,
                 source = "LESSON",
                 sourceId = lessonId,
                 xpDelta = 25,
