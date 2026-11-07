@@ -271,15 +271,15 @@ private fun VocabularyPage(locale: AcademyLocale, dao: AcademyDao) {
     val scope = rememberCoroutineScope()
     var search by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
-        AcademyCurriculum.lessons.forEach { lesson ->
+        AcademyLessonCatalog.all.forEach { lesson ->
             lesson.words.forEach { word ->
                 dao.insertVocabularyIfMissing(VocabularyEntity(
                     wordId = "${lesson.id}_${word.english.lowercase().replace(" ", "_")}",
                     english = word.english,
                     dariMeaning = word.dari,
                     pronunciation = word.pronunciation,
-                    exampleEnglish = lesson.exampleEnglish,
-                    exampleDari = lesson.exampleDari,
+                    exampleEnglish = lesson.example,
+                    exampleDari = lesson.translation,
                     categoryId = lesson.band.name
                 ))
             }
