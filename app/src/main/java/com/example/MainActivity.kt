@@ -46,7 +46,6 @@ import coil.compose.AsyncImage
 import com.bh.personalacademy.content.AcademyGameCatalog
 import com.bh.personalacademy.content.AcademyLessonCatalog
 import com.bh.personalacademy.ui.components.LessonStudyTimer
-import com.bh.personalacademy.ui.components.StudyCalendarCard
 import com.bh.personalacademy.content.GameMode
 import com.bh.personalacademy.content.GameStyle
 import com.bh.personalacademy.data.local.*
@@ -980,7 +979,6 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val reminders by dao.observeReminders().collectAsStateWithLifecycle(initialValue = emptyList())
-    val studySessions by dao.observeStudySessions().collectAsStateWithLifecycle(initialValue = emptyList())
     var elapsedSeconds by remember { mutableLongStateOf(0L) }
     var running by remember { mutableStateOf(false) }
     var sessionStart by remember { mutableLongStateOf(0L) }
@@ -1055,8 +1053,6 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
             }, enabled = elapsedSeconds > 0L, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "finishTimer")) }
             if (feedback.isNotEmpty()) Text(feedback, color = MaterialTheme.colorScheme.primary)
         }
-        StudyCalendarCard(locale = locale, sessions = studySessions)
-
         AcademyCard {
             Text(tr(locale, "reminders"), style = MaterialTheme.typography.titleLarge)
             OutlinedTextField(reminderTitle, { reminderTitle = it }, modifier = Modifier.fillMaxWidth(), label = { Text(tr(locale, "reminderTitle")) }, singleLine = true)
