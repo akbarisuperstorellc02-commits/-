@@ -113,6 +113,7 @@ internal object GemmaModelDownloader {
         val file = modelFile(app)
         if (!file.isFile || file.length() != expected.bytes) {
             file.delete()
+            app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY_ID).remove(KEY_VERIFIED).apply()
             return false
         }
         val digest = MessageDigest.getInstance("SHA-256")
@@ -127,7 +128,7 @@ internal object GemmaModelDownloader {
         val actual = digest.digest().joinToString("") { "%02x".format(it) }
         if (!actual.equals(expected.sha256, ignoreCase = true)) {
             file.delete()
-            app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY_VERIFIED).apply()
+            app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY_ID).remove(KEY_VERIFIED).apply()
             return false
         }
         app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
