@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">أكاديمية تطوير الذات Learning</string><string name="nav_home">الرئيسية</string><string name="nav_learning">التعلّم</string><string name="nav_games">الألعاب</string><string name="nav_calendar">التقويم</string><string name="nav_profile">الملف الشخصي</string>
+    <string name="app_name">أكاديمية تطوير الذات Learning Learning</string><string name="nav_home">الرئيسية</string><string name="nav_learning">التعلّم</string><string name="nav_games">الألعاب</string><string name="nav_calendar">التقويم</string><string name="nav_profile">الملف الشخصي</string>
     <string name="greeting">أهلاً بك</string><string name="settings">الإعدادات</string><string name="language">لغة التطبيق</string>
     <string name="language_dari">الدَّرية الأفغانية</string><string name="language_pashto">البشتوية الأفغانية</string><string name="language_arabic">العربية</string><string name="language_english">الإنجليزية</string>
     <string name="font_sans">Sans Serif</string><string name="font_serif">Serif</string><string name="font_cursive">Cursive</string><string name="daily_goal">الهدف اليومي</string><string name="minutes">دقيقة</string>
