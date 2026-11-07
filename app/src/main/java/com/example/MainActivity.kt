@@ -210,8 +210,8 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completed:
                         lesson.words.forEach { word ->
                             Text("${word.english} — ${word.dari}  (${word.pronunciation})", fontSize = 13.sp)
                         }
-                        Text(AsciiDigits.normalize(lesson.exampleEnglish), fontWeight = FontWeight.SemiBold)
-                        Text(AsciiDigits.normalize(lesson.exampleDari))
+                        Text(AsciiDigits.normalize(lesson.example), fontWeight = FontWeight.SemiBold)
+                        Text(AsciiDigits.normalize(lesson.translation))
                         Text(AsciiDigits.normalize(lesson.grammarTip))
                     }
                     Button(onClick = { complete(lesson.id) }, modifier = Modifier.fillMaxWidth()) {
