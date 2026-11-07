@@ -67,3 +67,7 @@
 - [ ] Verify image picker permission persists after restart.
 - [ ] Verify reminder delivery with app closed and after reboot.
 - [ ] Verify backup export/import using actual files.
+
+- [ ] Verify lesson and level unlock progression on a clean profile and an upgraded profile.
+- [ ] Verify illustrated game tiles and visual vocabulary clues on physical Android devices.
+- [ ] Verify launcher icon is fully visible across Android launcher masks and legacy launcher icons.
