@@ -214,7 +214,7 @@ fun HomeScreen(
             }
         }
 
-        // Hero Card: Zahra Puffy Profile & Roadmap from A1 to Z9
+        // Hero Card: Zahra Puffy Profile & Roadmap from A1 to Z24
         item {
             PuffyCard(
                 modifier = Modifier.fillMaxWidth(),
@@ -230,7 +230,7 @@ fun HomeScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         PuffyBadge(
-                            text = "مسیر طلایی A1 تا Z9",
+                            text = "مسیر طلایی A1 تا Z24",
                             emoji = "👑",
                             backgroundColor = theme.backgroundColor,
                             textColor = theme.primaryColor
@@ -361,7 +361,7 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     HomeFeatureCard(
-                        title = "سطوح A1 تا Z9",
+                        title = "سطوح A1 تا Z24",
                         subtitle = "$unlockedCount از $totalLevels سطح فعال",
                         emoji = "👑",
                         badge = "۳۰ سطح جامع",
