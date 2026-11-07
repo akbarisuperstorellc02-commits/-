@@ -19,6 +19,12 @@ data class AcademyStory(
 )
 object AcademyStoryCatalog {
     private fun t(en:String,fa:String,ps:String,ar:String)=StoryText(en,fa,ps,ar)
+    private fun s(
+        id: String, band: LearningBand, emoji: String, title: StoryText, summary: StoryText,
+        englishText: String, translation: StoryText, words: List<StoryWord>,
+        question: StoryText, options: List<StoryText>, correctIndex: Int
+    ) = AcademyStory(id, band, emoji, title, summary, englishText, translation, words, question, options, correctIndex)
+
     val all = listOf(
         AcademyStory("the_lost_key",LearningBand.PRE_A1,"🔑",
             t("The Lost Key","کلید گمشده","ورک شوی کیلي","المفتاح الضائع"),
