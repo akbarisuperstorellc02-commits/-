@@ -53,3 +53,10 @@ Soft, polished, playful/puffy cards; consistent spacing and component sizes; res
 
 ## Delivery gates
 A feature is complete only after implementation, compilation, automated tests and a practical UI/device check where possible. APK/AAB and release claims must match actual CI artifacts. No claim of real-device testing unless performed.
+
+
+## Recent progression and visual updates
+- 70 lessons across eight learning bands.
+- Sequential unlock: the next lesson unlocks after the immediately preceding lesson is completed; the next band unlocks after the final lesson in the preceding band.
+- Game selection uses visual tiles and each game round can display its vocabulary emoji clue.
+- Adaptive launcher artwork is scaled into the Android icon safe zone.
