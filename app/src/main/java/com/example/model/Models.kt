@@ -73,17 +73,6 @@ data class Level(
     var isMastered: Boolean = false
 )
 
-data class ChatMessage(
-    val id: String,
-    val isFromTutor: Boolean,
-    val englishText: String,
-    val persianTranslation: String? = null,
-    val grammarTipFa: String? = null,
-    val weaknessFlagged: String? = null,
-    val timestampMillis: Long = System.currentTimeMillis(),
-    val quickReplies: List<String> = emptyList()
-)
-
 data class GoldenMedal(
     val id: String,
     val titleFa: String,
