@@ -78,6 +78,15 @@ data class QuizAttempt(
 
 enum class RewardSource { LESSON, QUIZ, GAME, DAILY_GOAL, STREAK, LEVEL_COMPLETION, REVIEW }
 
+/**
+ * Stable ledger identifiers prevent replaying the same one-time reward after a lesson
+ * is reopened, the app is restarted, or the completion callback is triggered twice.
+ */
+object RewardEventIds {
+    fun lessonCompletion(profileId: String, lessonId: String): String =
+        "lesson_completion:${profileId.trim()}:${lessonId.trim()}"
+}
+
 data class RewardEvent(
     val eventId: String,
     val profileId: String,
