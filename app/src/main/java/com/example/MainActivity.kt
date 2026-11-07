@@ -210,7 +210,12 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                         Triple(AcademyTab.GAMES, Icons.Default.Extension, tr(profile.locale, "games")),
                         Triple(AcademyTab.PROGRESS, Icons.Default.Insights, tr(profile.locale, "progress")),
                         Triple(AcademyTab.PROFILE, Icons.Default.Person, tr(profile.locale, "profile")),
-                        Triple(AcademyTab.SPEAKING, Icons.Default.Mic, "گفتار")
+                        Triple(AcademyTab.SPEAKING, Icons.Default.Mic, when (profile.locale) {
+                            AcademyLocale.ENGLISH_US -> "Speak"
+                            AcademyLocale.DARI_AF -> "گفتار"
+                            AcademyLocale.PASHTO_AF -> "خبرې"
+                            AcademyLocale.ARABIC -> "تحدث"
+                        })
                     )
                     items.forEach { (destination, icon, label) ->
                         NavigationBarItem(selected = tab == destination, onClick = { tab = destination; band = null },
