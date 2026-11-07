@@ -10,6 +10,7 @@ import com.bh.personalacademy.data.local.StudySessionEntity
 import com.bh.personalacademy.data.local.VocabularyEntity
 import com.bh.personalacademy.data.local.WalletEntity
 import com.bh.personalacademy.data.preferences.AcademyPreferences
+import com.example.academy.domain.model.RewardEventIds
 import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
