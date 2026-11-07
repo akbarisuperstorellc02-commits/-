@@ -1695,7 +1695,21 @@ private fun ProfilePage(profile: UserProfile, profiles: List<UserProfile>, prefs
             }
             OutlinedTextField(displayName, { displayName = it }, modifier = Modifier.fillMaxWidth(), label = { Text(tr(profile.locale, "displayName")) }, singleLine = true)
             OutlinedTextField(username, { username = it }, modifier = Modifier.fillMaxWidth(), label = { Text(tr(profile.locale, "username")) }, singleLine = true)
-            Button(onClick = { scope.launch { prefs.updateDisplayName(displayName); prefs.updateUsername(username) } }, modifier = Modifier.fillMaxWidth()) { Text(tr(profile.locale, "save")) }
+            Button(onClick = {
+                scope.launch {
+                    prefs.updateDisplayName(displayName)
+                    val saved = prefs.updateUsername(username)
+                    if (!saved) {
+                        val message = when (profile.locale) {
+                            AcademyLocale.ENGLISH_US -> "Username is invalid or already in use."
+                            AcademyLocale.DARI_AF -> "نام کاربری نادرست است یا قبلاً استفاده شده است."
+                            AcademyLocale.PASHTO_AF -> "کارنوم ناسم دی یا مخکې کارول شوی دی."
+                            AcademyLocale.ARABIC -> "اسم المستخدم غير صالح أو مستخدم بالفعل."
+                        }
+                        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }, modifier = Modifier.fillMaxWidth()) { Text(tr(profile.locale, "save")) }
         }
         AcademyCard {
             Text(
