@@ -1,4 +1,4 @@
-# BH Personal Academy — QA checklist
+# Self-Growth Academy — QA checklist
 
 ## Automated checks
 - [x] `gradle testDebugUnitTest` passes (CI run 42395604417).
