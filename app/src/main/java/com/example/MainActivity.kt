@@ -545,7 +545,12 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
 
 @Composable
 private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedLessonIds: Set<String>, select: (LearningBand?) -> Unit, vocabulary: () -> Unit, complete: (String) -> Unit, saveStudySession: (String, Long, Long) -> Unit, quiz: () -> Unit) {
-    val names = listOf("Pre-A1", "A1", "A2", "B1", "B2", "C1")
+    val names = when (locale) {
+        AcademyLocale.ENGLISH_US -> listOf("Pre-A1", "A1", "A2", "B1", "B2", "C1", "C2", "Specialized")
+        AcademyLocale.DARI_AF -> listOf("پیش از A1", "A1", "A2", "B1", "B2", "C1", "C2", "تخصصی")
+        AcademyLocale.PASHTO_AF -> listOf("له A1 مخکې", "A1", "A2", "B1", "B2", "C1", "C2", "ځانګړې زده‌کړه")
+        AcademyLocale.ARABIC -> listOf("ما قبل A1", "A1", "A2", "B1", "B2", "C1", "C2", "تخصصي")
+    }
     val lessons = selected?.let { AcademyLessonCatalog.forBand(it) }.orEmpty()
     Page {
         Text(tr(locale, "learningPath"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
