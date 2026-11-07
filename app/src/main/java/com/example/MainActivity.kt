@@ -24,7 +24,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Gamepad
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.School
@@ -55,7 +54,6 @@ import com.example.ui.screens.DiaryCalendarScreen
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.LearningLevelsScreen
 import com.example.ui.screens.LevelExamScreen
-import com.example.ui.screens.MasterGohariChatScreen
 import com.example.ui.screens.PuffyProfileScreen
 import com.example.ui.screens.SettingsAndThemeScreen
 import com.example.ui.screens.SpeakingPracticeScreen
@@ -71,7 +69,6 @@ enum class AppScreen {
     HOME,
     LEVELS,
     LEVEL_EXAM,
-    CHAT,
     SPEAKING,
     GAME,
     CALENDAR,
@@ -149,7 +146,7 @@ fun MainAppContent(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            if (currentScreen != AppScreen.SPLASH && currentScreen != AppScreen.LEVEL_EXAM && currentScreen != AppScreen.CHAT) {
+            if (currentScreen != AppScreen.SPLASH && currentScreen != AppScreen.LEVEL_EXAM) {
                 PuffyBottomNavBar(
                     currentScreen = currentScreen,
                     onTabSelected = { screen ->
@@ -184,7 +181,6 @@ fun MainAppContent(
                                 activeClassroomFilter = null
                                 currentScreen = AppScreen.LEVELS
                             },
-                            onNavigateToChat = { currentScreen = AppScreen.CHAT },
                             onNavigateToSpeakingDrill = { currentScreen = AppScreen.SPEAKING },
                             onNavigateToWordGame = { currentScreen = AppScreen.GAME },
                             onNavigateToCalendar = { currentScreen = AppScreen.CALENDAR },
@@ -226,14 +222,6 @@ fun MainAppContent(
                             ttsHelper = ttsHelper,
                             onExamFinished = { currentScreen = AppScreen.LEVELS },
                             onBack = { currentScreen = AppScreen.LEVELS }
-                        )
-                    }
-
-                    AppScreen.CHAT -> {
-                        MasterGohariChatScreen(
-                            userProgressManager = userProgressManager,
-                            ttsHelper = ttsHelper,
-                            onBack = { currentScreen = AppScreen.HOME }
                         )
                     }
 
@@ -313,13 +301,6 @@ fun PuffyBottomNavBar(
                 isSelected = currentScreen == AppScreen.LEVELS,
                 onClick = { onTabSelected(AppScreen.LEVELS) },
                 testTag = "nav_levels"
-            )
-            NavBarItem(
-                label = "معلم هوشمند",
-                icon = Icons.Default.ChatBubble,
-                isSelected = currentScreen == AppScreen.CHAT,
-                onClick = { onTabSelected(AppScreen.CHAT) },
-                testTag = "nav_chat"
             )
             NavBarItem(
                 label = "بازی ۳۰ مرحله",
