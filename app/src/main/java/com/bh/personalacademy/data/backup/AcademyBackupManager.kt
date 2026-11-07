@@ -116,11 +116,16 @@ object AcademyBackupManager {
             preferences.updateTheme(enumValue(profile.optString("theme"), AcademyThemeId.SOFT_PINK))
             preferences.updateFont(enumValue(profile.optString("font"), AcademyFontId.SANS_SERIF))
             preferences.updateDailyGoal(profile.optInt("dailyGoalMinutes", 20).coerceIn(5, 240))
+            preferences.updateDailyTargets(
+                profile.optInt("dailyGoalLessons", 1).coerceIn(1, 20),
+                profile.optInt("dailyGoalWords", 5).coerceIn(1, 100),
+                profile.optInt("dailyGoalQuizzes", 1).coerceIn(1, 10)
+            )
             preferences.updateDailyTargets(profile.optInt("dailyGoalLessons", 1), profile.optInt("dailyGoalWords", 5), profile.optInt("dailyGoalQuizzes", 1))
             preferences.updateAvatar(if (profile.isNull("avatarUri")) null else profile.optString("avatarUri"))
 
             root.array("lessonProgress").forEachObject { o ->
-                dao.saveLessonProgress(LessonProgressEntity(
+                dao.mergeLessonProgress(LessonProgressEntity(
                     profileId = o.optString("profileId", "primary"),
                     lessonId = o.getString("lessonId"),
                     completedAt = o.longOrNull("completedAt"),
@@ -143,7 +148,7 @@ object AcademyBackupManager {
                 ))
             }
             root.array("studySessions").forEachObject { o ->
-                dao.insertStudySession(StudySessionEntity(
+                dao.mergeStudySession(StudySessionEntity(
                     sessionId = o.getString("sessionId"), profileId = o.optString("profileId", "primary"),
                     lessonId = o.getString("lessonId"), startedAt = o.optLong("startedAt"),
                     durationMillis = o.optLong("durationMillis"), completedAt = o.longOrNull("completedAt")
@@ -151,7 +156,7 @@ object AcademyBackupManager {
             }
             if (!root.isNull("wallet")) {
                 val o = root.getJSONObject("wallet")
-                dao.restoreWallet(WalletEntity(o.optString("profileId", "primary"), o.optLong("xp"), o.optLong("coins"), o.optInt("level", 1)))
+                dao.mergeWallet(WalletEntity(o.optString("profileId", "primary"), o.optLong("xp"), o.optLong("coins"), o.optInt("level", 1)))
             }
             root.array("rewardEvents").forEachObject { o ->
                 dao.restoreRewardEvent(RewardEventEntity(
@@ -161,7 +166,7 @@ object AcademyBackupManager {
                 ))
             }
             root.array("vocabulary").forEachObject { o ->
-                dao.saveVocabulary(VocabularyEntity(
+                dao.mergeVocabulary(VocabularyEntity(
                     wordId = o.getString("wordId"), profileId = o.optString("profileId", "primary"),
                     english = o.getString("english"), dariMeaning = o.optString("dariMeaning"),
                     pronunciation = o.optString("pronunciation"), exampleEnglish = o.optString("exampleEnglish"),
