@@ -9,7 +9,7 @@ import org.junit.Test
 class AcademyStoryCatalogTest {
     @Test fun storyIdsAreUniqueAndCatalogIsPopulated() {
         val stories = AcademyStoryCatalog.all
-        assertEquals(8, stories.size)
+        assertEquals(16, stories.size)
         assertEquals(stories.size, stories.map { it.id }.toSet().size)
     }
 
