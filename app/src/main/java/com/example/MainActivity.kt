@@ -62,6 +62,7 @@ import com.bh.personalacademy.content.AcademyGrammarCatalog
 import com.bh.personalacademy.content.AcademyLessonCatalog
 import com.bh.personalacademy.content.AcademyStoryCatalog
 import com.bh.personalacademy.content.LocalizedText
+import com.bh.personalacademy.content.StudyCompanion
 import com.bh.personalacademy.ui.components.LessonStudyTimer
 import com.bh.personalacademy.content.GameMode
 import com.bh.personalacademy.content.GameStyle
@@ -1686,13 +1687,7 @@ private fun CalendarPage(locale: AcademyLocale, profileId: String, dao: AcademyD
                     AcademyLocale.ARABIC -> "وقت الدراسة: $formattedSelectedMinutes دقيقة"
                 }
             )
-            val dailyCompanion = when {
-                selectedMinutes >= 60L -> "🐢"
-                selectedMinutes >= 30L -> "🦊"
-                selectedMinutes >= 15L -> "🐝"
-                selectedMinutes > 0L -> "🐣"
-                else -> "🌱"
-            }
+            val dailyCompanion = StudyCompanion.emojiForMinutes(selectedMinutes)
             Row(
                 modifier = Modifier.fillMaxWidth()
                     .clip(RoundedCornerShape(20.dp))
