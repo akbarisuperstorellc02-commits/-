@@ -125,6 +125,15 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
                                 dao.recordLessonCompletion(lessonId = id, completedAt = System.currentTimeMillis(), score = 100)
                                 dao.applyRewardOnce(RewardEventEntity(UUID.randomUUID().toString(), source = "LESSON", sourceId = id,
                                     xpDelta = 25, coinDelta = 5, createdAt = System.currentTimeMillis()))
+                                val activeBand = band
+                                if (activeBand != null) {
+                                    val completedBefore = lessons.map { it.lessonId }.toSet()
+                                    val bandFinished = AcademyLessonCatalog.forBand(activeBand).all { it.id == id || it.id in completedBefore }
+                                    if (bandFinished) {
+                                        dao.applyRewardOnce(RewardEventEntity(UUID.randomUUID().toString(), source = "LEVEL_COMPLETION",
+                                            sourceId = activeBand.name, xpDelta = 100, coinDelta = 20, createdAt = System.currentTimeMillis()))
+                                    }
+                                }
                             } }, { tab = AcademyTab.QUIZ })
                         AcademyTab.QUIZ -> QuizPage(profile.locale, dao) { tab = AcademyTab.PROGRESS }
                         AcademyTab.GAMES -> GamePage(profile.locale, wallet?.coins ?: 0, dao)
