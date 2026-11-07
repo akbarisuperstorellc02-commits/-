@@ -477,11 +477,19 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
                 TextButton(onClick = { select(null) }) { Text(tr(locale, "allLevels")) }
             }
             lessons.forEachIndexed { index, lesson ->
+                val isCompleted = lesson.id in completedLessonIds
+                val lessonUnlocked = index == 0 || lessons.take(index).all { it.id in completedLessonIds }
                 var expanded by remember(lesson.id) { mutableStateOf(false) }
                 AcademyCard {
-                    Text(AsciiDigits.normalize("${index + 1}. ${lesson.localizedTitle.forLocale(locale)}"), style = MaterialTheme.typography.titleMedium)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(AsciiDigits.normalize("${index + 1}. ${lesson.localizedTitle.forLocale(locale)}"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                        if (isCompleted) Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        else if (!lessonUnlocked) Icon(Icons.Default.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                     Text(AsciiDigits.normalize(lesson.localizedObjective.forLocale(locale)), fontSize = 13.sp)
-                    TextButton(onClick = { expanded = !expanded }) {
+                    if (isCompleted) Text(tr(locale, "lessonDone"), color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
+                    if (!lessonUnlocked) Text(tr(locale, "lessonLocked"), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                    TextButton(onClick = { expanded = !expanded }, enabled = lessonUnlocked || isCompleted) {
                         Text(if (expanded) tr(locale, "hideDetails") else tr(locale, "lessonDetails"))
                     }
                     if (expanded) {
@@ -500,8 +508,14 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
                             onSaveSession = saveStudySession
                         )
                     }
-                    Button(onClick = { complete(lesson.id) }, modifier = Modifier.fillMaxWidth()) {
-                        Icon(Icons.Default.CheckCircle, null); Spacer(Modifier.width(6.dp)); Text(tr(locale, "completeLesson"))
+                    Button(
+                        onClick = { complete(lesson.id) },
+                        enabled = lessonUnlocked && !isCompleted,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.CheckCircle, null)
+                        Spacer(Modifier.width(6.dp))
+                        Text(tr(locale, if (isCompleted) "lessonDone" else "completeLesson"))
                     }
                 }
             }
@@ -1623,7 +1637,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "myProfile" to "My profile", "learningPath" to "English learning path", "vocabulary" to "Vocabulary notebook", "searchWords" to "Search words", "wordCount" to "$arg words", "chooseLevel" to "Choose your current level",
         "bandSub" to "Structured learning at $arg", "viewLessons" to "View lessons", "levelLocked" to "Complete the previous level to unlock.", "allLevels" to "All levels",
         "lessonExplain" to "Learn the topic, practise vocabulary and check your understanding.", "lessonDetails" to "Open lesson", "hideDetails" to "Hide details", "newWords" to "New vocabulary",
-        "completeLesson" to "Complete lesson · earn XP", "quizReview" to "Review quizzes", "wordChallenge" to "Word meaning challenge",
+        "completeLesson" to "Complete lesson · earn XP", "lessonDone" to "Lesson completed", "quizReview" to "Review quizzes", "wordChallenge" to "Word meaning challenge",
         "chooseMeaning" to "Choose the Dari meaning of APPLE", "correct" to "Excellent! Correct answer.", "wrong" to "Not quite. Try again.",
         "hintText" to "Hint: It is a fruit.", "hintPaid" to "Hint unlocked. 6 coins spent.", "needCoins" to "You need at least 6 coins.",
         "hintButton" to "Get a hint · 6 coins", "coinBalance" to "Your coins: $arg", "newRound" to "New round",
@@ -1676,7 +1690,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "journeySub" to "هره نوې کلمه مو موخې ته نږدې کوي.", "goalMins" to "$arg دقیقې", "goalHint" to "د مطالعې وخت ثبتولو لپاره درس پیل کړئ.",
         "continue" to "راتلونکي ګام ته چمتو یاست؟", "chooseLesson" to "کچه وټاکئ او زده کړه روانه وساتئ.", "openLessons" to "درسونه پرانیزئ",
         "myProfile" to "زما پروفایل", "bandSub" to "د $arg لپاره منظم درسونه", "lessonDetails" to "درس پرانیزئ", "hideDetails" to "جزئیات پټ کړئ",
-        "newWords" to "نوې کلمې", "completeLesson" to "درس بشپړ کړئ · XP ترلاسه کړئ", "quizReview" to "ازموینې بیا وګورئ",
+        "newWords" to "نوې کلمې", "completeLesson" to "درس بشپړ کړئ · XP ترلاسه کړئ", "lessonDone" to "درس بشپړ شوی دی", "quizReview" to "ازموینې بیا وګورئ",
         "wordChallenge" to "د کلمې د مانا لوبه", "chooseMeaning" to "د APPLE پښتو/دري مانا وټاکئ", "hintText" to "لارښوونه: دا یوه مېوه ده.",
         "coinBalance" to "ستاسې سکې: $arg", "newRound" to "نوی پړاو", "gameRoadmap" to "نورې د لغت، املا او حافظې لوبې به وروسته ورزیاتې شي.",
         "summary" to "د زده کړې لنډیز", "badges" to "ویاړونه", "badgeFirstLesson" to "لومړی درس بشپړ شو", "badgeFiveLessons" to "پنځه درسونه بشپړ شول", "badgeFirstQuiz" to "لومړۍ ازموینه بشپړه شوه", "badgeFirstGame" to "لومړۍ لوبه وشوه", "badgeHour" to "یو ساعت مطالعه", "noBadges" to "د نښانونو لپاره درسونه او ازموینې بشپړې کړئ.", "studyToday" to "نن", "studyWeek" to "دا اونۍ", "studyMonth" to "دا میاشت", "studyTotal" to "د مطالعې ټول وخت", "average" to "د ازموینو منځنۍ نمره", "quizHistory" to "د ازموینو تاریخچه", "noHistory" to "تر اوسه ازموینه نه ده شوې.",
@@ -1687,7 +1701,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "journeySub" to "كل كلمة جديدة تقرّبك من هدفك.", "goalMins" to "$arg دقيقة", "goalHint" to "ابدأ درساً لتسجيل وقت الدراسة الفعلي.",
         "continue" to "هل أنت مستعد للخطوة التالية؟", "chooseLesson" to "اختر مستوى وتابع التعلم.", "openLessons" to "افتح الدروس",
         "myProfile" to "ملفي الشخصي", "bandSub" to "دروس منظمة للمستوى $arg", "lessonDetails" to "افتح الدرس", "hideDetails" to "إخفاء التفاصيل",
-        "newWords" to "مفردات جديدة", "completeLesson" to "أكمل الدرس · اكسب XP", "quizReview" to "مراجعة الاختبارات",
+        "newWords" to "مفردات جديدة", "completeLesson" to "أكمل الدرس · اكسب XP", "lessonDone" to "اكتمل الدرس", "quizReview" to "مراجعة الاختبارات",
         "wordChallenge" to "تحدي معنى الكلمة", "chooseMeaning" to "اختر معنى APPLE باللغة الدارية", "hintText" to "تلميح: إنها فاكهة.",
         "coinBalance" to "عملاتك: $arg", "newRound" to "جولة جديدة", "gameRoadmap" to "ستضاف ألعاب المفردات والإملاء والذاكرة في مرحلة المحتوى التالية.",
         "summary" to "ملخص التعلم", "badges" to "الإنجازات", "badgeFirstLesson" to "أكملت الدرس الأول", "badgeFiveLessons" to "أكملت خمسة دروس", "badgeFirstQuiz" to "أكملت الاختبار الأول", "badgeFirstGame" to "لعبت اللعبة الأولى", "badgeHour" to "ساعة من الدراسة", "noBadges" to "أكمل الدروس والاختبارات والألعاب للحصول على الشارات.", "studyToday" to "اليوم", "studyWeek" to "هذا الأسبوع", "studyMonth" to "هذا الشهر", "studyTotal" to "إجمالي وقت الدراسة", "average" to "متوسط نتيجة الاختبارات", "quizHistory" to "سجل الاختبارات", "noHistory" to "لم تُجرَ أي اختبارات بعد.",
