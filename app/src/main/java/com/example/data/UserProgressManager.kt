@@ -160,7 +160,7 @@ class UserProgressManager(context: Context) {
 
     fun getLearnerRank(score: Int): Pair<String, String> {
         return when {
-            score >= 2500 -> "پرنسس افسانه‌ای Z9 👑" to "نهایت تسلط طلایی و دیپلماتیک"
+            score >= 2500 -> "پرنسس افسانه‌ای Z24 👑" to "نهایت تسلط طلایی و دیپلماتیک"
             score >= 1500 -> "استاد سخنوری دخترانه ✨" to "تسلط بر مکالمات پیشرفته"
             score >= 800 -> "ستاره درخشان زبان 🌟" to "گسترش دایره لغات و گرامر"
             score >= 400 -> "قهرمان خودسازی 🌸" to "پیشرفت چشمگیر در اصطلاحات"
