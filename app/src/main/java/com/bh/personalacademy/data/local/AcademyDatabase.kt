@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         ReminderEntity::class,
         GameAttemptEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AcademyDatabase : RoomDatabase() {
@@ -50,6 +50,12 @@ abstract class AcademyDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE vocabulary ADD COLUMN lastPractisedAt INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         @Volatile
         private var instance: AcademyDatabase? = null
 
@@ -60,7 +66,7 @@ abstract class AcademyDatabase : RoomDatabase() {
                     AcademyDatabase::class.java,
                     "bh_personal_academy.db"
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .build()
                     .also { instance = it }
             }
