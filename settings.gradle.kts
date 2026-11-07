@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Self-Growth Academy"
+rootProject.name = "Self-Growth Learning Academy"
 include(":app")
