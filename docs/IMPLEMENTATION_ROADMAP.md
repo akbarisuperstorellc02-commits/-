@@ -1,4 +1,4 @@
-# Implementation Roadmap — BH Personal Academy
+# Implementation Roadmap — Self-Growth Academy
 
 ## Phase 0 — Safe project foundation
 - Create isolated feature branch from main.
