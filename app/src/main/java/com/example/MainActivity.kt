@@ -8,6 +8,10 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
+import android.speech.tts.TextToSpeech
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -70,7 +74,7 @@ import java.util.Locale
 import java.text.SimpleDateFormat
 import java.util.UUID
 
-private enum class AcademyTab { HOME, LEARN, QUIZ, GAMES, PROGRESS, PROFILE, TOOLS, VOCABULARY, CALENDAR }
+private enum class AcademyTab { HOME, LEARN, QUIZ, GAMES, PROGRESS, PROFILE, TOOLS, VOCABULARY, CALENDAR, SPEAKING }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -205,7 +209,8 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                         Triple(AcademyTab.LEARN, Icons.Default.MenuBook, tr(profile.locale, "learn")),
                         Triple(AcademyTab.GAMES, Icons.Default.Extension, tr(profile.locale, "games")),
                         Triple(AcademyTab.PROGRESS, Icons.Default.Insights, tr(profile.locale, "progress")),
-                        Triple(AcademyTab.PROFILE, Icons.Default.Person, tr(profile.locale, "profile"))
+                        Triple(AcademyTab.PROFILE, Icons.Default.Person, tr(profile.locale, "profile")),
+                        Triple(AcademyTab.SPEAKING, Icons.Default.Mic, "گفتار")
                     )
                     items.forEach { (destination, icon, label) ->
                         NavigationBarItem(selected = tab == destination, onClick = { tab = destination; band = null },
@@ -253,6 +258,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                         AcademyTab.TOOLS -> ToolsPage(profile.locale, dao) { tab = AcademyTab.HOME }
                         AcademyTab.CALENDAR -> CalendarPage(profile.locale, dao) { tab = AcademyTab.HOME }
                         AcademyTab.VOCABULARY -> VocabularyPage(profile.locale, dao)
+                        AcademyTab.SPEAKING -> SpeakingPage(profile.locale, dao)
                     }
                 }
             }
@@ -1823,4 +1829,168 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
     }
     val selected = when(locale) { AcademyLocale.ENGLISH_US -> en; AcademyLocale.DARI_AF -> fa; AcademyLocale.PASHTO_AF -> psComplete; AcademyLocale.ARABIC -> arComplete }
     return selected[key] ?: themeLabels[key] ?: en[key] ?: key
+}
+
+
+private data class SpeakingPrompt(val id: String, val text: String, val translation: String)
+private val speakingPrompts = listOf(
+    SpeakingPrompt("hello", "Hello, how are you today?", "سلام، امروز چطور هستی؟"),
+    SpeakingPrompt("name", "My name is Zahra.", "نام من زهرا است."),
+    SpeakingPrompt("school", "I go to school every morning.", "من هر صبح به مکتب می‌روم."),
+    SpeakingPrompt("water", "I would like a glass of water, please.", "لطفاً یک گیلاس آب می‌خواهم."),
+    SpeakingPrompt("family", "My family is very important to me.", "خانواده‌ام برای من بسیار مهم است."),
+    SpeakingPrompt("reading", "I enjoy reading books in my free time.", "من در وقت آزاد از کتاب‌خواندن لذت می‌برم."),
+    SpeakingPrompt("practice", "Practice makes progress every day.", "تمرین هر روز باعث پیشرفت می‌شود."),
+    SpeakingPrompt("future", "I am going to improve my English this year.", "من امسال می‌خواهم انگلیسی خود را بهتر بسازم.")
+)
+
+private fun speechAccuracy(target: String, spoken: String): Int {
+    val a = target.lowercase(Locale.US).replace(Regex("[^a-z0-9 ]"), " ").trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+    val b = spoken.lowercase(Locale.US).replace(Regex("[^a-z0-9 ]"), " ").trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+    if (a.isEmpty()) return 0
+    val previous = IntArray(b.size + 1) { it }
+    for (i in 1..a.size) {
+        val current = IntArray(b.size + 1)
+        current[0] = i
+        for (j in 1..b.size) {
+            val cost = if (a[i - 1] == b[j - 1]) 0 else 1
+            current[j] = minOf(current[j - 1] + 1, previous[j] + 1, previous[j - 1] + cost)
+        }
+        current.copyInto(previous)
+    }
+    return ((1.0 - previous[b.size].toDouble() / maxOf(a.size, b.size, 1)) * 100.0).toInt().coerceIn(0, 100)
+}
+
+@Composable
+private fun SpeakingPage(locale: AcademyLocale, dao: AcademyDao) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var promptIndex by remember { mutableIntStateOf(0) }
+    var transcript by remember { mutableStateOf("") }
+    var status by remember { mutableStateOf("") }
+    var listening by remember { mutableStateOf(false) }
+    var score by remember { mutableIntStateOf(-1) }
+    var permissionGranted by remember {
+        mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)
+    }
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        permissionGranted = granted
+        if (!granted) status = "Microphone permission is needed to practise speaking."
+    }
+    val prompt = speakingPrompts[promptIndex]
+    val recognizer = remember {
+        if (SpeechRecognizer.isRecognitionAvailable(context)) SpeechRecognizer.createSpeechRecognizer(context) else null
+    }
+    val speechEngine = remember {
+        TextToSpeech(context) { result ->
+            if (result == TextToSpeech.SUCCESS) { /* Ready for playback. */ }
+        }
+    }
+    DisposableEffect(recognizer) {
+        recognizer?.setRecognitionListener(object : RecognitionListener {
+            override fun onReadyForSpeech(params: Bundle?) { listening = true; status = "" }
+            override fun onBeginningOfSpeech() { listening = true }
+            override fun onRmsChanged(rmsdB: Float) {}
+            override fun onBufferReceived(buffer: ByteArray?) {}
+            override fun onEndOfSpeech() { listening = false }
+            override fun onError(error: Int) { listening = false; status = "Speech was not recognized. Try again in a quiet place." }
+            override fun onResults(results: Bundle?) {
+                listening = false
+                val spoken = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty()
+                transcript = spoken
+                score = speechAccuracy(prompt.text, spoken)
+                status = "Score compares recognized words; it is not phoneme-level accent analysis."
+                if (spoken.isNotBlank()) {
+                    val earned = score
+                    scope.launch {
+                        dao.insertGameAttempt(GameAttemptEntity(
+                            attemptId = UUID.randomUUID().toString(),
+                            gameId = "speaking_" + prompt.id,
+                            score = earned,
+                            totalQuestions = 100,
+                            completedAt = System.currentTimeMillis()
+                        ))
+                        if (earned >= 70) {
+                            val day = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                            dao.applyRewardOnce(RewardEventEntity(
+                                eventId = UUID.randomUUID().toString(),
+                                source = "SPEAKING",
+                                sourceId = prompt.id + "_" + day,
+                                xpDelta = 10,
+                                coinDelta = 2,
+                                createdAt = System.currentTimeMillis()
+                            ))
+                        }
+                    }
+                }
+            }
+            override fun onPartialResults(partialResults: Bundle?) {}
+            override fun onEvent(eventType: Int, params: Bundle?) {}
+        })
+        onDispose { recognizer?.destroy() }
+    }
+    DisposableEffect(speechEngine) {
+        onDispose { speechEngine.stop(); speechEngine.shutdown() }
+    }
+    Page {
+        Text("تمرین صحبت‌کردن / Speaking", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
+        AcademyCard {
+            Text("گوش کن، صحبت کن و امتیاز بگیر", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text((promptIndex + 1).toString() + " / " + speakingPrompts.size, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+            Text(prompt.text, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text(prompt.translation, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Button(
+                onClick = {
+                    speechEngine.language = Locale.US
+                    speechEngine.speak(prompt.text, TextToSpeech.QUEUE_FLUSH, null, "prompt_" + prompt.id)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(26.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp)
+            ) { Icon(Icons.Default.VolumeUp, null); Spacer(Modifier.width(8.dp)); Text("شنیدن تلفظ / Listen") }
+            Button(
+                onClick = {
+                    if (!permissionGranted) permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                    else if (recognizer == null) status = "Speech recognition is unavailable on this device."
+                    else {
+                        transcript = ""; score = -1
+                        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
+                            putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
+                            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
+                        }
+                        recognizer.startListening(intent)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !listening,
+                shape = RoundedCornerShape(26.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp, pressedElevation = 2.dp)
+            ) { Icon(Icons.Default.Mic, null); Spacer(Modifier.width(8.dp)); Text(if (listening) "در حال شنیدن…" else "بزن و صحبت کن / Speak") }
+            if (transcript.isNotBlank()) {
+                Text("چیزی که دستگاه شنید:", fontWeight = FontWeight.Bold)
+                Text(transcript)
+                if (score >= 0) {
+                    Text(score.toString() + " / 100", style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.ExtraBold)
+                    Text(if (score >= 90) "عالی!" else if (score >= 70) "آفرین! 10 XP و 2 سکه" else "دوباره تمرین کن")
+                }
+            }
+            if (status.isNotBlank()) Text(status, color = MaterialTheme.colorScheme.secondary)
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedButton(onClick = {
+                    recognizer?.cancel(); transcript = ""; score = -1; status = ""
+                }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(24.dp)) { Text("دوباره کوشش") }
+                Button(onClick = {
+                    recognizer?.cancel()
+                    promptIndex = (promptIndex + 1) % speakingPrompts.size
+                    transcript = ""; score = -1; status = ""
+                }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(24.dp)) { Text("بعدی") }
+            }
+        }
+        Text(
+            "امتیاز بر اساس شباهت متن تشخیص‌شده با جمله اصلی محاسبه می‌شود؛ این ارزیابی کامل لهجه و آواشناسی نیست. کیفیت تشخیص به سرویس گفتار و بسته زبان گوشی بستگی دارد.",
+            fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
 }
