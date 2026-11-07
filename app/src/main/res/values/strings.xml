@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">خودسازی زهرا</string>
+    <string name="app_name">خودسازی و انگلیسی</string>
+    <string name="nav_home">خانه</string><string name="nav_learning">آموزش</string><string name="nav_games">بازی‌ها</string><string name="nav_calendar">تقویم</string><string name="nav_profile">پروفایل</string>
+    <string name="greeting">خوش آمدی</string><string name="settings">تنظیمات</string><string name="language">زبان برنامه</string>
+    <string name="language_dari">دری افغانستان</string><string name="language_pashto">پشتو افغانستان</string><string name="language_arabic">عربی</string><string name="language_english">انگلیسی</string>
+    <string name="font_sans">Sans Serif</string><string name="font_serif">Serif</string><string name="font_cursive">Cursive</string><string name="daily_goal">هدف روزانه</string><string name="minutes">دقیقه</string>
 </resources>
