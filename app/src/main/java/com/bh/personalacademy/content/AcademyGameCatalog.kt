@@ -87,10 +87,10 @@ object AcademyGameCatalog {
         val wordIndex = (round * 3 + modeIndex) % words.size
         val word = words[wordIndex]
         val distractors = listOf(words[(wordIndex + 3) % words.size], words[(wordIndex + 7) % words.size])
-        val useMeaningOptions = mode.style in setOf(GameStyle.MEANING, GameStyle.MATCHING, GameStyle.MEMORY, GameStyle.REVIEW)
+        val useMeaningOptions = mode.style in setOf(GameStyle.MEANING, GameStyle.MATCHING, GameStyle.MEMORY, GameStyle.MISTAKE_REVIEW)
         val options = (listOf(word) + distractors).map { if (useMeaningOptions) it.meaning() else it.englishWord() }
         val prompt = when (mode.style) {
-            GameStyle.MEANING, GameStyle.MATCHING, GameStyle.MEMORY, GameStyle.REVIEW ->
+            GameStyle.MEANING, GameStyle.MATCHING, GameStyle.MEMORY, GameStyle.MISTAKE_REVIEW ->
                 t("Choose the meaning of “${word.english}”.", "معنی «${word.english}» را انتخاب کن.", "د «${word.english}» مانا وټاکئ.", "اختر معنى «${word.english}».")
             GameStyle.SPELLING, GameStyle.TRANSLATION, GameStyle.SPELLING_CHECK, GameStyle.WORD_BUILD ->
                 t("Which English word means “${word.fa}”?", "کدام واژه انگلیسی به معنی «${word.fa}» است؟", "کومه انګلیسي کلمه د «${word.ps}» مانا لري؟", "ما الكلمة الإنجليزية التي تعني «${word.ar}»؟")
