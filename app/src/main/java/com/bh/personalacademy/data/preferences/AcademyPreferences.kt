@@ -108,9 +108,23 @@ class AcademyPreferences(private val context: Context) {
     }
 
     suspend fun updateDisplayName(value: String) = updateString("display_name", value.trim().take(40), Keys.displayName)
-    suspend fun updateUsername(value: String) {
+    suspend fun updateUsername(value: String): Boolean {
         val username = value.trim().lowercase().filter { it.isLetterOrDigit() || it == '_' }.take(32)
-        if (username.isNotEmpty()) updateString("username", username, Keys.username)
+        if (username.isEmpty()) return false
+        return runCatching {
+            context.academyDataStore.edit { data ->
+                val id = data[Keys.activeProfile] ?: "primary"
+                val ids = (data[Keys.profileIds] ?: emptySet()) + "primary"
+                val duplicate = ids.filterNot { it == id }.any { other ->
+                    val otherName = data[stringPreferencesKey("${other}_username")]
+                        ?: if (other == "primary") data[Keys.username] ?: "zahra" else "learner"
+                    otherName.equals(username, ignoreCase = true)
+                }
+                require(!duplicate) { "This username is already in use." }
+                data[stringPreferencesKey("${id}_username")] = username
+                if (id == "primary") data[Keys.username] = username
+            }
+        }.isSuccess
     }
     suspend fun updateLocale(value: AcademyLocale) = updateString("locale", value.name, Keys.locale)
     suspend fun updateTheme(value: AcademyThemeId) = updateString("theme", value.name, Keys.theme)
