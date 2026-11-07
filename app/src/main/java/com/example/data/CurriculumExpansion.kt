@@ -12,8 +12,7 @@ import com.example.model.QuizQuestion
  */
 fun expandLearningCurriculum(levels: List<Level>): List<Level> = levels.map { level ->
     val additions = supplementalLessons[level.levelCode].orEmpty()
-    val extraQuestions = additions.flatMapIndexed { index, item ->
-        val suffix = index + 1
+    val extraQuestions = additions.flatMap { item ->
         listOf(
             QuizQuestion(
                 id = "${item.id}_meaning",
