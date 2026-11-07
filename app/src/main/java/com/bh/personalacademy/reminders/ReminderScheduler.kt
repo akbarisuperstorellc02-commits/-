@@ -9,6 +9,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import com.bh.personalacademy.data.local.AcademyDatabase
+import com.bh.personalacademy.data.local.ReminderEntity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 object ReminderScheduler {
@@ -37,6 +43,7 @@ object ReminderScheduler {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && manager.canScheduleExactAlarms()) {
             manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next.timeInMillis, pending)
         } else {
+            // Fall back to an inexact alarm when exact-alarm access is not granted.
             manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next.timeInMillis, pending)
         }
     }
@@ -93,11 +100,13 @@ class ReminderReceiver : BroadcastReceiver() {
                 NotificationChannel(ReminderScheduler.CHANNEL_ID, "Study reminders", NotificationManager.IMPORTANCE_HIGH)
             )
         }
-        val notification = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Notification.Builder(context, ReminderScheduler.CHANNEL_ID)
         } else {
             @Suppress("DEPRECATION") Notification.Builder(context)
-        }.setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+        }
+        val notification = builder
+            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle(title)
             .setContentText("Your BH Academy study reminder")
             .setAutoCancel(true)
@@ -106,6 +115,34 @@ class ReminderReceiver : BroadcastReceiver() {
 
         if (days != 0 && hour in 0..23 && minute in 0..59) {
             ReminderScheduler.schedule(context, id, title, hour, minute, days)
+        }
+    }
+}
+
+class ReminderBootReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action != Intent.ACTION_BOOT_COMPLETED &&
+            intent.action != Intent.ACTION_MY_PACKAGE_REPLACED
+        ) return
+
+        val pendingResult = goAsync()
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            try {
+                val reminders: List<ReminderEntity> =
+                    AcademyDatabase.getInstance(context).academyDao().getEnabledReminders()
+                reminders.forEach { reminder ->
+                    ReminderScheduler.schedule(
+                        context = context,
+                        id = reminder.reminderId,
+                        title = reminder.title,
+                        hour = reminder.hour,
+                        minute = reminder.minute,
+                        repeatDaysMask = reminder.repeatDaysMask
+                    )
+                }
+            } finally {
+                pendingResult.finish()
+            }
         }
     }
 }
