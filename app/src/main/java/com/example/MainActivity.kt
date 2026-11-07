@@ -96,15 +96,16 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPreferences, dao: AcademyDao) {
     val profile by viewModel.profile.collectAsStateWithLifecycle()
+    val profiles by viewModel.profiles.collectAsStateWithLifecycle()
     val wallet by viewModel.wallet.collectAsStateWithLifecycle()
     val lessons by viewModel.lessonProgress.collectAsStateWithLifecycle()
     val attempts by viewModel.quizAttempts.collectAsStateWithLifecycle()
     val gameAttempts by viewModel.gameAttempts.collectAsStateWithLifecycle()
     val todayRange = remember { val start = Calendar.getInstance().apply { set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0) }; val end = (start.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, 1) }; start.timeInMillis to end.timeInMillis }
-    val todayStudyMillis by dao.observeStudyMillis(todayRange.first, todayRange.second).collectAsStateWithLifecycle(initialValue = 0L)
-    val todayLessonCount by dao.observeCompletedLessonCount(todayRange.first, todayRange.second).collectAsStateWithLifecycle(initialValue = 0)
-    val todayQuizCount by dao.observeQuizCount(todayRange.first, todayRange.second).collectAsStateWithLifecycle(initialValue = 0)
-    val todayWordCount by dao.observeWordsPractisedCount(todayRange.first, todayRange.second).collectAsStateWithLifecycle(initialValue = 0)
+    val todayStudyMillis by dao.observeStudyMillis(todayRange.first, todayRange.second, profile.profileId).collectAsStateWithLifecycle(initialValue = 0L)
+    val todayLessonCount by dao.observeCompletedLessonCount(todayRange.first, todayRange.second, profile.profileId).collectAsStateWithLifecycle(initialValue = 0)
+    val todayQuizCount by dao.observeQuizCount(todayRange.first, todayRange.second, profile.profileId).collectAsStateWithLifecycle(initialValue = 0)
+    val todayWordCount by dao.observeWordsPractisedCount(todayRange.first, todayRange.second, profile.profileId).collectAsStateWithLifecycle(initialValue = 0)
     val weekRange = remember {
         val start = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
@@ -120,20 +121,21 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
         val end = (start.clone() as Calendar).apply { add(Calendar.MONTH, 1) }
         start.timeInMillis to end.timeInMillis
     }
-    val weekStudyMillis by dao.observeStudyMillis(weekRange.first, weekRange.second).collectAsStateWithLifecycle(initialValue = 0L)
-    val monthStudyMillis by dao.observeStudyMillis(monthRange.first, monthRange.second).collectAsStateWithLifecycle(initialValue = 0L)
+    val weekStudyMillis by dao.observeStudyMillis(weekRange.first, weekRange.second, profile.profileId).collectAsStateWithLifecycle(initialValue = 0L)
+    val monthStudyMillis by dao.observeStudyMillis(monthRange.first, monthRange.second, profile.profileId).collectAsStateWithLifecycle(initialValue = 0L)
     val todayIso = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()) }
-    val weekSessionStarts by dao.observeStudySessionStarts(weekRange.first, weekRange.second).collectAsStateWithLifecycle(initialValue = emptyList())
-    val monthSessionStarts by dao.observeStudySessionStarts(monthRange.first, monthRange.second).collectAsStateWithLifecycle(initialValue = emptyList())
+    val weekSessionStarts by dao.observeStudySessionStarts(weekRange.first, weekRange.second, profile.profileId).collectAsStateWithLifecycle(initialValue = emptyList())
+    val monthSessionStarts by dao.observeStudySessionStarts(monthRange.first, monthRange.second, profile.profileId).collectAsStateWithLifecycle(initialValue = emptyList())
     val weekStudyDays = remember(weekSessionStarts) { weekSessionStarts.map { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(it)) }.toSet().size }
     val monthStudyDays = remember(monthSessionStarts) { monthSessionStarts.map { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(it)) }.toSet().size }
-    val totalStudyMillis by dao.observeTotalStudyMillis().collectAsStateWithLifecycle(initialValue = 0L)
+    val totalStudyMillis by dao.observeTotalStudyMillis(profile.profileId).collectAsStateWithLifecycle(initialValue = 0L)
     var tab by remember { mutableStateOf(AcademyTab.HOME) }
     var band by remember { mutableStateOf<LearningBand?>(null) }
     LaunchedEffect(viewModel) { viewModel.initialize() }
     LaunchedEffect(todayIso, profile.dailyStudyGoalMinutes, profile.dailyGoalLessons, profile.dailyGoalWords, profile.dailyGoalQuizzes) {
         dao.saveDailyGoal(
             DailyGoalEntity(
+                profileId = profile.profileId,
                 dateIso = todayIso,
                 targetMinutes = profile.dailyStudyGoalMinutes,
                 targetLessons = profile.dailyGoalLessons,
@@ -151,7 +153,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
         if (goalsMet) {
             dao.applyRewardOnce(
                 RewardEventEntity(
-                    eventId = "daily_goal_$todayIso", source = "DAILY_GOAL", sourceId = todayIso,
+                    eventId = "daily_goal_${profile.profileId}_$todayIso", profileId = profile.profileId, source = "DAILY_GOAL", sourceId = todayIso,
                     xpDelta = 25, coinDelta = 10, createdAt = System.currentTimeMillis()
                 )
             )
@@ -162,14 +164,14 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
         if (weekStudyDays >= 5) {
             val key = SimpleDateFormat("YYYY-'W'ww", Locale.US).format(Date(now))
             dao.applyRewardOnce(RewardEventEntity(
-                eventId = "weekly_challenge_$key", source = "CHALLENGE", sourceId = "weekly_$key",
+                eventId = "weekly_challenge_${profile.profileId}_$key", profileId = profile.profileId, source = "CHALLENGE", sourceId = "weekly_$key",
                 xpDelta = 50, coinDelta = 20, createdAt = now
             ))
         }
         if (monthStudyDays >= 20) {
             val key = SimpleDateFormat("yyyy-MM", Locale.US).format(Date(now))
             dao.applyRewardOnce(RewardEventEntity(
-                eventId = "monthly_challenge_$key", source = "CHALLENGE", sourceId = "monthly_$key",
+                eventId = "monthly_challenge_${profile.profileId}_$key", profileId = profile.profileId, source = "CHALLENGE", sourceId = "monthly_$key",
                 xpDelta = 150, coinDelta = 50, createdAt = now
             ))
         }
@@ -248,7 +250,8 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                                     if (bandFinished) {
                                         viewModel.rewardOnce(
                                             RewardEventEntity(
-                                                eventId = UUID.randomUUID().toString(),
+                                                eventId = "level_${profile.profileId}_${activeBand.name}",
+                                                profileId = profile.profileId,
                                                 source = "LEVEL_COMPLETION",
                                                 sourceId = activeBand.name,
                                                 xpDelta = 100,
@@ -263,14 +266,14 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                                 viewModel.saveStudySession(lessonId, startedAt, duration)
                             },
                             { tab = AcademyTab.QUIZ })
-                        AcademyTab.QUIZ -> QuizPage(profile.locale, dao) { tab = AcademyTab.PROGRESS }
-                        AcademyTab.GAMES -> GamePage(profile.locale, wallet?.coins ?: 0, dao)
+                        AcademyTab.QUIZ -> QuizPage(profile.locale, profile.profileId, dao) { tab = AcademyTab.PROGRESS }
+                        AcademyTab.GAMES -> GamePage(profile.locale, profile.profileId, wallet?.coins ?: 0, dao)
                         AcademyTab.PROGRESS -> ProgressPage(profile.locale, lessons.size, attempts, gameAttempts.size, todayStudyMillis, weekStudyMillis, monthStudyMillis, totalStudyMillis, wallet?.xp ?: 0, wallet?.coins ?: 0)
-                        AcademyTab.PROFILE -> ProfilePage(profile, preferences, dao)
-                        AcademyTab.TOOLS -> ToolsPage(profile.locale, dao) { tab = AcademyTab.HOME }
-                        AcademyTab.CALENDAR -> CalendarPage(profile.locale, dao) { tab = AcademyTab.HOME }
-                        AcademyTab.VOCABULARY -> VocabularyPage(profile.locale, dao)
-                        AcademyTab.SPEAKING -> SpeakingPage(profile.locale, dao)
+                        AcademyTab.PROFILE -> ProfilePage(profile, profiles, preferences, dao)
+                        AcademyTab.TOOLS -> ToolsPage(profile.locale, profile.profileId, dao) { tab = AcademyTab.HOME }
+                        AcademyTab.CALENDAR -> CalendarPage(profile.locale, profile.profileId, dao) { tab = AcademyTab.HOME }
+                        AcademyTab.VOCABULARY -> VocabularyPage(profile.locale, profile.profileId, dao)
+                        AcademyTab.SPEAKING -> SpeakingPage(profile.locale, profile.profileId, dao)
                         AcademyTab.STORIES -> StoriesPage(profile.locale)
                     }
                 }
@@ -1583,14 +1586,14 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
 }
 
 @Composable
-private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: AcademyDao) {
+private fun ProfilePage(profile: UserProfile, profiles: List<UserProfile>, prefs: AcademyPreferences, dao: AcademyDao) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val wallet by dao.observeWallet().collectAsStateWithLifecycle(initialValue = null)
-    val completedLessons by dao.observeLessonProgress().collectAsStateWithLifecycle(initialValue = emptyList())
-    val quizAttempts by dao.observeQuizAttempts().collectAsStateWithLifecycle(initialValue = emptyList())
-    val gameAttempts by dao.observeGameAttempts().collectAsStateWithLifecycle(initialValue = emptyList())
-    val totalStudyMillis by dao.observeTotalStudyMillis().collectAsStateWithLifecycle(initialValue = 0L)
+    val wallet by dao.observeWallet(profile.profileId).collectAsStateWithLifecycle(initialValue = null)
+    val completedLessons by dao.observeLessonProgress(profile.profileId).collectAsStateWithLifecycle(initialValue = emptyList())
+    val quizAttempts by dao.observeQuizAttempts(profile.profileId).collectAsStateWithLifecycle(initialValue = emptyList())
+    val gameAttempts by dao.observeGameAttempts(profile.profileId).collectAsStateWithLifecycle(initialValue = emptyList())
+    val totalStudyMillis by dao.observeTotalStudyMillis(profile.profileId).collectAsStateWithLifecycle(initialValue = 0L)
     var displayName by remember(profile.displayName) { mutableStateOf(profile.displayName) }
     var username by remember(profile.username) { mutableStateOf(profile.username) }
     val avatarPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
