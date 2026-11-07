@@ -88,29 +88,38 @@ object AcademyGameCatalog {
         val wordIndex = (round * 3 + modeIndex) % words.size
         val word = words[wordIndex]
         val distractors = listOf(words[(wordIndex + 3) % words.size], words[(wordIndex + 7) % words.size])
-        val useMeaningOptions = mode.style in setOf(GameStyle.MEANING, GameStyle.MATCHING, GameStyle.MEMORY, GameStyle.MISTAKE_REVIEW)
+        val scrambled = if (word.english.length > 2) {
+            word.english.last() + word.english.drop(1).dropLast(1) + word.english.first()
+        } else word.english
         val options = when (mode.style) {
             GameStyle.ODD_ONE_OUT -> listOf(
                 t("apple", "سیب", "مڼه", "تفاحة"),
                 t("banana", "کیله", "کېله", "موز"),
                 t("book", "کتاب", "کتاب", "كتاب")
             )
+            GameStyle.MATCHING -> (listOf(word) + distractors).map {
+                t("${it.english} — ${it.fa}", "${it.english} — ${it.fa}", "${it.english} — ${it.ps}", "${it.english} — ${it.ar}")
+            }
             GameStyle.WORD_ORDER -> listOf(
-                t("I read a book.", "من یک کتاب می‌خوانم.", "زه یو کتاب لولم.", "أنا أقرأ كتاباً."),
-                t("Read I book a.", "می‌خوانم من کتاب یک.", "لولم زه کتاب یو.", "أقرأ أنا كتاباً."),
-                t("A book read I.", "یک کتاب می‌خوانم من.", "یو کتاب لولم زه.", "كتاباً أقرأ أنا.")
+                t("I know the word ${word.english}.", "من واژه ${word.fa} را می‌دانم.", "زه د ${word.ps} کلمه پېژنم.", "أنا أعرف كلمة ${word.ar}."),
+                t("Know I the word ${word.english}.", "می‌دانم من واژه ${word.fa} را.", "پېژنم زه کلمه ${word.ps} د.", "أعرف أنا كلمة ${word.ar}."),
+                t("The word I know ${word.english}.", "واژه من می‌دانم ${word.fa} را.", "کلمه زه پېژنم ${word.ps} د.", "الكلمة أنا أعرف ${word.ar}.")
             )
             GameStyle.SENTENCE -> listOf(
-                t("I have a book.", "من یک کتاب دارم.", "زه یو کتاب لرم.", "لدي كتاب."),
-                t("I a book have.", "من یک کتاب دارم است.", "زه یو کتاب لرم دی.", "أنا كتاب لدي."),
-                t("Have book I a.", "دارم کتاب من یک.", "لرم کتاب زه یو.", "لدي كتاب أنا.")
+                t("I know the word ${word.english}.", "من واژه ${word.fa} را می‌دانم.", "زه د ${word.ps} کلمه پېژنم.", "أنا أعرف كلمة ${word.ar}."),
+                t("I the word know ${word.english}.", "من واژه را می‌دانم ${word.fa}.", "زه کلمه پېژنم د ${word.ps}.", "أنا كلمة أعرف ${word.ar}."),
+                t("Know the word I ${word.english}.", "می‌دانم واژه من ${word.fa} را.", "پېژنم کلمه زه ${word.ps} د.", "أعرف الكلمة أنا ${word.ar}.")
             )
-            else -> (listOf(word) + distractors).map { if (useMeaningOptions) it.meaning() else it.englishWord() }
+            else -> (listOf(word) + distractors).map { it.englishWord() }
         }
         val prompt = when (mode.style) {
-            GameStyle.MEANING, GameStyle.MATCHING, GameStyle.MEMORY, GameStyle.MISTAKE_REVIEW ->
+            GameStyle.MEANING, GameStyle.MEMORY, GameStyle.MISTAKE_REVIEW ->
                 t("Choose the meaning of “${word.english}”.", "معنی «${word.english}» را انتخاب کن.", "د «${word.english}» مانا وټاکئ.", "اختر معنى «${word.english}».")
-            GameStyle.SPELLING, GameStyle.TRANSLATION, GameStyle.SPELLING_CHECK, GameStyle.WORD_BUILD ->
+            GameStyle.MATCHING ->
+                t("Choose the correct word-and-meaning pair.", "جفت درست واژه و معنی را انتخاب کن.", "د کلمې او مانا سمه جوړه وټاکئ.", "اختر زوج الكلمة والمعنى الصحيح.")
+            GameStyle.WORD_BUILD ->
+                t("Unscramble these letters: $scrambled", "این حروف را مرتب کن: $scrambled", "دا توري سم ترتیب کړئ: $scrambled", "رتّب هذه الحروف: $scrambled")
+            GameStyle.SPELLING, GameStyle.TRANSLATION, GameStyle.SPELLING_CHECK ->
                 t("Which English word means “${word.fa}”?", "کدام واژه انگلیسی به معنی «${word.fa}» است؟", "کومه انګلیسي کلمه د «${word.ps}» مانا لري؟", "ما الكلمة الإنجليزية التي تعني «${word.ar}»؟")
             GameStyle.PICTURE ->
                 t("Which word matches this picture: ${word.emoji}?", "کدام واژه با این تصویر برابر است: ${word.emoji}؟", "له دې انځور سره کومه کلمه برابره ده: ${word.emoji}؟", "أي كلمة تناسب هذه الصورة: ${word.emoji}؟")
@@ -129,7 +138,6 @@ object AcademyGameCatalog {
             else ->
                 t("Choose the best answer for “${word.english}”.", "بهترین پاسخ برای «${word.english}» را انتخاب کن.", "د «${word.english}» لپاره غوره ځواب وټاکئ.", "اختر أفضل إجابة عن «${word.english}».")
         }
-        val scrambled = if (word.english.length > 2) word.english.last() + word.english.drop(1).dropLast(1) + word.english.first() else word.english
         val hint = if (mode.style == GameStyle.WORD_BUILD) {
             t("Mixed letters: $scrambled", "حروف به‌هم‌ریخته: $scrambled", "ګډوډ توري: $scrambled", "حروف مبعثرة: $scrambled")
         } else {
