@@ -11,9 +11,9 @@ import org.junit.Test
 
 class AcademyGameCatalogTest {
     @Test
-    fun exposesEighteenUniquePlayableModes() {
-        assertEquals(18, AcademyGameCatalog.modes.size)
-        assertEquals(18, AcademyGameCatalog.modes.map { it.id }.toSet().size)
+    fun exposesTwentySixUniquePlayableModes() {
+        assertEquals(26, AcademyGameCatalog.modes.size)
+        assertEquals(26, AcademyGameCatalog.modes.map { it.id }.toSet().size)
     }
 
     @Test
