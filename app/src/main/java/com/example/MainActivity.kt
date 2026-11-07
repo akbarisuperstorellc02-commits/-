@@ -74,7 +74,7 @@ import java.util.Locale
 import java.text.SimpleDateFormat
 import java.util.UUID
 
-private enum class AcademyTab { HOME, LEARN, QUIZ, GAMES, PROGRESS, PROFILE, TOOLS, VOCABULARY, CALENDAR, SPEAKING }
+private enum class AcademyTab { HOME, LEARN, QUIZ, GAMES, PROGRESS, PROFILE, TOOLS, VOCABULARY, CALENDAR, SPEAKING, STORIES }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -217,6 +217,12 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                             AcademyLocale.ARABIC -> "تحدث"
                         })
                     )
+                    items.add(Triple(AcademyTab.STORIES, Icons.Default.AutoStories, when (profile.locale) {
+                        AcademyLocale.ENGLISH_US -> "Stories"
+                        AcademyLocale.DARI_AF -> "داستان‌ها"
+                        AcademyLocale.PASHTO_AF -> "کیسې"
+                        AcademyLocale.ARABIC -> "قصص"
+                    }))
                     items.forEach { (destination, icon, label) ->
                         NavigationBarItem(selected = tab == destination, onClick = { tab = destination; band = null },
                             icon = { Icon(icon, contentDescription = label) }, label = { Text(label, maxLines = 1, fontSize = 10.sp) })
@@ -264,6 +270,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                         AcademyTab.CALENDAR -> CalendarPage(profile.locale, dao) { tab = AcademyTab.HOME }
                         AcademyTab.VOCABULARY -> VocabularyPage(profile.locale, dao)
                         AcademyTab.SPEAKING -> SpeakingPage(profile.locale, dao)
+                        AcademyTab.STORIES -> StoriesPage(profile.locale)
                     }
                 }
             }
@@ -1804,6 +1811,103 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
             },
             dismissButton = { TextButton(onClick = { resetStep = 0 }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(profile.locale, "cancel")) } }
         )
+    }
+}
+
+
+@Composable
+private fun StoriesPage(locale: AcademyLocale) {
+    var selectedId by remember { mutableStateOf<String?>(null) }
+    var showTranslation by remember { mutableStateOf(false) }
+    var selectedAnswer by remember { mutableStateOf<Int?>(null) }
+    var completed by remember { mutableStateOf(setOf<String>()) }
+    val stories = AcademyStoryCatalog.all
+    val selected = stories.firstOrNull { it.id == selectedId }
+    val levelLabel = { band: LearningBand ->
+        when (locale) {
+            AcademyLocale.ENGLISH_US -> when (band) { LearningBand.PRE_A1, LearningBand.A1 -> "Beginner"; LearningBand.A2, LearningBand.B1 -> "Intermediate"; LearningBand.B2, LearningBand.C1, LearningBand.C2 -> "Advanced"; LearningBand.SPECIALIZED -> "Specialized" }
+            AcademyLocale.DARI_AF -> when (band) { LearningBand.PRE_A1, LearningBand.A1 -> "مبتدی"; LearningBand.A2, LearningBand.B1 -> "متوسط"; LearningBand.B2, LearningBand.C1, LearningBand.C2 -> "پیشرفته"; LearningBand.SPECIALIZED -> "تخصصی" }
+            AcademyLocale.PASHTO_AF -> when (band) { LearningBand.PRE_A1, LearningBand.A1 -> "پیل", LearningBand.A2, LearningBand.B1 -> "منځنۍ", LearningBand.B2, LearningBand.C1, LearningBand.C2 -> "پرمختللې", LearningBand.SPECIALIZED -> "ځانګړې" }
+            AcademyLocale.ARABIC -> when (band) { LearningBand.PRE_A1, LearningBand.A1 -> "مبتدئ"; LearningBand.A2, LearningBand.B1 -> "متوسط"; LearningBand.B2, LearningBand.C1, LearningBand.C2 -> "متقدم"; LearningBand.SPECIALIZED -> "متخصص" }
+        }
+    }
+    Page {
+        Text(when(locale) { AcademyLocale.ENGLISH_US -> "Story library"; AcademyLocale.DARI_AF -> "کتابخانه داستان‌ها"; AcademyLocale.PASHTO_AF -> "د کیسو کتابتون"; AcademyLocale.ARABIC -> "مكتبة القصص" },
+            style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
+        Text(when(locale) { AcademyLocale.ENGLISH_US -> "Learn English through short stories, useful words and comprehension checks."; AcademyLocale.DARI_AF -> "با داستان‌های کوتاه، واژگان کاربردی و آزمون درک مطلب انگلیسی یاد بگیر."; AcademyLocale.PASHTO_AF -> "د لنډو کیسو، ګټورو کلمو او د پوهې ازموینې له لارې انګلیسي زده کړئ."; AcademyLocale.ARABIC -> "تعلّم الإنجليزية من خلال القصص القصيرة والمفردات المفيدة واختبارات الفهم." },
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.AutoStories, null, tint = MaterialTheme.colorScheme.primary)
+            Text(when(locale) { AcademyLocale.ENGLISH_US -> "${completed.size} of ${stories.size} completed"; AcademyLocale.DARI_AF -> "${completed.size} از ${stories.size} داستان تکمیل‌شده"; AcademyLocale.PASHTO_AF -> "${completed.size} له ${stories.size} کیسو بشپړې شوې"; AcademyLocale.ARABIC -> "${completed.size} من ${stories.size} قصص مكتملة" },
+                fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        }
+        if (selected == null) {
+            stories.forEach { story ->
+                AcademyCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(story.emoji, fontSize = 30.sp)
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(story.title.forLocale(locale), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                            Text(levelLabel(story.band), color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
+                            Text(story.summary.forLocale(locale), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
+                        }
+                        if (story.id in completed) Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary)
+                    }
+                    Button(onClick = { selectedId = story.id; showTranslation = false; selectedAnswer = null },
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp)) {
+                        Text(when(locale) { AcademyLocale.ENGLISH_US -> "Read story"; AcademyLocale.DARI_AF -> "خواندن داستان"; AcademyLocale.PASHTO_AF -> "کیسه ولولئ"; AcademyLocale.ARABIC -> "اقرأ القصة" })
+                    }
+                }
+            }
+        } else {
+            TextButton(onClick = { selectedId = null; selectedAnswer = null }) {
+                Icon(Icons.Default.ArrowBack, null); Spacer(Modifier.width(6.dp))
+                Text(when(locale) { AcademyLocale.ENGLISH_US -> "All stories"; AcademyLocale.DARI_AF -> "همه داستان‌ها"; AcademyLocale.PASHTO_AF -> "ټولې کیسې"; AcademyLocale.ARABIC -> "كل القصص" })
+            }
+            AcademyCard {
+                Text(selected.title.forLocale(locale), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
+                Text(levelLabel(selected.band), color = MaterialTheme.colorScheme.primary)
+                Text(selected.englishText, style = MaterialTheme.typography.bodyLarge, lineHeight = 27.sp)
+                OutlinedButton(onClick = { showTranslation = !showTranslation }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) {
+                    Icon(Icons.Default.Translate, null); Spacer(Modifier.width(8.dp))
+                    Text(when(locale) { AcademyLocale.ENGLISH_US -> if(showTranslation) "Hide translation" else "Show translation"; AcademyLocale.DARI_AF -> if(showTranslation) "پنهان‌کردن ترجمه" else "نمایش ترجمه"; AcademyLocale.PASHTO_AF -> if(showTranslation) "ژباړه پټه کړه" else "ژباړه ښکاره کړه"; AcademyLocale.ARABIC -> if(showTranslation) "إخفاء الترجمة" else "عرض الترجمة" })
+                }
+                if (showTranslation) Text(selected.translation.forLocale(locale), color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 25.sp)
+                Divider()
+                Text(when(locale) { AcademyLocale.ENGLISH_US -> "Useful words"; AcademyLocale.DARI_AF -> "واژگان مهم"; AcademyLocale.PASHTO_AF -> "مهمې کلمې"; AcademyLocale.ARABIC -> "كلمات مفيدة" }, fontWeight = FontWeight.Bold)
+                selected.words.forEach { word ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(word.english, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                        Text(word.meaning.forLocale(locale), color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+                Divider()
+                Text(when(locale) { AcademyLocale.ENGLISH_US -> "Comprehension check"; AcademyLocale.DARI_AF -> "آزمون درک مطلب"; AcademyLocale.PASHTO_AF -> "د پوهېدو ازموینه"; AcademyLocale.ARABIC -> "اختبار الفهم" }, fontWeight = FontWeight.Bold)
+                Text(selected.question.forLocale(locale))
+                selected.options.forEachIndexed { index, option ->
+                    val isCorrect = index == selected.correctIndex
+                    val chosen = selectedAnswer == index
+                    OutlinedButton(onClick = { selectedAnswer = index }, modifier = Modifier.fillMaxWidth(),
+                        border = BorderStroke(if(chosen) 2.dp else 1.dp, if(chosen && isCorrect) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline),
+                        shape = RoundedCornerShape(22.dp)) { Text(option.forLocale(locale)) }
+                }
+                if (selectedAnswer != null) {
+                    val correct = selectedAnswer == selected.correctIndex
+                    Text(when(locale) {
+                        AcademyLocale.ENGLISH_US -> if(correct) "Correct! Well done." else "Not quite. Read the story again."
+                        AcademyLocale.DARI_AF -> if(correct) "آفرین! پاسخ درست است." else "پاسخ درست نیست؛ داستان را دوباره بخوان."
+                        AcademyLocale.PASHTO_AF -> if(correct) "آفرین! سم ځواب دی." else "سم نه دی؛ کیسه بیا ولولئ."
+                        AcademyLocale.ARABIC -> if(correct) "أحسنت! إجابة صحيحة." else "ليست الإجابة الصحيحة؛ اقرأ القصة مرة أخرى."
+                    }, color = if(correct) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                    if(correct) Button(onClick = { completed = completed + selected.id; selectedId = null; selectedAnswer = null },
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) {
+                        Text(when(locale) { AcademyLocale.ENGLISH_US -> "Finish story"; AcademyLocale.DARI_AF -> "تکمیل داستان"; AcademyLocale.PASHTO_AF -> "کیسه بشپړه کړه"; AcademyLocale.ARABIC -> "إنهاء القصة" })
+                    }
+                }
+            }
+        }
     }
 }
 
