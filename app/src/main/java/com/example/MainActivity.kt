@@ -45,6 +45,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.bh.personalacademy.content.AcademyGameCatalog
 import com.bh.personalacademy.content.AcademyLessonCatalog
+import com.bh.personalacademy.content.LocalizedText
 import com.bh.personalacademy.ui.components.LessonStudyTimer
 import com.bh.personalacademy.content.GameMode
 import com.bh.personalacademy.content.GameStyle
