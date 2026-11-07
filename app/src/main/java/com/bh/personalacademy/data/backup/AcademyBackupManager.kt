@@ -134,7 +134,7 @@ object AcademyBackupManager {
             }
             root.array("quizAttempts").forEachObject { o ->
                 dao.restoreQuizAttempt(QuizAttemptEntity(
-                    attemptId = o.getString("attemptId"), profileId = profileId,
+                    attemptId = scopedId(profileId, o.getString("attemptId")), profileId = profileId,
                     quizId = o.getString("quizId"), score = o.optInt("score"), totalQuestions = o.optInt("totalQuestions"),
                     completedAt = o.optLong("completedAt"), incorrectQuestionIds = o.optString("incorrectQuestionIds")
                 ))
@@ -148,7 +148,7 @@ object AcademyBackupManager {
             }
             root.array("studySessions").forEachObject { o ->
                 dao.mergeStudySession(StudySessionEntity(
-                    sessionId = o.getString("sessionId"), profileId = profileId,
+                    sessionId = scopedId(profileId, o.getString("sessionId")), profileId = profileId,
                     lessonId = o.getString("lessonId"), startedAt = o.optLong("startedAt"),
                     durationMillis = o.optLong("durationMillis"), completedAt = o.longOrNull("completedAt")
                 ))
@@ -159,7 +159,7 @@ object AcademyBackupManager {
             }
             root.array("rewardEvents").forEachObject { o ->
                 dao.restoreRewardEvent(RewardEventEntity(
-                    eventId = o.getString("eventId"), profileId = profileId,
+                    eventId = scopedId(profileId, o.getString("eventId")), profileId = profileId,
                     source = o.getString("source"), sourceId = o.getString("sourceId"),
                     xpDelta = o.optInt("xpDelta"), coinDelta = o.optInt("coinDelta"), createdAt = o.optLong("createdAt")
                 ))
@@ -183,7 +183,7 @@ object AcademyBackupManager {
             }
             root.array("reminders").forEachObject { o ->
                 val reminder = ReminderEntity(
-                    reminderId = o.getString("reminderId"), profileId = profileId,
+                    reminderId = scopedId(profileId, o.getString("reminderId")), profileId = profileId,
                     title = o.getString("title"), hour = o.optInt("hour"), minute = o.optInt("minute"),
                     repeatDaysMask = o.optInt("repeatDaysMask"), enabled = o.optBoolean("enabled")
                 )
@@ -197,6 +197,9 @@ object AcademyBackupManager {
     private inline fun JSONArray.forEachObject(action: (JSONObject) -> Unit) {
         for (index in 0 until length()) action(getJSONObject(index))
     }
+
+    private fun scopedId(profileId: String, sourceId: String): String =
+        if (sourceId.startsWith("$profileId:")) sourceId else "$profileId:$sourceId"
 
     private fun JSONObject.array(name: String): JSONArray = optJSONArray(name) ?: JSONArray()
     private fun JSONObject.longOrNull(name: String): Long? =
