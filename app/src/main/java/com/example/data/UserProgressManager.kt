@@ -25,7 +25,7 @@ class UserProgressManager(context: Context) {
 
     private val prefs: SharedPreferences = context.getSharedPreferences("zahra_self_dev_prefs", Context.MODE_PRIVATE)
 
-    private val _levelsState = MutableStateFlow<List<Level>>(expandLearningCurriculum(CurriculumData.levels))
+    private val _levelsState = MutableStateFlow<List<Level>>(expandLearningCurriculum(CurriculumData.levels + AdvancedCurriculumLevels.levels))
     val levelsState: StateFlow<List<Level>> = _levelsState.asStateFlow()
 
     private val _goldCoins = MutableStateFlow(prefs.getInt("gold_coins", 180))
@@ -79,7 +79,7 @@ class UserProgressManager(context: Context) {
     private val _diaryNotes = MutableStateFlow<List<DiaryNote>>(loadSavedDiaryNotes())
     val diaryNotes: StateFlow<List<DiaryNote>> = _diaryNotes.asStateFlow()
 
-    private val _wordStages = MutableStateFlow<List<GameStage>>(CurriculumData.wordGameStages)
+    private val _wordStages = MutableStateFlow<List<GameStage>>(CurriculumData.wordGameStages + AdvancedWordGameStages.stages)
     val wordStages: StateFlow<List<GameStage>> = _wordStages.asStateFlow()
 
     private val _medals = MutableStateFlow<List<GoldenMedal>>(CurriculumData.goldenMedals)
