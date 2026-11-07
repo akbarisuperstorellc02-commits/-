@@ -13,7 +13,7 @@ data class StudySessionEntity(@PrimaryKey val sessionId:String,val profileId:Str
 data class WalletEntity(@PrimaryKey val profileId:String="primary",val xp:Long=0,val coins:Long=0,val level:Int=1)
 @Entity(tableName="reward_events",indices=[Index(value=["profileId","source","sourceId"],unique=true)])
 data class RewardEventEntity(@PrimaryKey val eventId:String,val profileId:String="primary",val source:String,val sourceId:String,val xpDelta:Int,val coinDelta:Int,val createdAt:Long)
-@Entity(tableName="vocabulary",indices=[Index(value = ["profileId"]),Index(value = ["english"])])
+@Entity(tableName="vocabulary",primaryKeys=["profileId","wordId"],indices=[Index(value = ["profileId"]),Index(value = ["english"])])
 data class VocabularyEntity(@PrimaryKey val wordId:String,val profileId:String="primary",val english:String,val dariMeaning:String,val pronunciation:String,val exampleEnglish:String,val exampleDari:String,val categoryId:String,val favourite:Boolean=false,val mastery:Int=0,@ColumnInfo(defaultValue = "0") val lastPractisedAt:Long=0)
 @Entity(tableName="daily_goals",primaryKeys=["profileId","dateIso"])
 data class DailyGoalEntity(val profileId:String="primary",val dateIso:String,val targetMinutes:Int,val targetLessons:Int,val targetWords:Int,val targetQuizzes:Int)
