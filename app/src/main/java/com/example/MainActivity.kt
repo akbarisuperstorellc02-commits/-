@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bh.personalacademy.data.local.*
+import com.bh.personalacademy.content.AcademyLessonCatalog
 import com.bh.personalacademy.data.preferences.AcademyPreferences
 import com.example.academy.core.AsciiDigits
 import com.example.academy.domain.model.*
@@ -178,7 +179,7 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
 @Composable
 private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completed: Int, select: (LearningBand?) -> Unit, complete: (String) -> Unit, quiz: () -> Unit) {
     val names = listOf("Pre-A1", "A1", "A2", "B1", "B2", "C1")
-    val lessonNames = listOf("Alphabet and letter names", "Greetings and introductions", "Numbers and colours", "Family and everyday objects", "Present simple sentences", "Daily conversations")
+    val lessons = selected?.let { AcademyLessonCatalog.forBand(it) }.orEmpty()
     Page {
         Text(tr(locale, "learningPath"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         if (selected == null) {
@@ -195,11 +196,24 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completed:
                 Text(selected.name.replace("_", "-"), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
                 TextButton(onClick = { select(null) }) { Text(tr(locale, "allLevels")) }
             }
-            lessonNames.forEachIndexed { index, title ->
+            lessons.forEachIndexed { index, lesson ->
+                var expanded by remember(lesson.id) { mutableStateOf(false) }
                 AcademyCard {
-                    Text("${index + 1}. $title", style = MaterialTheme.typography.titleMedium)
-                    Text(tr(locale, "lessonExplain"))
-                    Button(onClick = { complete("${selected.name}_lesson_$index") }, modifier = Modifier.fillMaxWidth()) {
+                    Text("${index + 1}. ${lesson.title}", style = MaterialTheme.typography.titleMedium)
+                    Text(lesson.objective, fontSize = 13.sp)
+                    TextButton(onClick = { expanded = !expanded }) {
+                        Text(if (expanded) tr(locale, "hideDetails") else tr(locale, "lessonDetails"))
+                    }
+                    if (expanded) {
+                        Text(lesson.explanation)
+                        Text(tr(locale, "newWords"), fontWeight = FontWeight.Bold)
+                        lesson.words.forEach { word ->
+                            Text("${word.english} — ${word.dari}  (${word.pronunciation})", fontSize = 13.sp)
+                        }
+                        Text(lesson.example, fontWeight = FontWeight.SemiBold)
+                        Text(lesson.translation)
+                    }
+                    Button(onClick = { complete(lesson.id) }, modifier = Modifier.fillMaxWidth()) {
                         Icon(Icons.Default.CheckCircle, null); Spacer(Modifier.width(6.dp)); Text(tr(locale, "completeLesson"))
                     }
                 }
@@ -384,7 +398,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "continue" to "Ready for your next step?", "chooseLesson" to "Choose a level and continue learning.", "openLessons" to "Open lessons",
         "myProfile" to "My profile", "learningPath" to "English learning path", "chooseLevel" to "Choose your current level",
         "bandSub" to "Structured learning at $arg", "viewLessons" to "View lessons", "allLevels" to "All levels",
-        "lessonExplain" to "Learn the topic, practise vocabulary and check your understanding.",
+        "lessonExplain" to "Learn the topic, practise vocabulary and check your understanding.", "lessonDetails" to "Open lesson", "hideDetails" to "Hide details", "newWords" to "New vocabulary",
         "completeLesson" to "Complete lesson · earn XP", "quizReview" to "Review quizzes", "wordChallenge" to "Word meaning challenge",
         "chooseMeaning" to "Choose the Dari meaning of APPLE", "correct" to "Excellent! Correct answer.", "wrong" to "Not quite. Try again.",
         "hintText" to "Hint: It is a fruit.", "hintPaid" to "Hint unlocked. 6 coins spent.", "needCoins" to "You need at least 6 coins.",
@@ -404,7 +418,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "continue" to "برای قدم بعدی آماده‌ای؟", "chooseLesson" to "یک سطح را انتخاب کن و یادگیری را ادامه بده.", "openLessons" to "رفتن به درس‌ها",
         "myProfile" to "پروفایل من", "learningPath" to "مسیر آموزش انگلیسی", "chooseLevel" to "سطح فعلی خود را انتخاب کن",
         "bandSub" to "درس‌های مرحله‌بندی‌شده $arg", "viewLessons" to "دیدن درس‌ها", "allLevels" to "همه سطح‌ها",
-        "lessonExplain" to "موضوع را یاد بگیر، واژه‌های تازه را تمرین کن و دانسته‌هایت را بسنج.",
+        "lessonExplain" to "موضوع را یاد بگیر، واژه‌های تازه را تمرین کن و دانسته‌هایت را بسنج.", "lessonDetails" to "بازکردن درس", "hideDetails" to "بستن جزئیات", "newWords" to "واژگان تازه",
         "completeLesson" to "تکمیل درس · دریافت امتیاز", "quizReview" to "رفتن به آزمون‌ها", "wordChallenge" to "چالش معنی واژه",
         "chooseMeaning" to "معنی دری کلمه APPLE را انتخاب کن", "correct" to "آفرین! پاسخ درست است.", "wrong" to "این پاسخ درست نیست؛ دوباره تلاش کن.",
         "hintText" to "راهنما: این یک میوه است.", "hintPaid" to "راهنما فعال شد؛ 6 سکه مصرف شد.", "needCoins" to "حداقل 6 سکه نیاز داری.",
