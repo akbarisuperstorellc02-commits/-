@@ -301,7 +301,16 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
                     Text(tr(p.locale, "journey"), style = MaterialTheme.typography.titleLarge)
                     Text(tr(p.locale, "journeySub"))
                 }
-                Text("🌸", fontSize = 42.sp)
+                if (p.avatarUri != null) {
+                    AsyncImage(
+                        model = p.avatarUri,
+                        contentDescription = tr(p.locale, "profile"),
+                        modifier = Modifier.size(58.dp).clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Text("🌸", fontSize = 42.sp)
+                }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Stat(tr(p.locale, "level"), "${w?.level ?: 1}")
@@ -1383,6 +1392,11 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
 private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: AcademyDao) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val wallet by dao.observeWallet().collectAsStateWithLifecycle(initialValue = null)
+    val completedLessons by dao.observeLessonProgress().collectAsStateWithLifecycle(initialValue = emptyList())
+    val quizAttempts by dao.observeQuizAttempts().collectAsStateWithLifecycle(initialValue = emptyList())
+    val gameAttempts by dao.observeGameAttempts().collectAsStateWithLifecycle(initialValue = emptyList())
+    val totalStudyMillis by dao.observeTotalStudyMillis().collectAsStateWithLifecycle(initialValue = 0L)
     var displayName by remember(profile.displayName) { mutableStateOf(profile.displayName) }
     var username by remember(profile.username) { mutableStateOf(profile.username) }
     val avatarPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -1421,6 +1435,37 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
             OutlinedTextField(displayName, { displayName = it }, modifier = Modifier.fillMaxWidth(), label = { Text(tr(profile.locale, "displayName")) }, singleLine = true)
             OutlinedTextField(username, { username = it }, modifier = Modifier.fillMaxWidth(), label = { Text(tr(profile.locale, "username")) }, singleLine = true)
             Button(onClick = { scope.launch { prefs.updateDisplayName(displayName); prefs.updateUsername(username) } }, modifier = Modifier.fillMaxWidth()) { Text(tr(profile.locale, "save")) }
+        }
+        AcademyCard {
+            Text(
+                when (profile.locale) {
+                    AcademyLocale.ENGLISH_US -> "Learning statistics"
+                    AcademyLocale.DARI_AF -> "آمار یادگیری"
+                    AcademyLocale.PASHTO_AF -> "د زده کړې احصایې"
+                    AcademyLocale.ARABIC -> "إحصاءات التعلم"
+                },
+                style = MaterialTheme.typography.titleLarge
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Stat(tr(profile.locale, "level"), AsciiDigits.normalize((wallet?.level ?: 1).toString()))
+                Stat("XP", AsciiDigits.normalize((wallet?.xp ?: 0L).toString()))
+                Stat(tr(profile.locale, "coins"), AsciiDigits.normalize((wallet?.coins ?: 0L).toString()))
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                MiniStat(tr(profile.locale, "lessons"), AsciiDigits.normalize(completedLessons.size.toString()), Modifier.weight(1f))
+                MiniStat(tr(profile.locale, "quizzes"), AsciiDigits.normalize(quizAttempts.size.toString()), Modifier.weight(1f))
+                MiniStat(tr(profile.locale, "games"), AsciiDigits.normalize(gameAttempts.size.toString()), Modifier.weight(1f))
+            }
+            val totalMinutes = totalStudyMillis / 60_000L
+            Line(
+                when (profile.locale) {
+                    AcademyLocale.ENGLISH_US -> "Total study time"
+                    AcademyLocale.DARI_AF -> "مجموع زمان مطالعه"
+                    AcademyLocale.PASHTO_AF -> "د مطالعې ټول وخت"
+                    AcademyLocale.ARABIC -> "إجمالي وقت الدراسة"
+                },
+                AsciiDigits.normalize("${totalMinutes / 60}h ${totalMinutes % 60}m")
+            )
         }
         AcademyCard {
             Text(tr(profile.locale, "language"), style = MaterialTheme.typography.titleMedium)
