@@ -19,6 +19,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -37,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -47,6 +50,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -79,7 +84,7 @@ import java.util.Locale
 import java.text.SimpleDateFormat
 import java.util.UUID
 
-private enum class AcademyTab { HOME, LEARN, GRAMMAR, QUIZ, GAMES, PROGRESS, PROFILE, TOOLS, VOCABULARY, CALENDAR, SPEAKING, STORIES }
+private enum class AcademyTab { HOME, LEARN, GRAMMAR, QUIZ, GAMES, PROGRESS, PROFILE, TOOLS, VOCABULARY, CALENDAR, SPEAKING, STORIES, CONVERSATION }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -136,7 +141,28 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
     var tab by remember { mutableStateOf(AcademyTab.HOME) }
     var band by remember { mutableStateOf<LearningBand?>(null) }
     var speakingLessonPrompt by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(profile.profileId) { viewModel.initialize() }
+    var splashVisible by remember { mutableStateOf(true) }
+    val splashMessage = remember(profile.locale) {
+        val dailyMessages = listOf(
+            listOf(LocalizedText("A fresh week begins with one brave step.", "هفته تازه با یک گام شجاعانه آغاز می‌شود.", "نوې اوونۍ په یوه زړور ګام پیلېږي.", "يبدأ أسبوع جديد بخطوة شجاعة."),
+                LocalizedText("Build the habit today; enjoy the result tomorrow.", "امروز عادت خوب بساز؛ فردا نتیجه‌اش را ببین.", "نن ښه عادت جوړ کړئ؛ سبا یې پایله ووینئ.", "اصنع عادة جيدة اليوم واستمتع بنتيجتها غداً.")),
+            listOf(LocalizedText("Your effort is stronger than your excuses.", "تلاش تو از بهانه‌هایت نیرومندتر است.", "ستاسو هڅه له پلمو پیاوړې ده.", "اجتهادك أقوى من أعذارك."),
+                LocalizedText("Learn one useful phrase and use it today.", "یک عبارت کاربردی یاد بگیر و امروز به‌کار ببر.", "یوه ګټوره جمله زده کړئ او نن یې وکاروئ.", "تعلّم عبارة مفيدة واستخدمها اليوم.")),
+            listOf(LocalizedText("Small steps create remarkable progress.", "گام‌های کوچک، پیشرفت‌های بزرگ می‌سازند.", "کوچني ګامونه لوی پرمختګ جوړوي.", "الخطوات الصغيرة تصنع تقدماً رائعاً."),
+                LocalizedText("Mistakes mean you are learning. Keep going.", "اشتباه‌ها نشانه یادگیری‌اند؛ ادامه بده.", "تېروتنې د زده کړې نښه ده؛ دوام ورکړئ.", "الأخطاء تعني أنك تتعلم؛ واصل.")),
+            listOf(LocalizedText("Consistency turns knowledge into confidence.", "پیوستگی، دانش را به اعتمادبه‌نفس تبدیل می‌کند.", "دوام پوهه پر ځان باور بدلوي.", "الاستمرار يحوّل المعرفة إلى ثقة."),
+                LocalizedText("You do not need to be perfect; just keep practising.", "کامل‌بودن لازم نیست؛ فقط تمرین را ادامه بده.", "بشپړتیا اړینه نه ده؛ یوازې تمرین ته دوام ورکړئ.", "لا تحتاج إلى الكمال؛ واصل التدريب فقط.")),
+            listOf(LocalizedText("Make today a little better than yesterday.", "امروز را کمی بهتر از دیروز بساز.", "نن له پرون څخه لږ ښه کړئ.", "اجعل اليوم أفضل قليلاً من الأمس."),
+                LocalizedText("Every new word opens a new door.", "هر واژه تازه، دریچه تازه‌ای باز می‌کند.", "هره نوې کلمه نوې دروازه پرانیزي.", "كل كلمة جديدة تفتح باباً جديداً.")),
+            listOf(LocalizedText("Rest when needed, but never give up on yourself.", "هرگاه نیاز داشتی استراحت کن، اما از خودت دست نکش.", "چې اړتیا وي ارام وکړئ، خو له ځانه مه ناهیلي کېږئ.", "استرح عند الحاجة، لكن لا تتخلّ عن نفسك."),
+                LocalizedText("Your future self will thank you for learning today.", "خودِ آینده‌ات برای یادگیری امروز از تو سپاس‌گزار خواهد بود.", "ستاسو راتلونکی ځان به د نننۍ زده کړې مننه وکړي.", "نسختك المستقبلية ستشكرك على تعلمك اليوم.")),
+            listOf(LocalizedText("A new day is another chance to grow.", "روز تازه، فرصت تازه‌ای برای رشد است.", "نوې ورځ د ودې بل فرصت دی.", "يوم جديد هو فرصة أخرى للنمو."),
+                LocalizedText("Be proud of every honest effort you make.", "به هر تلاش صادقانه‌ات افتخار کن.", "په هره رښتینې هڅه مو ویاړ وکړئ.", "افتخر بكل جهد صادق تبذله."))
+        )
+        dailyMessages[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1].random().forLocale(profile.locale)
+    }
+    LaunchedEffect(Unit) { viewModel.initialize() }
+    LaunchedEffect(Unit) { delay(2600L); splashVisible = false }
     LaunchedEffect(profile.profileId, todayIso, profile.dailyStudyGoalMinutes, profile.dailyGoalLessons, profile.dailyGoalWords, profile.dailyGoalQuizzes) {
         dao.saveDailyGoal(
             DailyGoalEntity(
@@ -240,11 +266,12 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
             }) { padding ->
                 Box(Modifier.fillMaxSize().padding(padding)) {
                     when (tab) {
-                        AcademyTab.HOME -> HomePage(profile, wallet, lessons.size, attempts.size, (todayStudyMillis / 60000L).toInt(),
+                        AcademyTab.HOME -> HomePage(profile, wallet, lessons.size, attempts.size, todayStudyMillis,
                             todayLessonCount, todayWordCount, todayQuizCount, weekStudyDays, monthStudyDays,
                             { tab = AcademyTab.LEARN }, { tab = AcademyTab.GAMES }, { tab = AcademyTab.PROFILE }, { tab = AcademyTab.TOOLS }, { tab = AcademyTab.CALENDAR })
                         AcademyTab.LEARN -> LearnPage(profile.locale, profile.profileId, band, lessons.map { it.lessonId }.toSet(),
                             { band = it },
+                            { tab = AcademyTab.CONVERSATION },
                             { tab = AcademyTab.VOCABULARY },
                             { tab = AcademyTab.GRAMMAR },
                             { prompt -> speakingLessonPrompt = prompt; tab = AcademyTab.SPEAKING },
@@ -283,6 +310,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                         AcademyTab.VOCABULARY -> VocabularyPage(profile.locale, profile.profileId, dao)
                         AcademyTab.SPEAKING -> SpeakingPage(profile.locale, profile.profileId, dao, speakingLessonPrompt)
                         AcademyTab.STORIES -> StoriesPage(profile.locale) { prompt -> speakingLessonPrompt = prompt; tab = AcademyTab.SPEAKING }
+                        AcademyTab.CONVERSATION -> ConversationPage(profile.locale) { prompt -> speakingLessonPrompt = prompt; tab = AcademyTab.SPEAKING }
                     }
                 }
             }
@@ -353,8 +381,11 @@ private fun AcademyCard(content: @Composable ColumnScope.() -> Unit) {
         )
     }
 }
+private fun progressRatio(current: Long, target: Long): Float =
+    if (target <= 0L) 1f else (current.toDouble() / target.toDouble()).coerceIn(0.0, 1.0).toFloat()
+
 @Composable
-private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, studyMinutes: Int, todayLessons: Int, todayWords: Int, todayQuizzes: Int, weeklyStudyDays: Int, monthlyStudyDays: Int, learn: () -> Unit, games: () -> Unit, profile: () -> Unit, tools: () -> Unit, calendar: () -> Unit) {
+private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, studyMillis: Long, todayLessons: Int, todayWords: Int, todayQuizzes: Int, weeklyStudyDays: Int, monthlyStudyDays: Int, learn: () -> Unit, games: () -> Unit, profile: () -> Unit, tools: () -> Unit, calendar: () -> Unit) {
     var currentTimeMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(Unit) {
         while (true) {
@@ -421,9 +452,9 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
         AcademyCard {
             Text(tr(p.locale, "dailyGoal"), style = MaterialTheme.typography.titleLarge)
             Text(tr(p.locale, "goalMins", p.dailyStudyGoalMinutes.toString()))
-            val goalProgress = (studyMinutes.toFloat() / p.dailyStudyGoalMinutes.coerceAtLeast(1)).coerceIn(0f, 1f)
+            val goalProgress = progressRatio(studyMillis, p.dailyStudyGoalMinutes.coerceAtLeast(1) * 60_000L)
             LinearProgressIndicator(progress = { goalProgress }, modifier = Modifier.fillMaxWidth())
-            Text("${AsciiDigits.normalize(studyMinutes.toString())} / ${AsciiDigits.normalize(p.dailyStudyGoalMinutes.toString())} ${tr(p.locale, "minutes")}", fontSize = 12.sp)
+            Text("${AsciiDigits.normalize((studyMillis / 60_000L).toString())} / ${AsciiDigits.normalize(p.dailyStudyGoalMinutes.toString())} ${tr(p.locale, "minutes")}", fontSize = 12.sp)
             Text(tr(p.locale, "goalHint"), fontSize = 12.sp)
         }
         AcademyCard {
@@ -447,7 +478,7 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("$label · ${AsciiDigits.normalize(current.toString())}/$target", fontSize = 12.sp)
                     LinearProgressIndicator(
-                        progress = { (current.toFloat() / target).coerceIn(0f, 1f) },
+                        progress = { progressRatio(current.toLong(), target.toLong()) },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -502,7 +533,7 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
                         fontSize = 12.sp
                     )
                     LinearProgressIndicator(
-                        progress = { (current.toFloat() / target.coerceAtLeast(1)).coerceIn(0f, 1f) },
+                        progress = { progressRatio(current.toLong(), target.toLong()) },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -565,7 +596,7 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
 }
 
 @Composable
-private fun LearnPage(locale: AcademyLocale, profileId: String, selected: LearningBand?, completedLessonIds: Set<String>, select: (LearningBand?) -> Unit, vocabulary: () -> Unit, grammar: () -> Unit, openSpeaking: (String) -> Unit, complete: (String) -> Unit, saveStudySession: (String, Long, Long) -> Unit, quiz: () -> Unit) {
+private fun LearnPage(locale: AcademyLocale, profileId: String, selected: LearningBand?, completedLessonIds: Set<String>, select: (LearningBand?) -> Unit, conversation: () -> Unit, vocabulary: () -> Unit, grammar: () -> Unit, openSpeaking: (String) -> Unit, complete: (String) -> Unit, saveStudySession: (String, Long, Long) -> Unit, quiz: () -> Unit) {
     var optimisticCompletedIds by remember(profileId, selected) { mutableStateOf(emptySet<String>()) }
     val progressIds = completedLessonIds + optimisticCompletedIds
     val names = when (locale) {
@@ -578,6 +609,7 @@ private fun LearnPage(locale: AcademyLocale, profileId: String, selected: Learni
     Page {
         Text(tr(locale, "learningPath"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         OutlinedButton(onClick = grammar, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.36f))) { Icon(Icons.Default.Spellcheck, null); Spacer(Modifier.width(8.dp)); Text(tr(locale, "grammarAcademy")) }
+        OutlinedButton(onClick = conversation, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.36f))) { Icon(Icons.Default.Forum, null); Spacer(Modifier.width(8.dp)); Text(tr(locale, "conversationSection")) }
         OutlinedButton(onClick = vocabulary, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.36f))) { Icon(Icons.Default.Bookmarks, null); Spacer(Modifier.width(8.dp)); Text(tr(locale, "vocabulary")) }
         if (selected == null) {
             Text(tr(locale, "chooseLevel"))
@@ -655,6 +687,92 @@ private fun LearnPage(locale: AcademyLocale, profileId: String, selected: Learni
 }
 
 @Composable
+private data class ConversationScenario(
+    val title: LocalizedText,
+    val setting: LocalizedText,
+    val lines: List<Pair<LocalizedText, LocalizedText>>,
+    val practiceText: String
+)
+
+@Composable
+private fun ConversationPage(locale: AcademyLocale, onPractice: (String) -> Unit) {
+    fun t(en: String, fa: String, ps: String, ar: String) = LocalizedText(en, fa, ps, ar)
+    val scenarios = listOf(
+        ConversationScenario(
+            t("First meeting", "نخستین دیدار", "لومړۍ پېژندنه", "اللقاء الأول"),
+            t("At a new class or event", "در صنف یا محفل تازه", "په نوي ټولګي یا غونډه کې", "في صف أو مناسبة جديدة"),
+            listOf(
+                t("A: Hello! My name is Sara.", "الف: سلام! نام من سارا است.", "الف: سلام! زما نوم سارا دی.", "أ: مرحباً! اسمي سارة.") to t("B: Hi, I'm Adam. Nice to meet you.", "ب: سلام، من آدم هستم. از دیدنت خوش شدم.", "ب: سلام، زه آدم یم. په لیدو دې خوښ شوم.", "ب: أهلاً، أنا آدم. سعيد بلقائك."),
+                t("A: Nice to meet you too.", "الف: من هم از دیدنت خوش شدم.", "الف: زه هم په لیدو دې خوښ شوم.", "أ: وأنا سعيد بلقائك أيضاً.")
+            ), "Hello! My name is Sara. Nice to meet you."
+        ),
+        ConversationScenario(
+            t("Greetings and feelings", "سلام و احوال‌پرسی", "سلام او پوښتنه", "التحية والسؤال عن الحال"),
+            t("Meeting a friend in the morning", "دیدن یک دوست در صبح", "سهار له ملګري سره لیدل", "لقاء صديق في الصباح"),
+            listOf(
+                t("A: Good morning! How are you?", "الف: صبح بخیر! حالت چطور است؟", "الف: سهار مو پخیر! څنګه یاست؟", "أ: صباح الخير! كيف حالك؟") to t("B: I'm fine, thanks. And you?", "ب: خوب هستم، تشکر. تو چطور؟", "ب: ښه یم، مننه. تاسو څنګه یاست؟", "ب: أنا بخير، شكراً. وأنت؟"),
+                t("A: I'm great today.", "الف: امروز بسیار خوب هستم.", "الف: نن ډېر ښه یم.", "أ: أنا بخير جداً اليوم.")
+            ), "Good morning! How are you? I'm fine, thank you."
+        ),
+        ConversationScenario(
+            t("Asking someone's name", "پرسیدن نام", "د نوم پوښتنه", "السؤال عن الاسم"),
+            t("When you meet someone", "هنگام آشنایی با کسی", "کله چې له چا سره اشنا کېږئ", "عندما تتعرف إلى شخص"),
+            listOf(
+                t("A: What's your name?", "الف: نامت چیست؟", "الف: ستاسو نوم څه دی؟", "أ: ما اسمك؟") to t("B: My name is Maryam. What's yours?", "ب: نام من مریم است. نام تو چیست؟", "ب: زما نوم مریم دی. ستاسو نوم څه دی؟", "ب: اسمي مريم. وما اسمك؟"),
+                t("A: I'm Ali. Where are you from?", "الف: من علی هستم. اهل کجا هستی؟", "الف: زه علي یم. د کوم ځای یاست؟", "أ: أنا علي. من أين أنت؟")
+            ), "What's your name? My name is Maryam."
+        ),
+        ConversationScenario(
+            t("At a café", "در کافه", "په کافې کې", "في المقهى"),
+            t("Ordering a drink politely", "سفارش مؤدبانه نوشیدنی", "په ادب د څښاک غوښتل", "طلب مشروب بأدب"),
+            listOf(
+                t("A: Good afternoon. Can I have a tea, please?", "الف: عصر بخیر. لطفاً یک چای می‌خواهم.", "الف: ماسپښین مو پخیر. مهرباني، یو چای راکړئ.", "أ: مساء الخير. هل يمكنني الحصول على شاي من فضلك؟") to t("B: Of course. Anything else?", "ب: البته. چیز دیگری؟", "ب: هو، بل څه هم غواړئ؟", "ب: بالتأكيد. هل تريد شيئاً آخر؟"),
+                t("A: No, thank you. How much is it?", "الف: نه، تشکر. قیمتش چند است؟", "الف: نه، مننه. بیه یې څو ده؟", "أ: لا، شكراً. كم ثمنه؟")
+            ), "Can I have a tea, please? How much is it?"
+        ),
+        ConversationScenario(
+            t("Saying goodbye", "خداحافظی", "خدای پاماني", "الوداع"),
+            t("Ending a friendly conversation", "پایان یک گفت‌وگوی دوستانه", "د دوستانه خبرو پای", "إنهاء محادثة ودية"),
+            listOf(
+                t("A: It was nice talking to you.", "الف: از صحبت با تو خوش شدم.", "الف: له تاسو سره خبرې کول ښه وو.", "أ: سررت بالحديث معك.") to t("B: You too. See you tomorrow!", "ب: من هم همین‌طور. فردا می‌بینمت!", "ب: زه هم. سبا به سره ګورو!", "ب: وأنا كذلك. أراك غداً!"),
+                t("A: Take care. Bye!", "الف: مراقب خودت باش. خداحافظ!", "الف: ځان ساتئ. خدای پامان!", "أ: اعتنِ بنفسك. إلى اللقاء!")
+            ), "It was nice talking to you. See you tomorrow!"
+        )
+    )
+    Page {
+        Text(tr(locale, "conversationSection"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold)
+        Text(when (locale) {
+            AcademyLocale.ENGLISH_US -> "Read both sides, learn useful expressions, then practise saying the lines aloud."
+            AcademyLocale.DARI_AF -> "گفت‌وگوها را بخوان، عبارت‌های کاربردی را یاد بگیر و سپس با صدای بلند تمرین کن."
+            AcademyLocale.PASHTO_AF -> "خبرې ولولئ، ګټورې جملې زده کړئ او بیا یې په لوړ غږ تمرین کړئ."
+            AcademyLocale.ARABIC -> "اقرأ الحوار من الطرفين، وتعلّم العبارات المفيدة، ثم تدرّب على نطقها بصوت مرتفع."
+        }, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        scenarios.forEach { scenario ->
+            AcademyCard {
+                Text(scenario.title.forLocale(locale), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text(scenario.setting.forLocale(locale), fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                scenario.lines.forEach { (first, second) ->
+                    Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(20.dp), modifier = Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(first.forLocale(locale), fontWeight = FontWeight.SemiBold)
+                            Text(second.forLocale(locale))
+                        }
+                    }
+                }
+                Button(onClick = { onPractice(scenario.practiceText) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) {
+                    Icon(Icons.Default.RecordVoiceOver, null); Spacer(Modifier.width(8.dp))
+                    Text(when (locale) {
+                        AcademyLocale.ENGLISH_US -> "Practise this conversation"
+                        AcademyLocale.DARI_AF -> "تمرین این مکالمه"
+                        AcademyLocale.PASHTO_AF -> "دا خبرې تمرین کړئ"
+                        AcademyLocale.ARABIC -> "تدرّب على هذه المحادثة"
+                    })
+                }
+            }
+        }
+    }
+}
+
 private fun GrammarPage(locale: AcademyLocale, onBack: () -> Unit) {
     var selectedBand by remember { mutableStateOf<LearningBand?>(null) }
     Page {
@@ -1283,12 +1401,73 @@ private fun QuizPage(locale: AcademyLocale, profileId: String, dao: AcademyDao, 
 }
 
 @Composable
+private fun AcademySplashOverlay(locale: AcademyLocale, message: String, onFinished: () -> Unit) {
+    var logoReady by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (logoReady) 1f else 0.68f,
+        animationSpec = tween(durationMillis = 850),
+        label = "academyLogoScale"
+    )
+    LaunchedEffect(Unit) {
+        logoReady = true
+        delay(2600L)
+        onFinished()
+    }
+    Dialog(onDismissRequest = {}, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Box(
+            Modifier.fillMaxSize().background(
+                Brush.linearGradient(listOf(Color(0xFF30234F), Color(0xFF5A397C), Color(0xFFB56C9C)))
+            ),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                Modifier.fillMaxWidth().padding(horizontal = 30.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(18.dp)
+            ) {
+                Box(
+                    Modifier.size(124.dp).graphicsLayer { scaleX = scale; scaleY = scale }
+                        .clip(RoundedCornerShape(38.dp))
+                        .background(Brush.linearGradient(listOf(Color(0xFFFFD78A), Color(0xFFFFA7C7)))),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("📘", fontSize = 66.sp)
+                    Text("✦", fontSize = 26.sp, modifier = Modifier.align(Alignment.TopEnd).padding(12.dp))
+                }
+                Text("خودسازی و انگلیسی", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+                Text("Self-Growth & English", color = Color.White.copy(alpha = 0.86f), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Surface(color = Color.White.copy(alpha = 0.13f), shape = RoundedCornerShape(26.dp), border = BorderStroke(1.dp, Color.White.copy(alpha = 0.24f))) {
+                    Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(when (locale) {
+                            AcademyLocale.ENGLISH_US -> "TODAY'S MOTIVATION"
+                            AcademyLocale.DARI_AF -> "پیام انگیزشی امروز"
+                            AcademyLocale.PASHTO_AF -> "د نن ورځې هڅونه"
+                            AcademyLocale.ARABIC -> "رسالة تحفيزية اليوم"
+                        }, color = Color(0xFFFFE4A8), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(message, color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+                Text(when (locale) {
+                    AcademyLocale.ENGLISH_US -> "One small step every day."
+                    AcademyLocale.DARI_AF -> "هر روز، یک گام کوچک به سوی موفقیت."
+                    AcademyLocale.PASHTO_AF -> "هره ورځ د بریا پر لور یو کوچنی ګام."
+                    AcademyLocale.ARABIC -> "خطوة صغيرة نحو النجاح كل يوم."
+                }, color = Color.White.copy(alpha = 0.8f), fontSize = 13.sp)
+            }
+        }
+    }
+}
+
+@Composable
 private fun ProgressPage(locale: AcademyLocale, lessons: Int, attempts: List<QuizAttemptEntity>, games: Int, todayMillis: Long, weekMillis: Long, monthMillis: Long, totalStudyMillis: Long, xp: Long, coins: Long) {
     Page {
         Text(tr(locale, "progress"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         AcademyCard {
             Text(tr(locale, "summary"), style = MaterialTheme.typography.titleLarge)
             Line(tr(locale, "lessons"), "$lessons")
+            Text(when (locale) { AcademyLocale.ENGLISH_US -> "Course completion"; AcademyLocale.DARI_AF -> "پیشرفت کل درس‌ها"; AcademyLocale.PASHTO_AF -> "د درسونو ټولیز پرمختګ"; AcademyLocale.ARABIC -> "إكمال الدروس" }, fontWeight = FontWeight.SemiBold)
+            LinearProgressIndicator(progress = { progressRatio(lessons.toLong(), AcademyLessonCatalog.all.size.toLong()) }, modifier = Modifier.fillMaxWidth())
+            Text("${AsciiDigits.normalize(lessons.toString())} / ${AsciiDigits.normalize(AcademyLessonCatalog.all.size.toString())}", fontSize = 12.sp)
             Line(tr(locale, "quizzes"), "${attempts.size}")
             Line(tr(locale, "games"), "${games}")
             val totalMinutes = totalStudyMillis / 60_000L
@@ -2134,7 +2313,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "continue" to "Ready for your next step?", "chooseLesson" to "Choose a level and continue learning.", "openLessons" to "Open lessons",
         "myProfile" to "My profile", "learningPath" to "English learning path", "grammarAcademy" to "Grammar academy", "grammarIntro" to "Study clear grammar rules and check your understanding across all levels.", "grammarCorrect" to "Correct! Excellent work.", "grammarTryAgain" to "Not quite. Review the rule and try again.", "grammarRetry" to "Try this question again", "speakingLesson" to "Speaking practice for this lesson", "practiceSpeaking" to "Practise speaking", "backToLessons" to "Back to lessons", "vocabulary" to "Vocabulary notebook", "searchWords" to "Search words", "wordCount" to "$arg words", "chooseLevel" to "Choose your current level",
         "bandSub" to "Structured learning at $arg", "viewLessons" to "View lessons", "levelLocked" to "Complete the previous level to unlock.", "allLevels" to "All levels",
-        "lessonExplain" to "Learn the topic, practise vocabulary and check your understanding.", "lessonDetails" to "Open lesson", "hideDetails" to "Hide details", "newWords" to "New vocabulary",
+        "lessonExplain" to "Learn the topic, practise vocabulary and check your understanding.", "conversationSection" to "Conversation & greetings", "lessonDetails" to "Open lesson", "hideDetails" to "Hide details", "newWords" to "New vocabulary",
         "completeLesson" to "Complete lesson · earn XP", "lessonDone" to "Lesson completed", "lessonLocked" to "Complete the previous lesson to unlock this one.", "quizReview" to "Review quizzes", "wordChallenge" to "Word meaning challenge",
         "chooseMeaning" to "Choose the Dari meaning of APPLE", "correct" to "Excellent! Correct answer.", "wrong" to "Not quite. Try again.",
         "hintText" to "Hint: It is a fruit.", "hintPaid" to "Hint unlocked. 6 coins spent.", "needCoins" to "You need at least 6 coins.",
@@ -2154,7 +2333,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "continue" to "برای قدم بعدی آماده‌ای؟", "chooseLesson" to "یک سطح را انتخاب کن و یادگیری را ادامه بده.", "openLessons" to "رفتن به درس‌ها",
         "myProfile" to "پروفایل من", "learningPath" to "مسیر آموزش انگلیسی", "grammarAcademy" to "آموزش گرامر", "grammarIntro" to "قواعد گرامر را یاد بگیر و در همه سطح‌ها دانشت را بیازما.", "grammarCorrect" to "آفرین! پاسخ درست است.", "grammarTryAgain" to "پاسخ درست نیست؛ قاعده را مرور کن و دوباره کوشش کن.", "grammarRetry" to "دوباره کوشش کن", "speakingLesson" to "تمرین گفتار این درس", "practiceSpeaking" to "تمرین گفتار", "backToLessons" to "بازگشت به درس‌ها", "vocabulary" to "دفترچه واژگان", "searchWords" to "جست‌وجوی واژه", "wordCount" to "$arg واژه", "chooseLevel" to "سطح فعلی خود را انتخاب کن",
         "bandSub" to "درس‌های مرحله‌بندی‌شده $arg", "viewLessons" to "دیدن درس‌ها", "levelLocked" to "برای بازشدن این سطح، سطح قبلی را تکمیل کن.", "allLevels" to "همه سطح‌ها",
-        "lessonExplain" to "موضوع را یاد بگیر، واژه‌های تازه را تمرین کن و دانسته‌هایت را بسنج.", "lessonDetails" to "بازکردن درس", "hideDetails" to "بستن جزئیات", "newWords" to "واژگان تازه",
+        "lessonExplain" to "موضوع را یاد بگیر، واژه‌های تازه را تمرین کن و دانسته‌هایت را بسنج.", "conversationSection" to "مکالمه و احوال‌پرسی", "lessonDetails" to "بازکردن درس", "hideDetails" to "بستن جزئیات", "newWords" to "واژگان تازه",
         "completeLesson" to "تکمیل درس · دریافت امتیاز", "lessonDone" to "درس تکمیل شده است", "lessonLocked" to "برای بازشدن این درس، درس قبلی را تکمیل کن.", "quizReview" to "رفتن به آزمون‌ها", "wordChallenge" to "چالش معنی واژه",
         "chooseMeaning" to "معنی دری کلمه APPLE را انتخاب کن", "correct" to "آفرین! پاسخ درست است.", "wrong" to "این پاسخ درست نیست؛ دوباره تلاش کن.",
         "hintText" to "راهنما: این یک میوه است.", "hintPaid" to "راهنما فعال شد؛ 6 سکه مصرف شد.", "needCoins" to "حداقل 6 سکه نیاز داری.",
