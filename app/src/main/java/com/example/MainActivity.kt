@@ -38,6 +38,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import com.bh.personalacademy.reminders.ReminderScheduler
 import java.util.UUID
+import java.util.Calendar
 
 private enum class AcademyTab { HOME, LEARN, QUIZ, GAMES, PROGRESS, PROFILE, TOOLS }
 
@@ -57,6 +58,8 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
     val wallet by dao.observeWallet().collectAsStateWithLifecycle(initialValue = null)
     val lessons by dao.observeLessonProgress().collectAsStateWithLifecycle(initialValue = emptyList())
     val attempts by dao.observeQuizAttempts().collectAsStateWithLifecycle(initialValue = emptyList())
+    val todayRange = remember { val start = Calendar.getInstance().apply { set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0) }; val end = (start.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, 1) }; start.timeInMillis to end.timeInMillis }
+    val todayStudyMillis by dao.observeStudyMillis(todayRange.first, todayRange.second).collectAsStateWithLifecycle(initialValue = 0L)
     val scope = rememberCoroutineScope()
     var tab by remember { mutableStateOf(AcademyTab.HOME) }
     var band by remember { mutableStateOf<LearningBand?>(null) }
@@ -88,7 +91,7 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
             }) { padding ->
                 Box(Modifier.fillMaxSize().padding(padding)) {
                     when (tab) {
-                        AcademyTab.HOME -> HomePage(profile, wallet, lessons.size, attempts.size,
+                        AcademyTab.HOME -> HomePage(profile, wallet, lessons.size, attempts.size, (todayStudyMillis / 60000L).toInt(),
                             { tab = AcademyTab.LEARN }, { tab = AcademyTab.GAMES }, { tab = AcademyTab.PROFILE }, { tab = AcademyTab.TOOLS })
                         AcademyTab.LEARN -> LearnPage(profile.locale, band, lessons.size,
                             { band = it },
@@ -139,7 +142,7 @@ private fun AcademyCard(content: @Composable ColumnScope.() -> Unit) {
     }
 }
 @Composable
-private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, learn: () -> Unit, games: () -> Unit, profile: () -> Unit, tools: () -> Unit) {
+private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, studyMinutes: Int, learn: () -> Unit, games: () -> Unit, profile: () -> Unit, tools: () -> Unit) {
     Page {
         Text(tr(p.locale, "greeting", p.displayName), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Text(tr(p.locale, "welcome"), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .65f))
@@ -160,7 +163,9 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
         AcademyCard {
             Text(tr(p.locale, "dailyGoal"), style = MaterialTheme.typography.titleLarge)
             Text(tr(p.locale, "goalMins", p.dailyStudyGoalMinutes.toString()))
-            LinearProgressIndicator(progress = { 0f }, modifier = Modifier.fillMaxWidth())
+            val goalProgress = (studyMinutes.toFloat() / p.dailyStudyGoalMinutes.coerceAtLeast(1)).coerceIn(0f, 1f)
+            LinearProgressIndicator(progress = { goalProgress }, modifier = Modifier.fillMaxWidth())
+            Text("${AsciiDigits.normalize(studyMinutes.toString())} / ${AsciiDigits.normalize(p.dailyStudyGoalMinutes.toString())} ${tr(p.locale, "minutes")}", fontSize = 12.sp)
             Text(tr(p.locale, "goalHint"), fontSize = 12.sp)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
