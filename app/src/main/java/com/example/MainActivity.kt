@@ -170,7 +170,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
 
     val palette = paletteFor(profile.theme)
     CompositionLocalProvider(LocalLayoutDirection provides if (profile.locale.isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr) {
-        val appColorScheme = if (profile.theme == AcademyThemeId.BLACK_GOLD || profile.theme == AcademyThemeId.DARK) {
+        val appColorScheme = if (profile.theme in setOf(AcademyThemeId.BLACK_GOLD, AcademyThemeId.DARK, AcademyThemeId.NIGHT, AcademyThemeId.GREEN_BLACK)) {
             darkColorScheme(primary = palette.primary, onPrimary = Color(0xFF1D1B16), secondary = palette.secondary,
                 background = palette.background, surface = palette.surface, onSurface = Color.White,
                 surfaceVariant = palette.variant, onSurfaceVariant = Color.White)
@@ -247,16 +247,22 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
 
 private data class Palette(val primary: Color, val secondary: Color, val background: Color, val surface: Color, val variant: Color)
 private fun paletteFor(theme: AcademyThemeId): Palette = when (theme) {
-    AcademyThemeId.NAVY_BLUE, AcademyThemeId.BLUE_GRAY, AcademyThemeId.SPORT -> Palette(Color(0xFF315B9A), Color(0xFF82A9D8), Color(0xFFF1F5FB), Color.White, Color(0xFFE5EDF8))
-    AcademyThemeId.GREEN_BLACK -> Palette(Color(0xFF24745D), Color(0xFF83B9A4), Color(0xFFF0F7F3), Color.White, Color(0xFFE0EEE7))
+    AcademyThemeId.SOFT_PINK -> Palette(Color(0xFFD96F9E), Color(0xFFF2AFCB), Color(0xFFFFF5F8), Color.White, Color(0xFFFBE3ED))
+    AcademyThemeId.PINK_PURPLE -> Palette(Color(0xFFB05DAB), Color(0xFFD8A6D5), Color(0xFFFBF3FC), Color.White, Color(0xFFF1E1F2))
+    AcademyThemeId.LILAC_WHITE -> Palette(Color(0xFF9576B5), Color(0xFFC6B2D8), Color(0xFFF7F3FA), Color.White, Color(0xFFEDE6F3))
+    AcademyThemeId.PASTEL -> Palette(Color(0xFF70AFA2), Color(0xFFF0B8A2), Color(0xFFFFF8F0), Color.White, Color(0xFFEAF3EE))
+    AcademyThemeId.FLORAL -> Palette(Color(0xFFB66E83), Color(0xFF9EBA9A), Color(0xFFFFF7F4), Color.White, Color(0xFFF3E8E2))
+    AcademyThemeId.NAVY_BLUE -> Palette(Color(0xFF315B9A), Color(0xFF82A9D8), Color(0xFFF1F5FB), Color.White, Color(0xFFE5EDF8))
+    AcademyThemeId.BLUE_GRAY -> Palette(Color(0xFF536779), Color(0xFF9BAFBD), Color(0xFFF2F5F7), Color.White, Color(0xFFE4EAEE))
+    AcademyThemeId.GREEN_BLACK -> Palette(Color(0xFF64B99A), Color(0xFF24745D), Color(0xFF14231F), Color(0xFF20342D), Color(0xFF30483F))
+    AcademyThemeId.SPORT -> Palette(Color(0xFF1D65C1), Color(0xFFF08A35), Color(0xFFF1F6FD), Color.White, Color(0xFFE1ECFA))
+    AcademyThemeId.SPACE -> Palette(Color(0xFF5368B5), Color(0xFF9B8BD4), Color(0xFFEEF0FA), Color.White, Color(0xFFE1E4F4))
     AcademyThemeId.BLACK_GOLD -> Palette(Color(0xFFD6B96E), Color(0xFF9A762A), Color(0xFF171717), Color(0xFF242321), Color(0xFF39352C))
     AcademyThemeId.WHITE_GOLD -> Palette(Color(0xFF9A762A), Color(0xFFD6B96E), Color(0xFFFAF8F1), Color.White, Color(0xFFF0EBDD))
-    AcademyThemeId.ROYAL_PURPLE, AcademyThemeId.PINK_PURPLE -> Palette(Color(0xFF8051A8), Color(0xFFB99BD3), Color(0xFFF7F1FB), Color.White, Color(0xFFEDE2F5))
-    AcademyThemeId.LILAC_WHITE, AcademyThemeId.NIGHT -> Palette(Color(0xFF9576B5), Color(0xFFC6B2D8), Color(0xFFF7F3FA), Color.White, Color(0xFFEDE6F3))
-    AcademyThemeId.SPACE -> Palette(Color(0xFF5368B5), Color(0xFF9B8BD4), Color(0xFFEEF0FA), Color.White, Color(0xFFE1E4F4))
+    AcademyThemeId.ROYAL_PURPLE -> Palette(Color(0xFF68429A), Color(0xFFB99BD3), Color(0xFFF5F0FB), Color.White, Color(0xFFE9E0F5))
+    AcademyThemeId.NIGHT -> Palette(Color(0xFF9B8AE0), Color(0xFF5B6FB4), Color(0xFF171B2A), Color(0xFF232A3D), Color(0xFF343D55))
     AcademyThemeId.LIGHT -> Palette(Color(0xFF6E8CB8), Color(0xFFADC5E2), Color(0xFFFAFCFF), Color.White, Color(0xFFEAF0F7))
     AcademyThemeId.DARK -> Palette(Color(0xFF8E78C7), Color(0xFFB7A8DE), Color(0xFF191820), Color(0xFF282631), Color(0xFF393644))
-    else -> Palette(Color(0xFFD96F9E), Color(0xFFF2AFCB), Color(0xFFFFF5F8), Color.White, Color(0xFFFBE3ED))
 }
 private fun fontFor(font: AcademyFontId) = when(font) {
     AcademyFontId.SANS_SERIF -> FontFamily.SansSerif
