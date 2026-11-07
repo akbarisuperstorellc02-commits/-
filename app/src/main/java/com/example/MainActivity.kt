@@ -210,8 +210,9 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completed:
                         lesson.words.forEach { word ->
                             Text("${word.english} — ${word.dari}  (${word.pronunciation})", fontSize = 13.sp)
                         }
-                        Text(lesson.example, fontWeight = FontWeight.SemiBold)
-                        Text(lesson.translation)
+                        Text(AsciiDigits.normalize(lesson.exampleEnglish), fontWeight = FontWeight.SemiBold)
+                        Text(AsciiDigits.normalize(lesson.exampleDari))
+                        Text(AsciiDigits.normalize(lesson.grammarTip))
                     }
                     Button(onClick = { complete(lesson.id) }, modifier = Modifier.fillMaxWidth()) {
                         Icon(Icons.Default.CheckCircle, null); Spacer(Modifier.width(6.dp)); Text(tr(locale, "completeLesson"))
