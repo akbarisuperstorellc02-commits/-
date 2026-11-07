@@ -1581,6 +1581,7 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
                             dao.observeReminders().first().forEach { ReminderScheduler.cancel(context, it.reminderId) }
                             dao.clearAllLearningData()
                             prefs.resetProfile()
+                            dao.insertWallet(WalletEntity(profileId = "primary", coins = 30))
                         }.onSuccess {
                             Toast.makeText(context, tr(profile.locale, "resetSuccess"), Toast.LENGTH_LONG).show()
                         }.onFailure {
