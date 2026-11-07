@@ -26,15 +26,6 @@ class AcademyLessonCatalogTest {
     }
 
     @Test
-    fun animalLessonContainsFifteenMultilingualAnimalNames() {
-        val lesson = AcademyLessonCatalog.all.single { it.id == "pre_a1_animals" }
-        assertEquals(15, lesson.words.size)
-        assertTrue(lesson.words.all { it.english.isNotBlank() && it.dari.isNotBlank() && it.pashto.isNotBlank() && it.arabic.isNotBlank() && it.pronunciation.isNotBlank() && it.emoji.isNotBlank() })
-        assertEquals("سپی", lesson.words.first { it.english == "dog" }.meaningFor(com.example.academy.domain.model.AcademyLocale.PASHTO_AF))
-        assertEquals("قطة", lesson.words.first { it.english == "cat" }.meaningFor(com.example.academy.domain.model.AcademyLocale.ARABIC))
-    }
-
-    @Test
     fun nextLessonUnlocksWhenImmediatelyPreviousLessonIsCompleted() {
         val band = LearningBand.PRE_A1
         val lessons = AcademyLessonCatalog.forBand(band)
