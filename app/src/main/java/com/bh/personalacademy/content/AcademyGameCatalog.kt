@@ -110,6 +110,8 @@ object AcademyGameCatalog {
                 t("I the word know ${word.english}.", "من واژه را می‌دانم ${word.fa}.", "زه کلمه پېژنم د ${word.ps}.", "أنا كلمة أعرف ${word.ar}."),
                 t("Know the word I ${word.english}.", "می‌دانم واژه من ${word.fa} را.", "پېژنم کلمه زه ${word.ps} د.", "أعرف الكلمة أنا ${word.ar}.")
             )
+            GameStyle.MEANING, GameStyle.MEMORY, GameStyle.MISTAKE_REVIEW ->
+                (listOf(word) + distractors).map { it.meaning() }
             else -> (listOf(word) + distractors).map { it.englishWord() }
         }
         val prompt = when (mode.style) {
