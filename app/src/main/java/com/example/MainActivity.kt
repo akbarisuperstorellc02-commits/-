@@ -903,6 +903,16 @@ private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> U
             text("The usual order is subject + verb + object.", "ترتیب معمول جمله فاعل + فعل + مفعول است.", "د جملې عادي ترتیب فاعل + فعل + مفعول دی.", "الترتيب المعتاد هو الفاعل ثم الفعل ثم المفعول.")
         )
     )
+    val quizQuestions = remember(locale) {
+        questions.mapIndexed { questionIndex, question ->
+            val rotation = (questionIndex + 1) % question.options.size
+            val rotatedOptions = question.options.drop(rotation) + question.options.take(rotation)
+            question.copy(
+                options = rotatedOptions,
+                correct = (question.correct - rotation + question.options.size) % question.options.size
+            )
+        }
+    }
     var index by remember { mutableIntStateOf(0) }
     var score by remember { mutableIntStateOf(0) }
     var finished by remember { mutableStateOf(false) }
@@ -917,7 +927,7 @@ private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> U
                 attemptId = attemptId,
                 quizId = "starter_mixed_quiz",
                 score = score,
-                totalQuestions = questions.size,
+                totalQuestions = quizQuestions.size,
                 completedAt = System.currentTimeMillis(),
                 incorrectQuestionIds = incorrectIds.joinToString(",")
             ))
@@ -938,13 +948,13 @@ private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> U
         AcademyCard {
             if (finished) {
                 Text(tr(locale, "quizComplete"), style = MaterialTheme.typography.titleLarge)
-                Text("${AsciiDigits.normalize(score.toString())}/${questions.size}", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
+                Text("${AsciiDigits.normalize(score.toString())}/${quizQuestions.size}", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
                 Text(tr(locale, "quizSaved"))
                 Button(onClick = onFinished, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "seeProgress")) }
             } else {
-                val question = questions[index]
+                val question = quizQuestions[index]
                 Text(tr(locale, "questionProgress", "${index + 1}/${questions.size}"))
-                LinearProgressIndicator(progress = { (index + 1).toFloat() / questions.size }, modifier = Modifier.fillMaxWidth())
+                LinearProgressIndicator(progress = { (index + 1).toFloat() / quizQuestions.size }, modifier = Modifier.fillMaxWidth())
                 Text(question.type.forLocale(locale), fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
                 Text(question.prompt.forLocale(locale), style = MaterialTheme.typography.titleLarge)
                 question.options.forEachIndexed { optionIndex, option ->
@@ -963,7 +973,7 @@ private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> U
                 if (explanation.isNotEmpty()) {
                     Text(explanation, color = MaterialTheme.colorScheme.primary)
                     Button(onClick = {
-                        if (index == questions.lastIndex) finished = true
+                        if (index == quizQuestions.lastIndex) finished = true
                         else { index += 1; selectedAnswer = -1; explanation = "" }
                     }, modifier = Modifier.fillMaxWidth()) {
                         Text(if (index == questions.lastIndex) tr(locale, "finishQuiz") else tr(locale, "nextQuestion"))
