@@ -132,7 +132,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
     var tab by remember { mutableStateOf(AcademyTab.HOME) }
     var band by remember { mutableStateOf<LearningBand?>(null) }
     LaunchedEffect(profile.profileId) { viewModel.initialize() }
-    LaunchedEffect(todayIso, profile.dailyStudyGoalMinutes, profile.dailyGoalLessons, profile.dailyGoalWords, profile.dailyGoalQuizzes) {
+    LaunchedEffect(profile.profileId, todayIso, profile.dailyStudyGoalMinutes, profile.dailyGoalLessons, profile.dailyGoalWords, profile.dailyGoalQuizzes) {
         dao.saveDailyGoal(
             DailyGoalEntity(
                 profileId = profile.profileId,
@@ -144,7 +144,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
             )
         )
     }
-    LaunchedEffect(todayStudyMillis, todayLessonCount, todayWordCount, todayQuizCount,
+    LaunchedEffect(profile.profileId, todayStudyMillis, todayLessonCount, todayWordCount, todayQuizCount,
         profile.dailyStudyGoalMinutes, profile.dailyGoalLessons, profile.dailyGoalWords, profile.dailyGoalQuizzes) {
         val goalsMet = todayStudyMillis >= profile.dailyStudyGoalMinutes * 60_000L &&
             todayLessonCount >= profile.dailyGoalLessons &&
@@ -159,7 +159,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
             )
         }
     }
-    LaunchedEffect(weekStudyDays, monthStudyDays) {
+    LaunchedEffect(profile.profileId, weekStudyDays, monthStudyDays) {
         val now = System.currentTimeMillis()
         if (weekStudyDays >= 5) {
             val key = SimpleDateFormat("YYYY-'W'ww", Locale.US).format(Date(now))
