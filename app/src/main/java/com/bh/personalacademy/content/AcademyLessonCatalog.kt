@@ -344,7 +344,7 @@ object AcademyLessonCatalog {
             "پس از can و cannot فعل به شکل ساده می‌آید: She can swim. برای پرسش، can را به آغاز جمله ببر.",
             "Can you help me?", "آیا می‌توانی به من کمک کنی؟", "پس از can حرف اضافه یا s سوم‌شخص به فعل اضافه نمی‌شود.",
             LessonWord("ability","توانایی","/əˈbɪl.ə.ti/"), LessonWord("swim","شنا کردن","/swɪm/"), LessonWord("permission","اجازه","/pərˈmɪʃ.ən/")),
-        l("a2_comparatives", LearningBand.A2, "Comparative adjectives", "صفت‌های مقایسه‌ای", "د پرتله کولو صفتونه", "صفات المقارنة",
+        l("a2_comparative_adjectives", LearningBand.A2, "Comparative adjectives", "صفت‌های مقایسه‌ای", "د پرتله کولو صفتونه", "صفات المقارنة",
             "Compare people, places and things.", "اشخاص، مکان‌ها و چیزها را مقایسه کن.", "خلک، ځایونه او شیان پرتله کړئ.", "قارن بين الأشخاص والأماكن والأشياء.",
             "برای صفت‌های کوتاه معمولاً er و برای بسیاری از صفت‌های بلندتر more می‌آید؛ than طرف مقایسه را معرفی می‌کند.",
             "This road is wider than that one.", "این سرک از آن یکی پهن‌تر است.", "برای good از شکل بی‌قاعده better استفاده می‌شود.",
