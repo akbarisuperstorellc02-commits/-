@@ -1,8 +1,8 @@
-# Self-Growth Academy — Product Specification
+# Self-Growth Learning Academy — Product Specification
 
 ## Product identity
-- Persian/Dari name: خودسازی آکادمی
-- English name: Self-Growth Academy
+- Persian/Dari name: آکادمی خودسازی Learning
+- English name: Self-Growth Learning Academy
 - Default display name: زهرا (stored as user data; never hard-coded in UI)
 - Android application; offline-first; multiple independent local learner profiles with profile-scoped settings and learning records.
 
@@ -25,7 +25,7 @@ All numeric UI output uses ASCII digits 0–9 in every locale.
 ## Product modules
 1. Home dashboard and navigation
 2. Learning path: Pre-A1, A1, A2, B1, B2, C1, C2 and Specialized
-3. Lessons with objectives, explanations, vocabulary, Dari meaning, pronunciation, examples, practice and completion rewards
+3. Lessons with objectives, explanations, vocabulary, localized Dari/Pashto/Arabic meanings, pronunciation, examples, practice and completion rewards
 4. Quiz engine: multiple choice, true/false, fill blank, translation, ordering, sentence building, listening where bundled audio exists
 5. Educational games with difficulty, score, rules and persisted results
 6. XP, coins, levels, badges and anti-duplicate reward ledger
@@ -56,7 +56,7 @@ A feature is complete only after implementation, compilation, automated tests an
 
 
 ## Recent progression and visual updates
-- 70 lessons across eight learning bands.
+- 71 lessons across eight learning bands.
 - Sequential unlock: the next lesson unlocks after the immediately preceding lesson is completed; the next band unlocks after the final lesson in the preceding band.
 - Game selection uses visual tiles and each game round can display its vocabulary emoji clue.
 - Adaptive launcher artwork is scaled into the Android icon safe zone.
