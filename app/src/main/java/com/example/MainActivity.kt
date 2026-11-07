@@ -634,8 +634,8 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
 }
 
 @Composable
-private fun VocabularyPage(locale: AcademyLocale, dao: AcademyDao) {
-    val words by dao.observeVocabulary().collectAsStateWithLifecycle(initialValue = emptyList())
+private fun VocabularyPage(locale: AcademyLocale, profileId: String, dao: AcademyDao) {
+    val words by dao.observeVocabulary(profileId).collectAsStateWithLifecycle(initialValue = emptyList())
     val scope = rememberCoroutineScope()
     var search by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
@@ -705,7 +705,7 @@ private fun VocabularyPage(locale: AcademyLocale, dao: AcademyDao) {
 }
 
 @Composable
-private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
+private fun GamePage(locale: AcademyLocale, profileId: String, coins: Long, dao: AcademyDao) {
     val scope = rememberCoroutineScope()
     var selectedGameId by remember { mutableStateOf<String?>(null) }
     val selectedMode = AcademyGameCatalog.modes.firstOrNull { it.id == selectedGameId }
@@ -975,7 +975,7 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
                             if (hintCount < question.answer.length && !hintPending) {
                                 hintPending = true
                                 scope.launch {
-                                    if (dao.spendHintCoins() > 0) {
+                                    if (dao.spendHintCoins(profileId) > 0) {
                                         hintCount += 1
                                         feedback = when (locale) {
                                             AcademyLocale.ENGLISH_US -> "Hint unlocked. Exactly 6 coins spent."
@@ -1037,7 +1037,7 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
 
 
 @Composable
-private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> Unit) {
+private fun QuizPage(locale: AcademyLocale, profileId: String, dao: AcademyDao, onFinished: () -> Unit) {
     data class Question(
         val type: LocalizedText,
         val prompt: LocalizedText,
@@ -1214,9 +1214,9 @@ private fun ProgressPage(locale: AcademyLocale, lessons: Int, attempts: List<Qui
 
 
 @Composable
-private fun CalendarPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit) {
-    val sessions by dao.observeStudySessions().collectAsStateWithLifecycle(initialValue = emptyList())
-    val reminders by dao.observeReminders().collectAsStateWithLifecycle(initialValue = emptyList())
+private fun CalendarPage(locale: AcademyLocale, profileId: String, dao: AcademyDao, onBack: () -> Unit) {
+    val sessions by dao.observeStudySessions(profileId).collectAsStateWithLifecycle(initialValue = emptyList())
+    val reminders by dao.observeReminders(profileId).collectAsStateWithLifecycle(initialValue = emptyList())
     var monthOffset by remember { mutableIntStateOf(0) }
     val month = remember(monthOffset) {
         Calendar.getInstance().apply {
@@ -1390,7 +1390,7 @@ private fun CalendarPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> U
 }
 
 @Composable
-private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit) {
+private fun ToolsPage(locale: AcademyLocale, profileId: String, dao: AcademyDao, onBack: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val reminders by dao.observeReminders().collectAsStateWithLifecycle(initialValue = emptyList())
@@ -1507,7 +1507,7 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
                     val title = reminderTitle.trim()
                     val schedule = {
                         scope.launch {
-                            dao.saveReminder(ReminderEntity(reminderId = id, title = title, hour = hour!!, minute = minute!!, repeatDaysMask = repeatDaysMask, enabled = true))
+                            dao.saveReminder(ReminderEntity(reminderId = id, profileId = profileId, title = title, hour = hour!!, minute = minute!!, repeatDaysMask = repeatDaysMask, enabled = true))
                         }
                         ReminderScheduler.cancel(context, id)
                         ReminderScheduler.schedule(context, id, title, hour!!, minute!!, repeatDaysMask)
@@ -2029,7 +2029,7 @@ private fun speechAccuracy(target: String, spoken: String): Int =
     com.bh.personalacademy.speaking.SpeechScoring.accuracy(target, spoken)
 
 @Composable
-private fun SpeakingPage(locale: AcademyLocale, dao: AcademyDao) {
+private fun SpeakingPage(locale: AcademyLocale, profileId: String, dao: AcademyDao) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var promptIndex by remember { mutableIntStateOf(0) }
@@ -2075,6 +2075,7 @@ private fun SpeakingPage(locale: AcademyLocale, dao: AcademyDao) {
                     scope.launch {
                         dao.insertGameAttempt(GameAttemptEntity(
                             attemptId = UUID.randomUUID().toString(),
+                            profileId = profileId,
                             gameId = "speaking_" + evaluatedPrompt.id,
                             score = earned,
                             totalQuestions = 100,
@@ -2083,7 +2084,8 @@ private fun SpeakingPage(locale: AcademyLocale, dao: AcademyDao) {
                         if (earned >= 70) {
                             val day = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
                             dao.applyRewardOnce(RewardEventEntity(
-                                eventId = UUID.randomUUID().toString(),
+                                eventId = "speaking_${profileId}_${evaluatedPrompt.id}_$day",
+                                profileId = profileId,
                                 source = "SPEAKING",
                                 sourceId = evaluatedPrompt.id + "_" + day,
                                 xpDelta = 10,
