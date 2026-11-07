@@ -1,0 +1,213 @@
+package com.example.academy.data
+
+import com.example.academy.domain.model.AcademyLocale
+import com.example.academy.domain.model.LearningBand
+
+data class LocalizedText(
+    val en: String,
+    val fa: String,
+    val ps: String,
+    val ar: String
+) {
+    fun forLocale(locale: AcademyLocale): String = when (locale) {
+        AcademyLocale.ENGLISH_US -> en
+        AcademyLocale.DARI_AF -> fa
+        AcademyLocale.PASHTO_AF -> ps
+        AcademyLocale.ARABIC -> ar
+    }
+}
+
+data class LessonWord(val english: String, val dari: String, val pronunciation: String)
+
+data class AcademyLesson(
+    val id: String,
+    val band: LearningBand,
+    val title: LocalizedText,
+    val objective: LocalizedText,
+    val explanationDari: String,
+    val words: List<LessonWord>,
+    val exampleEnglish: String,
+    val exampleDari: String,
+    val grammarTip: String
+)
+
+object AcademyCurriculum {
+    private fun t(en: String, fa: String, ps: String, ar: String) = LocalizedText(en, fa, ps, ar)
+    private fun l(
+        id: String, band: LearningBand, en: String, fa: String, ps: String, ar: String,
+        objectiveEn: String, objectiveFa: String, objectivePs: String, objectiveAr: String,
+        explanation: String, example: String, translation: String, tip: String,
+        vararg words: LessonWord
+    ) = AcademyLesson(
+        id, band, t(en, fa, ps, ar), t(objectiveEn, objectiveFa, objectivePs, objectiveAr),
+        explanation, words.toList(), example, translation, tip
+    )
+
+    val lessons: List<AcademyLesson> = listOf(
+        // PRE-A1 — sound, first words and basic patterns
+        l("pre_a1_alphabet", LearningBand.PRE_A1, "English alphabet", "الفبای انگلیسی", "انګلیسي الفبا", "الأبجدية الإنجليزية",
+            "Recognize the 26 letters.", "با ۲۶ حرف انگلیسی آشنا شو.", "د انګلیسي ۲۶ توري وپېژنئ.", "تعرّف إلى الحروف الإنجليزية الستة والعشرين.",
+            "الفبای انگلیسی ۲۶ حرف دارد. نام حرف با صدای آن در کلمه همیشه یکسان نیست.", "A is for apple.", "A برای کلمه apple به معنی سیب است.", "نام حرف A «اِی» است، اما در apple صدای کوتاه /æ/ می‌دهد.",
+            LessonWord("apple","سیب","/ˈæp.əl/"), LessonWord("book","کتاب","/bʊk/"), LessonWord("cat","پیشو","/kæt/")),
+        l("pre_a1_greetings", LearningBand.PRE_A1, "Greetings", "سلام و احوال‌پرسی", "روغبړ او سلام", "التحيات",
+            "Use simple greetings politely.", "سلام‌های ساده و مؤدبانه را به‌کار ببر.", "ساده او په ادب سلام کول زده کړئ.", "استخدم التحيات البسيطة بأدب.",
+            "برای آغاز مکالمه از Hello یا Hi استفاده می‌کنیم. برای خداحافظی Goodbye یا Bye مناسب است.", "Hello! How are you?", "سلام! حالت چطور است؟", "Hello رسمی‌تر از Hi است؛ هر دو در مکالمه روزمره کاربرد دارند.",
+            LessonWord("hello","سلام","/həˈloʊ/"), LessonWord("goodbye","خداحافظ","/ˌɡʊdˈbaɪ/"), LessonWord("please","لطفاً","/pliːz/")),
+        l("pre_a1_numbers", LearningBand.PRE_A1, "Numbers 0–20", "اعداد 0 تا 20", "له ۰ تر ۲۰ شمېرې", "الأرقام من 0 إلى 20",
+            "Read and say numbers 0 to 20.", "اعداد 0 تا 20 را بخوان و بگو.", "له ۰ څخه تر ۲۰ پورې شمېرې ووایئ.", "اقرأ وانطق الأرقام من 0 إلى 20.",
+            "اعداد برای شمارش، سن، قیمت و شماره تلفن استفاده می‌شوند. هر عدد را با صدای بلند تمرین کن.", "I have three pens.", "من سه قلم دارم.", "Three عدد 3 است و با /θ/ آغاز می‌شود.",
+            LessonWord("zero","صفر","/ˈzɪə.roʊ/"), LessonWord("seven","هفت","/ˈsev.ən/"), LessonWord("twenty","بیست","/ˈtwen.ti/")),
+        l("pre_a1_colors", LearningBand.PRE_A1, "Basic colours", "رنگ‌های ابتدایی", "بنسټیز رنګونه", "الألوان الأساسية",
+            "Name common colours.", "نام رنگ‌های پرکاربرد را یاد بگیر.", "عام رنګونه زده کړئ.", "تعلّم أسماء الألوان الشائعة.",
+            "صفت رنگ معمولاً پیش از اسم می‌آید؛ مانند a red bag یعنی یک بکس سرخ.", "The flower is pink.", "گل صورتی است.", "Pink برای صورتی و purple برای بنفش استفاده می‌شود.",
+            LessonWord("red","سرخ","/red/"), LessonWord("blue","آبی","/bluː/"), LessonWord("green","سبز","/ɡriːn/")),
+        l("pre_a1_pronouns", LearningBand.PRE_A1, "Subject pronouns", "ضمیرهای فاعلی", "فاعلي ضمیرونه", "ضمائر الفاعل",
+            "Choose I, you, he, she and it.", "ضمیرهای فاعلی را درست انتخاب کن.", "فاعلي ضمیرونه سم وکاروئ.", "اختر ضمائر الفاعل بصورة صحيحة.",
+            "I برای گوینده، you برای مخاطب، he برای مرد، she برای زن و it برای شیء یا حیوان به‌کار می‌رود.", "She is my sister.", "او خواهر من است.", "ضمیر فاعلی معمولاً پیش از فعل می‌آید.",
+            LessonWord("I","من","/aɪ/"), LessonWord("they","آن‌ها","/ðeɪ/"), LessonWord("we","ما","/wiː/")),
+        l("pre_a1_be", LearningBand.PRE_A1, "Verb be: am, is, are", "فعل be: am، is و are", "د be فعل: am، is، are", "الفعل be: am و is و are",
+            "Build simple sentences with be.", "با am، is و are جمله ساده بساز.", "د be فعل په مرسته ساده جملې جوړې کړئ.", "كوّن جملاً بسيطة باستخدام be.",
+            "I am، he/she/it is و you/we/they are. این فعل برای معرفی و بیان حالت استفاده می‌شود.", "They are happy.", "آن‌ها خوشحال هستند.", "فعل را با فاعل هماهنگ کن؛ نگوییم I is.",
+            LessonWord("happy","خوشحال","/ˈhæp.i/"), LessonWord("student","شاگرد","/ˈstuː.dənt/"), LessonWord("ready","آماده","/ˈred.i/")),
+
+        // A1 — everyday foundations
+        l("a1_articles", LearningBand.A1, "A and an", "حروف تعریف a و an", "د a او an توري", "أداتا a و an",
+            "Use a or an before singular nouns.", "پیش از اسم مفرد a یا an را درست به‌کار ببر.", "د مفرد نوم مخکې a یا an سم وکاروئ.", "استخدم a أو an قبل الاسم المفرد.",
+            "a پیش از صدای همخوان و an پیش از صدای واکه می‌آید؛ صدا مهم است، نه فقط حرف نخست.", "She has an orange.", "او یک مالته دارد.", "an hour درست است چون h در hour تلفظ نمی‌شود.",
+            LessonWord("an umbrella","یک چتر","/ən ʌmˈbrel.ə/"), LessonWord("a chair","یک چوکی","/ə tʃeər/"), LessonWord("an egg","یک تخم‌مرغ","/ən eɡ/")),
+        l("a1_family", LearningBand.A1, "Family members", "اعضای خانواده", "د کورنۍ غړي", "أفراد الأسرة",
+            "Describe close family members.", "اعضای نزدیک خانواده را معرفی کن.", "د خپلې نږدې کورنۍ غړي معرفي کړئ.", "عرّف أفراد أسرتك المقربين.",
+            "برای رابطه خانوادگی از my استفاده می‌کنیم: my mother، my brother و my parents.", "My brother is kind.", "برادرم مهربان است.", "در انگلیسی معمولاً my پیش از اسم رابطه خانوادگی می‌آید.",
+            LessonWord("mother","مادر","/ˈmʌð.ər/"), LessonWord("brother","برادر","/ˈbrʌð.ər/"), LessonWord("parents","والدین","/ˈpeə.rənts/")),
+        l("a1_present_simple", LearningBand.A1, "Present simple", "زمان حال ساده", "اوسنی ساده زمان", "المضارع البسيط",
+            "Talk about routines and facts.", "درباره عادت‌ها و حقیقت‌ها صحبت کن.", "د ورځنیو عادتونو او حقیقتونو په اړه خبرې وکړئ.", "تحدث عن العادات والحقائق.",
+            "برای I/you/we/they شکل پایه فعل و برای he/she/it معمولاً s اضافه می‌شود.", "She reads every evening.", "او هر شام مطالعه می‌کند.", "برای he، she و it به فعل معمولاً s اضافه کن: reads.",
+            LessonWord("read","خواندن","/riːd/"), LessonWord("work","کار کردن","/wɜːrk/"), LessonWord("every day","هر روز","/ˈev.ri deɪ/")),
+        l("a1_questions", LearningBand.A1, "Questions with do and does", "پرسش با do و does", "د do او does سره پوښتنې", "الأسئلة باستخدام do و does",
+            "Ask about habits and routines.", "درباره عادت‌ها پرسش بساز.", "د عادتونو په اړه پوښتنې جوړې کړئ.", "كوّن أسئلة عن العادات.",
+            "Do با I/you/we/they و does با he/she/it می‌آید. پس از does فعل ساده می‌ماند.", "Does he play football?", "آیا او فوتبال بازی می‌کند؟", "بعد از does نگوییم plays؛ شکل درست play است.",
+            LessonWord("where","کجا","/weər/"), LessonWord("when","چه وقت","/wen/"), LessonWord("usually","معمولاً","/ˈjuː.ʒu.ə.li/")),
+        l("a1_time", LearningBand.A1, "Telling the time", "گفتن ساعت", "د وخت ویل", "قراءة الوقت",
+            "Ask and answer about time.", "درباره ساعت پرسش و پاسخ کن.", "د وخت په اړه پوښتنه او ځواب وکړئ.", "اسأل وأجب عن الوقت.",
+            "برای پرسیدن ساعت می‌گوییم What time is it? برای ساعت کامل می‌توان گفت It is five o’clock.", "It is half past six.", "ساعت شش‌ونیم است.", "half past six یعنی 6:30 و quarter past six یعنی 6:15.",
+            LessonWord("o'clock","تمام","/əˈklɒk/"), LessonWord("half","نیم","/hæf/"), LessonWord("quarter","ربع","/ˈkwɔːr.tər/")),
+        l("a1_there_is", LearningBand.A1, "There is and there are", "There is و There are", "There is او There are", "There is و There are",
+            "Describe what exists in a place.", "وجود چیزها در یک مکان را بیان کن.", "په یوه ځای کې د شیانو شتون بیان کړئ.", "صف ما يوجد في مكان.",
+            "There is برای اسم مفرد و there are برای اسم جمع استفاده می‌شود.", "There are two windows.", "دو کلکین وجود دارد.", "پس از there are اسم جمع می‌آید.",
+            LessonWord("window","کلکین","/ˈwɪn.doʊ/"), LessonWord("kitchen","آشپزخانه","/ˈkɪtʃ.ən/"), LessonWord("garden","باغ","/ˈɡɑːr.dən/")),
+
+        // A2 — expanding everyday communication
+        l("a2_past_simple", LearningBand.A2, "Past simple", "زمان گذشته ساده", "تېر ساده زمان", "الماضي البسيط",
+            "Describe completed past actions.", "کارهای تکمیل‌شده در گذشته را بیان کن.", "په تېر وخت کې بشپړ شوي کارونه بیان کړئ.", "صف أفعالاً اكتملت في الماضي.",
+            "برای فعل‌های باقاعده معمولاً ed اضافه می‌شود؛ فعل‌های بی‌قاعده شکل ویژه دارند.", "We visited our aunt yesterday.", "ما دیروز به دیدن خاله‌مان رفتیم.", "yesterday نشانه رایج گذشته است؛ visit به visited تبدیل می‌شود.",
+            LessonWord("visited","دیدار کرد","/ˈvɪz.ɪ.tɪd/"), LessonWord("bought","خرید","/bɔːt/"), LessonWord("yesterday","دیروز","/ˈjes.tər.deɪ/")),
+        l("a2_comparatives", LearningBand.A2, "Comparatives", "صفت‌های مقایسه‌ای", "د پرتله صفتونه", "صفات المقارنة",
+            "Compare two people or things.", "دو شخص یا چیز را مقایسه کن.", "دوه کسان یا شیان پرتله کړئ.", "قارن بين شخصين أو شيئين.",
+            "برای صفت کوتاه معمولاً er و برای صفت بلندتر more می‌آید؛ سپس than استفاده می‌شود.", "This book is cheaper than that one.", "این کتاب از آن یکی ارزان‌تر است.", "cheap به cheaper تبدیل می‌شود؛ beautiful از more beautiful استفاده می‌کند.",
+            LessonWord("cheaper","ارزان‌تر","/ˈtʃiː.pər/"), LessonWord("better","بهتر","/ˈbet.ər/"), LessonWord("than","نسبت به","/ðæn/")),
+        l("a2_countable", LearningBand.A2, "Countable and uncountable nouns", "اسم‌های شمارش‌پذیر و شمارش‌ناپذیر", "شمېرل کېدونکي او نه شمېرل کېدونکي نومونه", "الأسماء المعدودة وغير المعدودة",
+            "Choose much, many and some.", "much، many و some را درست انتخاب کن.", "much، many او some سم وکاروئ.", "اختر much و many و some بشكل صحيح.",
+            "many با اسم جمع شمارش‌پذیر و much با اسم غیرقابل‌شمارش می‌آید. some در جمله مثبت رایج است.", "How much water do you need?", "به چه اندازه آب نیاز داری؟", "water شمارش‌ناپذیر است؛ پس much water می‌گوییم.",
+            LessonWord("water","آب","/ˈwɔː.tər/"), LessonWord("apples","سیب‌ها","/ˈæp.əlz/"), LessonWord("many","تعداد زیاد","/ˈmen.i/")),
+        l("a2_future", LearningBand.A2, "Future with going to", "آینده با going to", "د going to په وسیله راتلونکی", "المستقبل باستخدام going to",
+            "Talk about plans and intentions.", "درباره برنامه و نیت آینده صحبت کن.", "د راتلونکو پلانونو او ارادو په اړه خبرې وکړئ.", "تحدث عن الخطط والنوايا المستقبلية.",
+            "ساختار am/is/are + going to + فعل ساده برای برنامه یا قصد آینده استفاده می‌شود.", "I am going to study tonight.", "امشب قصد دارم مطالعه کنم.", "پس از going to فعل به شکل ساده می‌آید.",
+            LessonWord("tonight","امشب","/təˈnaɪt/"), LessonWord("plan","برنامه","/plæn/"), LessonWord("travel","سفر کردن","/ˈtræv.əl/")),
+        l("a2_modals", LearningBand.A2, "Can and could", "Can و Could", "Can او Could", "Can و Could",
+            "Express ability and polite requests.", "توانایی و درخواست مؤدبانه را بیان کن.", "وړتیا او مؤدبانه غوښتنه بیان کړئ.", "عبّر عن القدرة والطلبات المهذبة.",
+            "can برای توانایی یا اجازه و could برای درخواست مؤدبانه‌تر یا توانایی گذشته به‌کار می‌رود.", "Could you open the window, please?", "لطفاً می‌توانی کلکین را باز کنی؟", "بعد از can و could فعل بدون to می‌آید.",
+            LessonWord("ability","توانایی","/əˈbɪl.ə.ti/"), LessonWord("borrow","قرض گرفتن","/ˈbɒr.oʊ/"), LessonWord("could","می‌توانست","/kʊd/")),
+        l("a2_adverbs", LearningBand.A2, "Adverbs of frequency", "قیدهای تکرار", "د تکرار قیدونه", "ظروف التكرار",
+            "Describe how often actions happen.", "میزان تکرار کارها را بیان کن.", "د کارونو د تکرار اندازه بیان کړئ.", "صف عدد مرات حدوث الأفعال.",
+            "always، usually، often، sometimes و never میزان تکرار را نشان می‌دهند و معمولاً پیش از فعل اصلی می‌آیند.", "I usually walk to school.", "من معمولاً پیاده به مکتب می‌روم.", "قید تکرار بعد از فعل be می‌آید: She is always kind.",
+            LessonWord("always","همیشه","/ˈɔːl.weɪz/"), LessonWord("sometimes","گاهی","/ˈsʌm.taɪmz/"), LessonWord("never","هرگز","/ˈnev.ər/")),
+
+        // B1 — independent communication
+        l("b1_present_perfect", LearningBand.B1, "Present perfect", "زمان حال کامل", "اوسنی بشپړ زمان", "المضارع التام",
+            "Connect past experience to the present.", "تجربه گذشته را به زمان حال پیوند بده.", "تېرې تجربې له اوسني وخت سره وتړئ.", "اربط التجربة الماضية بالحاضر.",
+            "ساختار have/has + past participle برای تجربه یا نتیجه مرتبط با حال استفاده می‌شود.", "I have finished my homework.", "من کارخانگی‌ام را تمام کرده‌ام.", "با he/she/it از has و با سایر فاعل‌ها از have استفاده می‌شود.",
+            LessonWord("finished","تمام کرده","/ˈfɪn.ɪʃt/"), LessonWord("already","قبلاً","/ɔːlˈred.i/"), LessonWord("experience","تجربه","/ɪkˈspɪə.ri.əns/")),
+        l("b1_first_conditional", LearningBand.B1, "First conditional", "شرطی نوع اول", "لومړی شرطي ډول", "الشرط الأول",
+            "Talk about likely future results.", "د نتیجه‌های احتمالی آینده صحبت کن.", "د راتلونکي د ممکنه پایلو په اړه خبرې وکړئ.", "تحدث عن نتائج مستقبلية محتملة.",
+            "ساختار رایج: If + present simple, will + base verb. بخش if شرط و بخش دیگر نتیجه است.", "If it rains, we will stay home.", "اگر باران ببارد، در خانه می‌مانیم.", "در بخش if معمولاً will نمی‌آید.",
+            LessonWord("if","اگر","/ɪf/"), LessonWord("unless","مگر این‌که","/ənˈles/"), LessonWord("result","نتیجه","/rɪˈzʌlt/")),
+        l("b1_passive", LearningBand.B1, "Passive voice", "ساختار مجهول", "مجهول جوړښت", "صيغة المبني للمجهول",
+            "Focus on an action rather than its doer.", "بر عمل تمرکز کن، نه انجام‌دهنده آن.", "پر عمل تمرکز وکړئ، نه پر ترسره کوونکي.", "ركّز على الفعل لا على من قام به.",
+            "ساختار مجهول در زمان حال ساده: am/is/are + past participle.", "English is spoken in many countries.", "در کشورهای زیادی به انگلیسی صحبت می‌شود.", "وقتی انجام‌دهنده مهم نیست یا معلوم نیست، مجهول کاربرد دارد.",
+            LessonWord("spoken","گفته‌شده","/ˈspoʊ.kən/"), LessonWord("built","ساخته‌شده","/bɪlt/"), LessonWord("written","نوشته‌شده","/ˈrɪt.ən/")),
+        l("b1_relative", LearningBand.B1, "Relative clauses", "جمله‌واره‌های موصولی", "اړوندې جملې", "جملات الوصل",
+            "Add information using who, which and that.", "با who، which و that اطلاعات بیشتری بده.", "د who، which او that په وسیله نور معلومات ورکړئ.", "أضف معلومات باستخدام who و which و that.",
+            "who برای انسان، which برای چیز و that در بسیاری از جمله‌های موصولی برای هر دو استفاده می‌شود.", "The woman who lives next door is a doctor.", "زنی که همسایه ما زندگی می‌کند داکتر است.", "جمله موصولی بلافاصله پس از اسمی می‌آید که توضیح می‌دهد.",
+            LessonWord("whose","که مال اوست","/huːz/"), LessonWord("which","که","/wɪtʃ/"), LessonWord("neighbour","همسایه","/ˈneɪ.bər/")),
+        l("b1_reported", LearningBand.B1, "Reported speech basics", "مبانی نقل قول غیرمستقیم", "د غیر مستقیم نقل قول بنسټونه", "أساسيات الكلام المنقول",
+            "Report what another person said.", "گفته شخص دیگر را نقل کن.", "د بل کس خبرې په غیر مستقیم ډول بیان کړئ.", "انقل ما قاله شخص آخر.",
+            "در نقل قول غیرمستقیم، زمان فعل معمولاً یک مرحله به گذشته می‌رود؛ say و tell کاربردهای متفاوت دارند.", "She said that she was tired.", "او گفت که خسته بود.", "پس از tell معمولاً شخص می‌آید: told me؛ اما said me درست نیست.",
+            LessonWord("reported","نقل‌شده","/rɪˈpɔːr.tɪd/"), LessonWord("explained","توضیح داد","/ɪkˈspleɪnd/"), LessonWord("promise","وعده","/ˈprɒm.ɪs/")),
+        l("b1_opinions", LearningBand.B1, "Giving opinions and reasons", "بیان نظر و دلیل", "د نظر او دلیل بیانول", "إبداء الرأي والأسباب",
+            "Support opinions with clear reasons.", "نظر خود را با دلیل روشن پشتیبانی کن.", "خپل نظر په روښانه دلیل ملاتړ کړئ.", "ادعم رأيك بأسباب واضحة.",
+            "برای بیان نظر از I think یا In my opinion و برای دلیل از because استفاده کن.", "In my opinion, reading is useful because it builds vocabulary.", "به نظر من مطالعه مفید است، زیرا دایره واژگان را گسترش می‌دهد.", "because دلیل را معرفی می‌کند؛ so نتیجه را نشان می‌دهد.",
+            LessonWord("opinion","نظر","/əˈpɪn.jən/"), LessonWord("reason","دلیل","/ˈriː.zən/"), LessonWord("however","با این حال","/haʊˈev.ər/")),
+
+        // B2 — upper-intermediate precision
+        l("b2_second_conditional", LearningBand.B2, "Second conditional", "شرطی نوع دوم", "دویم شرطي ډول", "الشرط الثاني",
+            "Discuss unreal or unlikely situations.", "د وضعیت‌های فرضی یا بعید صحبت کن.", "د فرضي یا کم احتمال حالتونو په اړه خبرې وکړئ.", "ناقش المواقف الافتراضية أو غير المحتملة.",
+            "ساختار: If + past simple, would + base verb. برای تصور وضعیت غیرواقعی در حال یا آینده است.", "If I had more time, I would learn another language.", "اگر وقت بیشتری می‌داشتم، زبان دیگری یاد می‌گرفتم.", "در جمله فرضی با I معمولاً were نیز در سبک رسمی استفاده می‌شود.",
+            LessonWord("unlikely","بعید","/ʌnˈlaɪk.li/"), LessonWord("imagine","تصور کردن","/ɪˈmædʒ.ɪn/"), LessonWord("would","می‌کرد","/wʊd/")),
+        l("b2_modals_deduction", LearningBand.B2, "Modals of deduction", "افعال کمکی برای استنتاج", "د اټکل لپاره مرستندویه فعلونه", "الأفعال الناقصة للاستنتاج",
+            "Make logical guesses about situations.", "د وضعیت‌ها حدس منطقی بزن.", "د حالتونو په اړه منطقي اټکل وکړئ.", "استنتج أموراً منطقية عن المواقف.",
+            "must برای استنتاج قوی، might/may برای احتمال و can't برای ناممکن بودن استفاده می‌شود.", "She must be at work; her car is gone.", "حتماً در کار است؛ موترش نیست.", "این must بیان الزام نیست؛ در این جمله نتیجه‌گیری منطقی است.",
+            LessonWord("must","حتماً","/mʌst/"), LessonWord("might","شاید","/maɪt/"), LessonWord("evidence","شواهد","/ˈev.ɪ.dəns/")),
+        l("b2_linkers", LearningBand.B2, "Advanced linking words", "واژه‌های پیونددهنده پیشرفته", "پرمختللي نښلوونکي توري", "أدوات الربط المتقدمة",
+            "Connect ideas clearly and logically.", "اندیشه‌ها را روشن و منطقی پیوند بده.", "نظرونه په روښانه او منطقي ډول وتړئ.", "اربط الأفكار بوضوح ومنطق.",
+            "although تضاد را نشان می‌دهد، therefore نتیجه را و moreover اطلاعات تکمیلی را اضافه می‌کند.", "The task was difficult; nevertheless, we completed it.", "کار دشوار بود؛ با این وجود، آن را تکمیل کردیم.", "nevertheless معمولاً تضاد با جمله پیشین را برجسته می‌کند.",
+            LessonWord("therefore","بنابراین","/ˈðeə.fɔːr/"), LessonWord("nevertheless","با این وجود","/ˌnev.ə.ðəˈles/"), LessonWord("moreover","علاوه بر آن","/mɔːrˈoʊ.vər/")),
+        l("b2_collocations", LearningBand.B2, "Natural collocations", "هم‌آیی‌های طبیعی واژگان", "طبیعي کلمیزې", "المتلازمات اللفظية الطبيعية",
+            "Use words that naturally go together.", "واژه‌هایی را به‌کار ببر که طبیعی باهم می‌آیند.", "هغه کلمې وکاروئ چې په طبیعي ډول یوځای راځي.", "استخدم الكلمات التي تأتي معاً بصورة طبيعية.",
+            "در انگلیسی برخی واژه‌ها ترکیب ثابت دارند؛ مانند make a decision و take a break.", "We need to make a decision.", "ما باید تصمیم بگیریم.", "گفتن do a decision نادرست است؛ ترکیب طبیعی make a decision است.",
+            LessonWord("make a decision","تصمیم گرفتن","/meɪk ə dɪˈsɪʒ.ən/"), LessonWord("take a break","استراحت کردن","/teɪk ə breɪk/"), LessonWord("pay attention","توجه کردن","/peɪ əˈten.ʃən/")),
+        l("b2_formal_writing", LearningBand.B2, "Formal email writing", "نوشتن ایمیل رسمی", "رسمي برېښنالیک لیکل", "كتابة بريد إلكتروني رسمي",
+            "Organize a polite professional email.", "یک ایمیل مؤدبانه و حرفه‌ای تنظیم کن.", "یو مؤدبانه او مسلکي برېښنالیک ولیکئ.", "نظّم بريداً إلكترونياً مهنياً ومهذباً.",
+            "ایمیل رسمی معمولاً با Dear شروع می‌شود، هدف را روشن بیان می‌کند و با Kind regards پایان می‌یابد.", "I am writing to enquire about the course.", "برای پرس‌وجو درباره دوره می‌نویسم.", "در نوشتار رسمی از مخفف‌های خیلی محاوره‌ای کمتر استفاده کن.",
+            LessonWord("enquire","پرس‌وجو کردن","/ɪnˈkwaɪər/"), LessonWord("regarding","در مورد","/rɪˈɡɑːr.dɪŋ/"), LessonWord("sincerely","با احترام","/sɪnˈsɪə.li/")),
+        l("b2_passive_advanced", LearningBand.B2, "Advanced passive forms", "شکل‌های پیشرفته مجهول", "د مجهول پرمختللي بڼې", "صيغ المبني للمجهول المتقدمة",
+            "Use passive forms across common tenses.", "ساختار مجهول را در زمان‌های گوناگون به‌کار ببر.", "مجهول جوړښت په بېلابېلو زمانونو کې وکاروئ.", "استخدم المبني للمجهول في أزمنة مختلفة.",
+            "مجهول می‌تواند با زمان‌های مختلف بیاید: has been completed، will be delivered و was being repaired.", "The bridge will be opened next month.", "پل ماه آینده افتتاح خواهد شد.", "زمان فعل be را با زمان موردنظر هماهنگ کن.",
+            LessonWord("delivered","تحویل‌شده","/dɪˈlɪv.ərd/"), LessonWord("repaired","ترمیم‌شده","/rɪˈpeərd/"), LessonWord("announced","اعلام‌شده","/əˈnaʊnst/")),
+        l("b2_argument", LearningBand.B2, "Building an argument", "ساختن استدلال", "د استدلال جوړول", "بناء الحجة",
+            "Present a claim and support it.", "ادعا را همراه با شواهد ارائه کن.", "ادعا له شواهدو سره وړاندې کړئ.", "قدّم ادعاءً مدعوماً بالأدلة.",
+            "یک استدلال قوی شامل ادعا، دلیل، مثال و نتیجه است. از شواهد مشخص استفاده کن.", "The evidence suggests that the policy is effective.", "شواهد نشان می‌دهد که این پالیسی مؤثر است.", "suggests از claims محتاطانه‌تر و علمی‌تر است.",
+            LessonWord("claim","ادعا","/kleɪm/"), LessonWord("evidence","شواهد","/ˈev.ɪ.dəns/"), LessonWord("conclusion","نتیجه‌گیری","/kənˈkluː.ʒən/")),
+
+        // C1 — advanced fluency and nuance
+        l("c1_inversion", LearningBand.C1, "Inversion for emphasis", "وارونگی برای تأکید", "د ټینګار لپاره اړونه", "القلب للتوكيد",
+            "Use inversion in formal emphatic sentences.", "در جمله رسمی برای تأکید وارونگی بساز.", "په رسمي جملو کې د ټینګار لپاره اړونه وکاروئ.", "استخدم القلب في الجمل الرسمية للتوكيد.",
+            "پس از عبارت‌های منفی مانند Never و Rarely، فعل کمکی پیش از فاعل می‌آید.", "Never have I seen such a view.", "هرگز چنین منظره‌ای ندیده‌ام.", "پس از Never ساختار پرسشی‌مانند می‌آید، اما جمله پرسش واقعی نیست.",
+            LessonWord("rarely","به‌ندرت","/ˈreə.li/"), LessonWord("seldom","کمتر","/ˈsel.dəm/"), LessonWord("under no circumstances","تحت هیچ شرایطی","/ˈsɪr.kəm.stæn.sɪz/")),
+        l("c1_cleft", LearningBand.C1, "Cleft sentences", "جمله‌های شکافته برای تأکید", "د ټینګار ځانګړې جملې", "الجمل المنشطرة للتوكيد",
+            "Highlight one part of a sentence.", "بخش مشخصی از جمله را برجسته کن.", "د جملې یوه برخه مهمه وښایئ.", "أبرز جزءاً محدداً من الجملة.",
+            "ساختار It is/was ... that برای برجسته‌سازی زمان، شخص یا علت به‌کار می‌رود.", "It was yesterday that I met her.", "دیروز بود که او را دیدم.", "بخش میان It was و that همان بخشی است که تأکید می‌شود.",
+            LessonWord("emphasis","تأکید","/ˈem.fə.sɪs/"), LessonWord("precisely","دقیقاً","/prɪˈsaɪs.li/"), LessonWord("highlight","برجسته کردن","/ˈhaɪ.laɪt/")),
+        l("c1_mixed_conditionals", LearningBand.C1, "Mixed conditionals", "شرطی‌های ترکیبی", "ګډ شرطي جوړښتونه", "الجمل الشرطية المختلطة",
+            "Connect past conditions with present results.", "شرط گذشته را به نتیجه حال پیوند بده.", "تېر شرط له اوسني پایلې سره وتړئ.", "اربط شرطاً ماضياً بنتيجة حاضرة.",
+            "شرطی ترکیبی می‌تواند از if + past perfect و would + base verb برای نتیجه کنونی استفاده کند.", "If I had studied medicine, I would be a doctor now.", "اگر طب خوانده بودم، اکنون داکتر می‌بودم.", "شرط در گذشته رخ نداده، اما نتیجه فرضی به زمان حال مربوط است.",
+            LessonWord("consequence","پیامد","/ˈkɒn.sɪ.kwəns/"), LessonWord("counterfactual","خلاف واقع","/ˌkaʊn.tərˈfæk.tʃu.əl/"), LessonWord("otherwise","در غیر آن","/ˈʌð.ər.waɪz/")),
+        l("c1_hedging", LearningBand.C1, "Hedging and cautious language", "زبان محتاطانه و تعدیل ادعا", "احتیاطي ژبه", "اللغة التحوطية",
+            "Express uncertainty with academic precision.", "عدم قطعیت را با دقت علمی بیان کن.", "ناڅرګندتیا په علمي دقت بیان کړئ.", "عبّر عن عدم اليقين بدقة أكاديمية.",
+            "عبارت‌هایی مانند may suggest، appears to و is likely to از ادعای قطعی جلوگیری می‌کنند.", "The results appear to indicate a positive trend.", "نتایج ظاهراً یک روند مثبت را نشان می‌دهد.", "در متن علمی، میزان اطمینان را متناسب با شواهد انتخاب کن.",
+            LessonWord("apparently","ظاهراً","/əˈpær.ənt.li/"), LessonWord("potentially","احتمالاً","/pəˈten.ʃəl.i/"), LessonWord("indicate","نشان دادن","/ˈɪn.dɪ.keɪt/")),
+        l("c1_register", LearningBand.C1, "Register and tone", "سطح زبان و لحن", "د ژبې کچه او لحن", "مستوى اللغة والنبرة",
+            "Adapt language to audience and purpose.", "زبان را با مخاطب و هدف هماهنگ کن.", "ژبه د مخاطب او موخې سره برابره کړئ.", "كيّف اللغة وفق الجمهور والغرض.",
+            "واژگان و ساختار رسمی، دوستانه و محاوره‌ای باهم تفاوت دارند. انتخاب درست به مخاطب بستگی دارد.", "Could you please provide further details?", "ممکن است لطفاً جزئیات بیشتری ارائه کنید؟", "در موقعیت رسمی could you please از give me details مؤدبانه‌تر است.",
+            LessonWord("register","سطح کاربرد زبان","/ˈredʒ.ɪ.stər/"), LessonWord("audience","مخاطب","/ˈɔː.di.əns/"), LessonWord("appropriate","مناسب","/əˈproʊ.pri.ət/")),
+        l("c1_idioms", LearningBand.C1, "Idioms in context", "اصطلاحات در متن", "په متن کې اصطلاحات", "التعابير الاصطلاحية في السياق",
+            "Understand idioms from context.", "اصطلاح‌ها را از متن درک کن.", "اصطلاحات د متن له مخې درک کړئ.", "افهم التعابير الاصطلاحية من السياق.",
+            "معنی اصطلاح‌ها همیشه از معنی تک‌تک واژه‌ها به‌دست نمی‌آید؛ جمله و موقعیت را بررسی کن.", "After the exam, she was on cloud nine.", "پس از امتحان، از خوشحالی در آسمان‌ها بود.", "on cloud nine یعنی بسیار خوشحال بودن، نه واقعاً روی ابر بودن.",
+            LessonWord("on cloud nine","بسیار خوشحال","/ɒn klaʊd naɪn/"), LessonWord("break the ice","یخ مجلس را شکستن","/breɪk ði aɪs/"), LessonWord("once in a blue moon","به‌ندرت","/wʌns ɪn ə bluː muːn/")),
+        l("c1_critical_reading", LearningBand.C1, "Critical reading", "خواندن انتقادی", "انتقادي لوستل", "القراءة النقدية",
+            "Evaluate claims, evidence and bias.", "ادعا، شواهد و جانبداری متن را ارزیابی کن.", "ادعاوې، شواهد او تعصب وارزوئ.", "قيّم الادعاءات والأدلة والتحيز.",
+            "خواننده انتقادی میان واقعیت، نظر، شواهد و برداشت تفاوت می‌گذارد و اعتبار منبع را می‌سنجد.", "The author supports the claim with reliable data.", "نویسنده ادعا را با داده‌های قابل اعتماد پشتیبانی می‌کند.", "به منبع، تاریخ انتشار و روش گردآوری شواهد توجه کن.",
+            LessonWord("bias","جانبداری","/ˈbaɪ.əs/"), LessonWord("reliable","قابل اعتماد","/rɪˈlaɪ.ə.bəl/"), LessonWord("evaluate","ارزیابی کردن","/ɪˈvæl.ju.eɪt/"))
+    )
+
+    fun forBand(band: LearningBand): List<AcademyLesson> = lessons.filter { it.band == band }
+}
