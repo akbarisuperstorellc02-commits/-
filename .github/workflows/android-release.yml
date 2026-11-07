@@ -2,6 +2,9 @@ name: Self-Growth Learning Academy Signed Release
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - feature/bh-personal-academy-rebuild
 
 permissions:
   contents: read
