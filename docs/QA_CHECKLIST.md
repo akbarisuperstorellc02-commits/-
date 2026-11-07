@@ -8,6 +8,13 @@
 - [ ] Manifest has no INTERNET permission.
 
 ## Profile and preferences
+- [ ] Create a second learner profile and verify it appears in the profile selector.
+- [ ] Switch between profiles and verify each profile has an independent wallet, lesson progress, quizzes, games, vocabulary, study sessions, goals and reminders.
+- [ ] Restart the app and verify the selected profile is restored.
+- [ ] Verify duplicate usernames are rejected when creating a profile.
+- [ ] Reset one profile and verify all other profiles remain unchanged.
+- [ ] Upgrade a database from schema version 3 to 4 and verify existing vocabulary is preserved for the primary profile.
+- [ ] Export one profile, switch profiles, restore the backup and verify records merge only into the selected profile.
 - [ ] Fresh install shows the default profile name زهرا.
 - [ ] Changing display name updates the dashboard immediately.
 - [ ] Username, avatar URI, locale, theme, font and daily targets survive app restart.
@@ -32,7 +39,7 @@
 - [ ] Insufficient balance prevents hint use.
 
 ## Vocabulary and progress
-- [ ] Vocabulary seed is inserted without overwriting favourites.
+- [ ] Vocabulary seed is inserted separately for each profile without overwriting favourites.
 - [ ] Search works for English words and Dari meanings.
 - [ ] Favourite changes survive restart.
 - [ ] Progress totals are calculated from Room records.
@@ -47,7 +54,7 @@
 - [ ] Calendar marks days with recorded study sessions.
 
 ## Backup and reset
-- [ ] JSON backup exports profile and all learning records.
+- [ ] JSON backup exports only the selected profile and its learning records.
 - [ ] Restore validates backup format and version.
 - [ ] Restore merges by stable IDs and restores enabled reminders.
 - [ ] Reset requires two separate confirmations.
