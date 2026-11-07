@@ -11,13 +11,13 @@ import androidx.sqlite.db.SupportSQLiteDatabase
     entities = [
         LessonProgressEntity::class,
         QuizAttemptEntity::class,
-        GameAttemptEntity::class,
         StudySessionEntity::class,
         WalletEntity::class,
         RewardEventEntity::class,
         VocabularyEntity::class,
         DailyGoalEntity::class,
-        ReminderEntity::class
+        ReminderEntity::class,
+        GameAttemptEntity::class
     ],
     version = 2,
     exportSchema = false
@@ -27,19 +27,31 @@ abstract class AcademyDatabase : RoomDatabase() {
 
     companion object {
         private val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL(
-                    "CREATE TABLE IF NOT EXISTS game_attempts (" +
-                        "attemptId TEXT NOT NULL, profileId TEXT NOT NULL, gameId TEXT NOT NULL, " +
-                        "score INTEGER NOT NULL, totalQuestions INTEGER NOT NULL, completedAt INTEGER NOT NULL, " +
-                        "PRIMARY KEY(attemptId))"
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS game_attempts (
+                        attemptId TEXT NOT NULL,
+                        profileId TEXT NOT NULL,
+                        gameId TEXT NOT NULL,
+                        score INTEGER NOT NULL,
+                        totalQuestions INTEGER NOT NULL,
+                        completedAt INTEGER NOT NULL,
+                        PRIMARY KEY(attemptId)
+                    )
+                    """.trimIndent()
                 )
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_game_attempts_profileId ON game_attempts(profileId)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_game_attempts_completedAt ON game_attempts(completedAt)")
+                database.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_game_attempts_profileId ON game_attempts(profileId)"
+                )
+                database.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_game_attempts_completedAt ON game_attempts(completedAt)"
+                )
             }
         }
 
-        @Volatile private var instance: AcademyDatabase? = null
+        @Volatile
+        private var instance: AcademyDatabase? = null
 
         fun getInstance(context: Context): AcademyDatabase =
             instance ?: synchronized(this) {
@@ -47,7 +59,10 @@ abstract class AcademyDatabase : RoomDatabase() {
                     context.applicationContext,
                     AcademyDatabase::class.java,
                     "bh_personal_academy.db"
-                ).addMigrations(MIGRATION_1_2).build().also { instance = it }
+                )
+                    .addMigrations(MIGRATION_1_2)
+                    .build()
+                    .also { instance = it }
             }
     }
 }
