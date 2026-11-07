@@ -28,6 +28,9 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.core.content.ContextCompat
 import com.bh.personalacademy.data.local.*
 import com.bh.personalacademy.content.AcademyLessonCatalog
@@ -254,6 +257,7 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completed:
 private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
     val scope = rememberCoroutineScope()
     var hint by remember { mutableStateOf(false) }
+    var hintPending by remember { mutableStateOf(false) }
     var solved by remember { mutableStateOf(false) }
     var feedback by remember { mutableStateOf("") }
     Page {
@@ -273,13 +277,17 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
             if (hint) Text(tr(locale, "hintText"))
             if (feedback.isNotEmpty()) Text(feedback, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
             OutlinedButton(onClick = {
-                if (!hint && !solved) scope.launch {
-                    if (dao.spendHintCoins() > 0) { hint = true; feedback = tr(locale, "hintPaid") }
-                    else feedback = tr(locale, "needCoins")
+                if (!hint && !hintPending && !solved) {
+                    hintPending = true
+                    scope.launch {
+                        if (dao.spendHintCoins() > 0) { hint = true; feedback = tr(locale, "hintPaid") }
+                        else feedback = tr(locale, "needCoins")
+                        hintPending = false
+                    }
                 }
-            }, enabled = !hint && !solved, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "hintButton")) }
+            }, enabled = !hint && !hintPending && !solved, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "hintButton")) }
             Text(tr(locale, "coinBalance", AsciiDigits.normalize("$coins")))
-            TextButton(onClick = { hint = false; solved = false; feedback = "" }) { Text(tr(locale, "newRound")) }
+            TextButton(onClick = { hint = false; hintPending = false; solved = false; feedback = "" }) { Text(tr(locale, "newRound")) }
         }
         Text(tr(locale, "gameRoadmap"), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .65f))
     }
@@ -379,6 +387,17 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
     var reminderTitle by remember { mutableStateOf("") }
     var reminderTime by remember { mutableStateOf("19:00") }
     var feedback by remember { mutableStateOf("") }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) running = false
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            running = false
+        }
+    }
 
     LaunchedEffect(running) {
         while (running) {
