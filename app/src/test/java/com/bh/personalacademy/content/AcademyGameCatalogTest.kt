@@ -32,6 +32,28 @@ class AcademyGameCatalogTest {
     }
 
     @Test
+    fun missingWordPromptDoesNotRevealTheAnswer() {
+        val mode = AcademyGameCatalog.modes.first { it.style == GameStyle.MISSING_WORD }
+        repeat(5) { round ->
+            val question = AcademyGameCatalog.questionFor(mode, round)
+            assertTrue(question.prompt.forLocale(AcademyLocale.ENGLISH_US).contains("____"))
+            assertFalse(question.prompt.forLocale(AcademyLocale.ENGLISH_US).contains(question.answer))
+        }
+    }
+
+    @Test
+    fun wordBuildClueContainsAllLettersInAScrambledOrder() {
+        val mode = AcademyGameCatalog.modes.first { it.style == GameStyle.WORD_BUILD }
+        repeat(5) { round ->
+            val question = AcademyGameCatalog.questionFor(mode, round)
+            val prompt = question.prompt.forLocale(AcademyLocale.ENGLISH_US)
+            val scrambled = prompt.substringAfter(": ").trim()
+            assertEquals(question.answer.toCharArray().sorted(), scrambled.toCharArray().sorted())
+            assertTrue(scrambled != question.answer)
+        }
+    }
+
+    @Test
     fun hintWalletSpendsExactlySixCoinsAndRejectsInsufficientBalance() {
         assertEquals(6L, Wallet.HINT_COST_COINS)
         assertEquals(14L, Wallet(coins = 20).spendHint()?.coins)
