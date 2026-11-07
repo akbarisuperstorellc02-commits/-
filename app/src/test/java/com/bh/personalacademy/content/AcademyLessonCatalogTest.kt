@@ -13,7 +13,7 @@ class AcademyLessonCatalogTest {
             assertTrue(lessons.size >= 6)
             assertEquals(lessons.size, lessons.map { it.id }.distinct().size)
         }
-        assertTrue(AcademyLessonCatalog.all.size >= 36)
+        assertTrue(AcademyLessonCatalog.all.size >= 50)
     }
 
     @Test
