@@ -259,7 +259,7 @@ object AcademyLessonCatalog {
             "حال کامل با have یا has و شکل سوم فعل ساخته می‌شود و زمان دقیق گذشته را مشخص نمی‌کند.",
             "I have visited Herat twice.", "من دو بار از هرات دیدن کرده‌ام.", "ever و never برای تجربه‌های زندگی کاربرد دارند.",
             LessonWord("experience","تجربه","/ɪkˈspɪə.ri.əns/"), LessonWord("visited","دیدن کرده","/ˈvɪz.ɪ.tɪd/"), LessonWord("twice","دو بار","/twaɪs/")),
-        l("b1_first_conditional", LearningBand.B1, "First conditional", "شرطی نوع اول", "لومړی شرطي جوړښت", "الشرط الأول",
+        l("b1_first_conditional_extended", LearningBand.B1, "First conditional", "شرطی نوع اول", "لومړی شرطي جوړښت", "الشرط الأول",
             "Describe realistic future possibilities.", "امکان‌های واقعی آینده را بیان کن.", "د راتلونکي واقعي امکانات بیان کړئ.", "صف احتمالات مستقبلية واقعية.",
             "در شرطی نوع اول، if با حال ساده و نتیجه با will ساخته می‌شود.",
             "If it rains, we will stay home.", "اگر باران ببارد، در خانه می‌مانیم.", "در بخش if برای آینده از will استفاده نمی‌کنیم.",
