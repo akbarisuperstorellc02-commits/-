@@ -744,6 +744,24 @@ private fun ProgressPage(locale: AcademyLocale, lessons: Int, attempts: List<Qui
             Line(tr(locale, "average"), "$average%")
         }
         AcademyCard {
+            Text(tr(locale, "badges"), style = MaterialTheme.typography.titleLarge)
+            val badges = listOf(
+                Triple(lessons >= 1, "🌱", tr(locale, "badgeFirstLesson")),
+                Triple(lessons >= 5, "📚", tr(locale, "badgeFiveLessons")),
+                Triple(attempts.isNotEmpty(), "📝", tr(locale, "badgeFirstQuiz")),
+                Triple(games >= 1, "🎮", tr(locale, "badgeFirstGame")),
+                Triple(totalStudyMillis >= 3_600_000L, "⏳", tr(locale, "badgeHour"))
+            )
+            val earned = badges.filter { it.first }
+            if (earned.isEmpty()) Text(tr(locale, "noBadges"))
+            earned.forEach { (_, icon, title) ->
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(icon, fontSize = 24.sp)
+                    Text(title, fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
+        AcademyCard {
             Text(tr(locale, "quizHistory"), style = MaterialTheme.typography.titleMedium)
             if (attempts.isEmpty()) Text(tr(locale, "noHistory")) else attempts.take(15).forEach { Text("${it.quizId}: ${it.score}/${it.totalQuestions}") }
         }
@@ -1151,7 +1169,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "hintText" to "Hint: It is a fruit.", "hintPaid" to "Hint unlocked. 6 coins spent.", "needCoins" to "You need at least 6 coins.",
         "hintButton" to "Get a hint · 6 coins", "coinBalance" to "Your coins: $arg", "newRound" to "New round",
         "gameRoadmap" to "More vocabulary, spelling and memory games are planned for the next content phase.",
-        "summary" to "Learning summary", "studyToday" to "Today", "studyWeek" to "This week", "studyMonth" to "This month", "studyTotal" to "Total study time", "average" to "Average quiz score", "quizHistory" to "Quiz history", "noHistory" to "No quiz attempts yet.", "quizTitle" to "Quick mixed quiz", "nextQuestion" to "Next question", "finishQuiz" to "Finish quiz", "quizComplete" to "Quiz completed!", "quizSaved" to "Your result has been saved to your learning history.", "seeProgress" to "View progress", "questionProgress" to "Question $arg",
+        "summary" to "Learning summary", "badges" to "Achievements", "badgeFirstLesson" to "First lesson completed", "badgeFiveLessons" to "Five lessons completed", "badgeFirstQuiz" to "First quiz completed", "badgeFirstGame" to "First game played", "badgeHour" to "One hour of study", "noBadges" to "Complete lessons, quizzes and games to earn badges.", "studyToday" to "Today", "studyWeek" to "This week", "studyMonth" to "This month", "studyTotal" to "Total study time", "average" to "Average quiz score", "quizHistory" to "Quiz history", "noHistory" to "No quiz attempts yet.", "quizTitle" to "Quick mixed quiz", "nextQuestion" to "Next question", "finishQuiz" to "Finish quiz", "quizComplete" to "Quiz completed!", "quizSaved" to "Your result has been saved to your learning history.", "seeProgress" to "View progress", "questionProgress" to "Question $arg",
         "displayName" to "Display name", "changeAvatar" to "Change photo", "username" to "Username", "save" to "Save profile", "language" to "Language", "theme" to "Theme",
         "font" to "Font", "minutes" to "minutes", "studyTools" to "Study tools", "timer" to "Study timer", "startTimer" to "Start", "pauseTimer" to "Pause", "finishTimer" to "Finish session", "timerSaved" to "Study session saved.", "reminders" to "Reminders and alarms", "reminderTitle" to "Reminder title", "timeHHMM" to "Time (HH:MM)", "dailyReminder" to "Repeat every day", "scheduleReminder" to "Schedule reminder", "reminderSaved" to "Reminder scheduled.", "invalidTime" to "Enter a title and valid time such as 19:30.", "permissionNeeded" to "Allow notifications in Android settings to receive reminders.", "exactAlarmPermission" to "Allow exact alarms in Android settings; otherwise reminders may be delayed.", "noReminders" to "No reminders scheduled yet.", "DARI_AF" to "Afghan Dari", "PASHTO_AF" to "Afghan Pashto", "ARABIC" to "Arabic", "ENGLISH_US" to "English",
         "SANS_SERIF" to "Sans Serif", "SERIF" to "Serif", "CURSIVE" to "Cursive"
@@ -1171,7 +1189,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "hintText" to "راهنما: این یک میوه است.", "hintPaid" to "راهنما فعال شد؛ 6 سکه مصرف شد.", "needCoins" to "حداقل 6 سکه نیاز داری.",
         "hintButton" to "دریافت راهنما · 6 سکه", "coinBalance" to "سکه‌های تو: $arg", "newRound" to "دور تازه",
         "gameRoadmap" to "بازی‌های واژگان، املا و حافظه در مرحله بعدی محتوا اضافه می‌شوند.",
-        "summary" to "خلاصه یادگیری تو", "studyToday" to "امروز", "studyWeek" to "این هفته", "studyMonth" to "این ماه", "studyTotal" to "مجموع زمان مطالعه", "average" to "میانگین نمره آزمون", "quizHistory" to "تاریخچه آزمون", "noHistory" to "هنوز آزمونی انجام نشده است.", "quizTitle" to "آزمون ترکیبی کوتاه", "nextQuestion" to "پرسش بعدی", "finishQuiz" to "پایان آزمون", "quizComplete" to "آزمون تکمیل شد!", "quizSaved" to "نتیجه در تاریخچه یادگیری ذخیره شد.", "seeProgress" to "دیدن پیشرفت", "questionProgress" to "پرسش $arg",
+        "summary" to "خلاصه یادگیری تو", "badges" to "افتخارات", "badgeFirstLesson" to "نخستین درس تکمیل شد", "badgeFiveLessons" to "پنج درس تکمیل شد", "badgeFirstQuiz" to "نخستین آزمون انجام شد", "badgeFirstGame" to "نخستین بازی انجام شد", "badgeHour" to "یک ساعت مطالعه", "noBadges" to "برای دریافت مدال، درس‌ها و آزمون‌ها را تکمیل کن.", "studyToday" to "امروز", "studyWeek" to "این هفته", "studyMonth" to "این ماه", "studyTotal" to "مجموع زمان مطالعه", "average" to "میانگین نمره آزمون", "quizHistory" to "تاریخچه آزمون", "noHistory" to "هنوز آزمونی انجام نشده است.", "quizTitle" to "آزمون ترکیبی کوتاه", "nextQuestion" to "پرسش بعدی", "finishQuiz" to "پایان آزمون", "quizComplete" to "آزمون تکمیل شد!", "quizSaved" to "نتیجه در تاریخچه یادگیری ذخیره شد.", "seeProgress" to "دیدن پیشرفت", "questionProgress" to "پرسش $arg",
         "displayName" to "نام نمایشی", "changeAvatar" to "تغییر عکس", "username" to "نام کاربری", "save" to "ذخیره پروفایل", "language" to "زبان", "theme" to "تم",
         "font" to "فونت", "minutes" to "دقیقه", "studyTools" to "ابزارهای مطالعه", "timer" to "تایمر مطالعه", "startTimer" to "شروع", "pauseTimer" to "مکث", "finishTimer" to "پایان جلسه", "timerSaved" to "جلسه مطالعه ذخیره شد.", "reminders" to "یادآوری و زنگ", "reminderTitle" to "عنوان یادآوری", "timeHHMM" to "زمان (ساعت:دقیقه)", "dailyReminder" to "تکرار هر روز", "scheduleReminder" to "تنظیم یادآوری", "reminderSaved" to "یادآوری تنظیم شد.", "invalidTime" to "عنوان و زمان درست مانند 19:30 وارد کن.", "permissionNeeded" to "برای دریافت یادآوری، اجازه اعلان‌ها را در اندروید فعال کن.", "exactAlarmPermission" to "برای زنگ دقیق، اجازه زنگ‌های دقیق را در تنظیمات اندروید فعال کن.", "noReminders" to "هنوز یادآوری تنظیم نشده است.", "DARI_AF" to "دری افغانستان", "PASHTO_AF" to "پشتو افغانستان", "ARABIC" to "عربی", "ENGLISH_US" to "انگلیسی",
         "SANS_SERIF" to "سن‌سریف", "SERIF" to "سریف", "CURSIVE" to "دست‌نویس"
@@ -1201,7 +1219,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "newWords" to "نوې کلمې", "completeLesson" to "درس بشپړ کړئ · XP ترلاسه کړئ", "quizReview" to "ازموینې بیا وګورئ",
         "wordChallenge" to "د کلمې د مانا لوبه", "chooseMeaning" to "د APPLE پښتو/دري مانا وټاکئ", "hintText" to "لارښوونه: دا یوه مېوه ده.",
         "coinBalance" to "ستاسې سکې: $arg", "newRound" to "نوی پړاو", "gameRoadmap" to "نورې د لغت، املا او حافظې لوبې به وروسته ورزیاتې شي.",
-        "summary" to "د زده کړې لنډیز", "studyToday" to "نن", "studyWeek" to "دا اونۍ", "studyMonth" to "دا میاشت", "studyTotal" to "د مطالعې ټول وخت", "average" to "د ازموینو منځنۍ نمره", "quizHistory" to "د ازموینو تاریخچه", "noHistory" to "تر اوسه ازموینه نه ده شوې.",
+        "summary" to "د زده کړې لنډیز", "badges" to "ویاړونه", "badgeFirstLesson" to "لومړی درس بشپړ شو", "badgeFiveLessons" to "پنځه درسونه بشپړ شول", "badgeFirstQuiz" to "لومړۍ ازموینه بشپړه شوه", "badgeFirstGame" to "لومړۍ لوبه وشوه", "badgeHour" to "یو ساعت مطالعه", "noBadges" to "د نښانونو لپاره درسونه او ازموینې بشپړې کړئ.", "studyToday" to "نن", "studyWeek" to "دا اونۍ", "studyMonth" to "دا میاشت", "studyTotal" to "د مطالعې ټول وخت", "average" to "د ازموینو منځنۍ نمره", "quizHistory" to "د ازموینو تاریخچه", "noHistory" to "تر اوسه ازموینه نه ده شوې.",
         "questionProgress" to "پوښتنه $arg"
     )
     val arComplete = ar + mapOf(
@@ -1211,7 +1229,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "newWords" to "مفردات جديدة", "completeLesson" to "أكمل الدرس · اكسب XP", "quizReview" to "مراجعة الاختبارات",
         "wordChallenge" to "تحدي معنى الكلمة", "chooseMeaning" to "اختر معنى APPLE باللغة الدارية", "hintText" to "تلميح: إنها فاكهة.",
         "coinBalance" to "عملاتك: $arg", "newRound" to "جولة جديدة", "gameRoadmap" to "ستضاف ألعاب المفردات والإملاء والذاكرة في مرحلة المحتوى التالية.",
-        "summary" to "ملخص التعلم", "studyToday" to "اليوم", "studyWeek" to "هذا الأسبوع", "studyMonth" to "هذا الشهر", "studyTotal" to "إجمالي وقت الدراسة", "average" to "متوسط نتيجة الاختبارات", "quizHistory" to "سجل الاختبارات", "noHistory" to "لم تُجرَ أي اختبارات بعد.",
+        "summary" to "ملخص التعلم", "badges" to "الإنجازات", "badgeFirstLesson" to "أكملت الدرس الأول", "badgeFiveLessons" to "أكملت خمسة دروس", "badgeFirstQuiz" to "أكملت الاختبار الأول", "badgeFirstGame" to "لعبت اللعبة الأولى", "badgeHour" to "ساعة من الدراسة", "noBadges" to "أكمل الدروس والاختبارات والألعاب للحصول على الشارات.", "studyToday" to "اليوم", "studyWeek" to "هذا الأسبوع", "studyMonth" to "هذا الشهر", "studyTotal" to "إجمالي وقت الدراسة", "average" to "متوسط نتيجة الاختبارات", "quizHistory" to "سجل الاختبارات", "noHistory" to "لم تُجرَ أي اختبارات بعد.",
         "questionProgress" to "السؤال $arg"
     )
     val themeLabels = when (locale) {
