@@ -141,7 +141,7 @@ object AcademyBackupManager {
             }
             root.array("gameAttempts").forEachObject { o ->
                 dao.restoreGameAttempt(GameAttemptEntity(
-                    attemptId = o.getString("attemptId"), profileId = profileId,
+                    attemptId = scopedId(profileId, o.getString("attemptId")), profileId = profileId,
                     gameId = o.getString("gameId"), score = o.optInt("score"),
                     totalQuestions = o.optInt("totalQuestions"), completedAt = o.optLong("completedAt")
                 ))
