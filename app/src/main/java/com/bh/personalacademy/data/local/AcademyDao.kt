@@ -66,6 +66,9 @@ abstract class AcademyDao {
     @Query("SELECT COALESCE(SUM(durationMillis), 0) FROM study_sessions WHERE profileId = :profileId")
     abstract fun observeTotalStudyMillis(profileId: String = "primary"): Flow<Long>
 
+    @Query("SELECT startedAt FROM study_sessions WHERE profileId = :profileId AND startedAt >= :fromMillis AND startedAt < :untilMillis")
+    abstract fun observeStudySessionStarts(fromMillis: Long, untilMillis: Long, profileId: String = "primary"): Flow<List<Long>>
+
     @Query("SELECT * FROM study_sessions WHERE profileId = :profileId ORDER BY startedAt DESC")
     abstract fun observeStudySessions(profileId: String = "primary"): Flow<List<StudySessionEntity>>
 
