@@ -2,9 +2,21 @@ package com.example.academy.domain.model
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class AcademyModelsTest {
+    @Test
+    fun lessonRewardIdsAreStableAndProfileScoped() {
+        val first = RewardEventIds.lessonCompletion("primary", "lesson_1")
+        val repeated = RewardEventIds.lessonCompletion("primary", "lesson_1")
+        val otherProfile = RewardEventIds.lessonCompletion("profile_2", "lesson_1")
+        val otherLesson = RewardEventIds.lessonCompletion("primary", "lesson_2")
+        assertEquals(first, repeated)
+        assertNotEquals(first, otherProfile)
+        assertNotEquals(first, otherLesson)
+    }
+
     @Test
     fun defaultProfileUsesZahraAndAfghanDari() {
         val profile = UserProfile()
