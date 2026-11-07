@@ -58,7 +58,6 @@ fun HomeScreen(
     userProgressManager: UserProgressManager,
     ttsHelper: TextToSpeechHelper?,
     onNavigateToLevels: () -> Unit,
-    onNavigateToChat: () -> Unit,
     onNavigateToSpeakingDrill: () -> Unit,
     onNavigateToWordGame: () -> Unit,
     onNavigateToCalendar: () -> Unit,
@@ -387,13 +386,13 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     HomeFeatureCard(
-                        title = "معلم هوش مصنوعی",
-                        subtitle = "صبور و مهربان از سطح صفر",
-                        emoji = "🎙️",
-                        badge = "اختصاصی",
+                        title = "تمرین گفتار و تلفظ",
+                        subtitle = "تمرین شنیدن و بیان جمله‌ها",
+                        emoji = "🗣️",
+                        badge = "تمرینی",
                         color = theme.secondaryColor,
                         modifier = Modifier.weight(1f),
-                        onClick = onNavigateToChat
+                        onClick = onNavigateToSpeakingDrill
                     )
 
                     HomeFeatureCard(
