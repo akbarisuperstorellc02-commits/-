@@ -46,8 +46,8 @@ class AcademyViewModel(
         viewModelScope.launch { repository.initializeProfileWallet() }
     }
 
-    fun completeLesson(lessonId: String, score: Int = 100) {
-        viewModelScope.launch { repository.completeLesson(lessonId, score) }
+    fun completeLesson(lessonId: String, score: Int = 100, profileId: String = "primary") {
+        viewModelScope.launch { repository.completeLesson(lessonId, score, profileId) }
     }
 
     fun saveStudySession(lessonId: String, startedAt: Long, durationMillis: Long) {
