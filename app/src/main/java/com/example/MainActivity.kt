@@ -1588,6 +1588,10 @@ private fun ToolsPage(locale: AcademyLocale, profileId: String, dao: AcademyDao,
 @Composable
 private fun ProfilePage(profile: UserProfile, profiles: List<UserProfile>, prefs: AcademyPreferences, dao: AcademyDao) {
     val scope = rememberCoroutineScope()
+    var showCreateProfile by remember { mutableStateOf(false) }
+    var newProfileName by remember { mutableStateOf("") }
+    var newProfileUsername by remember { mutableStateOf("") }
+    var profileError by remember { mutableStateOf("") }
     val context = LocalContext.current
     val wallet by dao.observeWallet(profile.profileId).collectAsStateWithLifecycle(initialValue = null)
     val completedLessons by dao.observeLessonProgress(profile.profileId).collectAsStateWithLifecycle(initialValue = emptyList())
@@ -1616,6 +1620,34 @@ private fun ProfilePage(profile: UserProfile, profiles: List<UserProfile>, prefs
     }
     Page {
         Text(tr(profile.locale, "profile"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        AcademyCard {
+            Text(when (profile.locale) {
+                AcademyLocale.ENGLISH_US -> "Profiles"
+                AcademyLocale.DARI_AF -> "پروفایل‌ها"
+                AcademyLocale.PASHTO_AF -> "پروفایلونه"
+                AcademyLocale.ARABIC -> "الملفات الشخصية"
+            }, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            profiles.forEach { item ->
+                OutlinedButton(
+                    onClick = { scope.launch { prefs.switchProfile(item.profileId) } },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    border = BorderStroke(if (item.profileId == profile.profileId) 2.dp else 1.dp,
+                        MaterialTheme.colorScheme.primary.copy(alpha = if (item.profileId == profile.profileId) 0.8f else 0.3f))
+                ) {
+                    Text((if (item.profileId == profile.profileId) "✓  " else "") + item.displayName + "  @" + item.username)
+                }
+            }
+            Button(onClick = { showCreateProfile = true }, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Default.PersonAdd, null); Spacer(Modifier.width(8.dp))
+                Text(when (profile.locale) {
+                    AcademyLocale.ENGLISH_US -> "Add another profile"
+                    AcademyLocale.DARI_AF -> "افزودن پروفایل جدید"
+                    AcademyLocale.PASHTO_AF -> "نوی پروفایل زیاتول"
+                    AcademyLocale.ARABIC -> "إضافة ملف شخصي"
+                })
+            }
+        }
         AcademyCard {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (profile.avatarUri?.startsWith("emoji:") == true) {
@@ -1762,6 +1794,37 @@ private fun ProfilePage(profile: UserProfile, profiles: List<UserProfile>, prefs
             Slider(value = quizTarget, onValueChange = { quizTarget = it }, valueRange = 1f..5f, steps = 3,
                 onValueChangeFinished = { scope.launch { prefs.updateDailyTargets(lessonTarget.toInt(), wordTarget.toInt(), quizTarget.toInt()) } })
         }
+    }
+    if (showCreateProfile) {
+        AlertDialog(
+            onDismissRequest = { showCreateProfile = false; profileError = "" },
+            title = { Text(when (profile.locale) {
+                AcademyLocale.ENGLISH_US -> "Create profile"
+                AcademyLocale.DARI_AF -> "ساخت پروفایل"
+                AcademyLocale.PASHTO_AF -> "پروفایل جوړول"
+                AcademyLocale.ARABIC -> "إنشاء ملف شخصي"
+            }) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(newProfileName, { newProfileName = it }, label = { Text(tr(profile.locale, "displayName")) }, singleLine = true)
+                    OutlinedTextField(newProfileUsername, { newProfileUsername = it }, label = { Text(tr(profile.locale, "username")) }, singleLine = true)
+                    if (profileError.isNotBlank()) Text(profileError, color = MaterialTheme.colorScheme.error)
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    scope.launch {
+                        runCatching { prefs.createProfile(newProfileName, newProfileUsername) }
+                            .onSuccess { id ->
+                                prefs.switchProfile(id)
+                                newProfileName = ""; newProfileUsername = ""; profileError = ""; showCreateProfile = false
+                            }
+                            .onFailure { profileError = it.message ?: "Could not create profile." }
+                    }
+                }, enabled = newProfileName.isNotBlank() && newProfileUsername.isNotBlank()) { Text(tr(profile.locale, "save")) }
+            },
+            dismissButton = { TextButton(onClick = { showCreateProfile = false; profileError = "" }) { Text(tr(profile.locale, "cancel")) } }
+        )
     }
     if (pendingImportUri != null) {
         AlertDialog(
