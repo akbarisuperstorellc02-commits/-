@@ -464,12 +464,12 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
             Button(onClick = learn, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Icon(Icons.Default.MenuBook, null); Spacer(Modifier.width(8.dp)); Text(tr(p.locale, "openLessons")) }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = games, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(p.locale, "games")) }
-            OutlinedButton(onClick = profile, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(p.locale, "myProfile")) }
+            OutlinedButton(onClick = games, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp)) { Text(tr(p.locale, "games")) }
+            OutlinedButton(onClick = profile, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp)) { Text(tr(p.locale, "myProfile")) }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = tools, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Icon(Icons.Default.Alarm, null); Spacer(Modifier.width(6.dp)); Text(tr(p.locale, "studyTools")) }
-            OutlinedButton(onClick = calendar, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
+            OutlinedButton(onClick = tools, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp)) { Icon(Icons.Default.Alarm, null); Spacer(Modifier.width(6.dp)); Text(tr(p.locale, "studyTools")) }
+            OutlinedButton(onClick = calendar, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp)) {
                 Icon(Icons.Default.CalendarMonth, null); Spacer(Modifier.width(6.dp))
                 Text(when (p.locale) {
                     AcademyLocale.ENGLISH_US -> "Calendar"
@@ -516,7 +516,7 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
     val lessons = selected?.let { AcademyLessonCatalog.forBand(it) }.orEmpty()
     Page {
         Text(tr(locale, "learningPath"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        OutlinedButton(onClick = vocabulary, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Icon(Icons.Default.Bookmarks, null); Spacer(Modifier.width(8.dp)); Text(tr(locale, "vocabulary")) }
+        OutlinedButton(onClick = vocabulary, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp)) { Icon(Icons.Default.Bookmarks, null); Spacer(Modifier.width(8.dp)); Text(tr(locale, "vocabulary")) }
         if (selected == null) {
             Text(tr(locale, "chooseLevel"))
             LearningBand.values().forEachIndexed { i, level ->
@@ -579,7 +579,7 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completedL
                     }
                 }
             }
-            OutlinedButton(onClick = quiz, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(locale, "quizReview")) }
+            OutlinedButton(onClick = quiz, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp)) { Text(tr(locale, "quizReview")) }
         }
     }
 }
@@ -850,7 +850,7 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
                         },
                         enabled = !answered,
                         modifier = Modifier.fillMaxWidth()
-                    , shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
+                    , shape = RoundedCornerShape(26.dp)) {
                         Text(option.forLocale(locale))
                     }
                 }
@@ -886,7 +886,7 @@ private fun GamePage(locale: AcademyLocale, coins: Long, dao: AcademyDao) {
                         },
                         enabled = hintCount < question.answer.length && !hintPending,
                         modifier = Modifier.fillMaxWidth()
-                    , shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
+                    , shape = RoundedCornerShape(26.dp)) {
                         Text(
                             when (locale) {
                                 AcademyLocale.ENGLISH_US -> "Hint · 6 coins"
@@ -1043,7 +1043,7 @@ private fun QuizPage(locale: AcademyLocale, dao: AcademyDao, onFinished: () -> U
                         },
                         enabled = selectedAnswer == -1,
                         modifier = Modifier.fillMaxWidth()
-                    , shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(option.forLocale(locale)) }
+                    , shape = RoundedCornerShape(26.dp)) { Text(option.forLocale(locale)) }
                 }
                 if (explanation.isNotEmpty()) {
                     Text(explanation, color = MaterialTheme.colorScheme.primary)
@@ -1344,7 +1344,7 @@ private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit
                         running = true
                     }
                 }, enabled = !running, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(locale, "startTimer")) }
-                OutlinedButton(onClick = { running = false }, enabled = running, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(locale, "pauseTimer")) }
+                OutlinedButton(onClick = { running = false }, enabled = running, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp)) { Text(tr(locale, "pauseTimer")) }
             }
             Button(onClick = {
                 running = false
@@ -1520,7 +1520,7 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
                 } else {
                     PuffyAvatar(emoji = "🌸", size = 82)
                 }
-                OutlinedButton(onClick = { avatarPicker.launch(arrayOf("image/*")) }, shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(profile.locale, "changeAvatar")) }
+                OutlinedButton(onClick = { avatarPicker.launch(arrayOf("image/*")) }, shape = RoundedCornerShape(26.dp)) { Text(tr(profile.locale, "changeAvatar")) }
             }
             Text(profile.displayName, style = MaterialTheme.typography.titleLarge)
             Text(when (profile.locale) {
@@ -1587,7 +1587,7 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
         AcademyCard {
             Text(tr(profile.locale, "language"), style = MaterialTheme.typography.titleMedium)
             AcademyLocale.values().forEach { option ->
-                OutlinedButton(onClick = { scope.launch { prefs.updateLocale(option) } }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
+                OutlinedButton(onClick = { scope.launch { prefs.updateLocale(option) } }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp)) {
                     Text(if (profile.locale == option) "✓  ${tr(profile.locale, option.name)}" else tr(profile.locale, option.name))
                 }
             }
@@ -1597,7 +1597,7 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
             AcademyThemeId.values().toList().chunked(2).forEach { pair ->
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     pair.forEach { option ->
-                        OutlinedButton(onClick = { scope.launch { prefs.updateTheme(option) } }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
+                        OutlinedButton(onClick = { scope.launch { prefs.updateTheme(option) } }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(26.dp)) {
                             Text(tr(profile.locale, option.name), fontSize = 9.sp, maxLines = 1)
                         }
                     }
@@ -1607,21 +1607,21 @@ private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences, dao: Ac
         }
         AcademyCard {
             Text(tr(profile.locale, "backupRestore"), style = MaterialTheme.typography.titleMedium)
-            OutlinedButton(onClick = { exportLauncher.launch("bh-personal-academy-backup.json") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
+            OutlinedButton(onClick = { exportLauncher.launch("bh-personal-academy-backup.json") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp)) {
                 Icon(Icons.Default.CloudDownload, null); Spacer(Modifier.width(8.dp)); Text(tr(profile.locale, "createBackup"))
             }
-            OutlinedButton(onClick = { importLauncher.launch(arrayOf("application/json", "text/json")) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
+            OutlinedButton(onClick = { importLauncher.launch(arrayOf("application/json", "text/json")) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp)) {
                 Icon(Icons.Default.CloudUpload, null); Spacer(Modifier.width(8.dp)); Text(tr(profile.locale, "restoreBackup"))
             }
             Text(tr(profile.locale, "backupMergeNote"), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = .65f))
-            OutlinedButton(onClick = { resetStep = 1 }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) {
+            OutlinedButton(onClick = { resetStep = 1 }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error), shape = RoundedCornerShape(26.dp)) {
                 Icon(Icons.Default.DeleteForever, null); Spacer(Modifier.width(8.dp)); Text(tr(profile.locale, "resetData"))
             }
         }
         AcademyCard {
             Text(tr(profile.locale, "font"), style = MaterialTheme.typography.titleMedium)
             AcademyFontId.values().forEach { option ->
-                OutlinedButton(onClick = { scope.launch { prefs.updateFont(option) } }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 7.dp, pressedElevation = 2.dp, focusedElevation = 8.dp, hoveredElevation = 8.dp)) { Text(tr(profile.locale, option.name)) }
+                OutlinedButton(onClick = { scope.launch { prefs.updateFont(option) } }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(26.dp)) { Text(tr(profile.locale, option.name)) }
             }
             Text(tr(profile.locale, "dailyGoal"), style = MaterialTheme.typography.titleMedium)
             var goal by remember(profile.dailyStudyGoalMinutes) { mutableFloatStateOf(profile.dailyStudyGoalMinutes.toFloat()) }
