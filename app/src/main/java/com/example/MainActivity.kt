@@ -50,6 +50,10 @@ import com.bh.personalacademy.ui.components.LessonStudyTimer
 import com.bh.personalacademy.content.GameMode
 import com.bh.personalacademy.content.GameStyle
 import com.bh.personalacademy.data.local.*
+import com.bh.personalacademy.data.AcademyRepository
+import com.bh.personalacademy.presentation.AcademyViewModel
+import com.bh.personalacademy.presentation.AcademyViewModelFactory
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bh.personalacademy.data.preferences.AcademyPreferences
 import com.bh.personalacademy.reminders.ReminderScheduler
 import com.example.academy.core.AsciiDigits
@@ -70,17 +74,23 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val preferences = AcademyPreferences(applicationContext)
         val database = AcademyDatabase.getInstance(applicationContext)
-        setContent { BHAcademyApp(preferences, database.academyDao()) }
+        val repository = AcademyRepository(preferences, database.academyDao())
+        setContent {
+            val academyViewModel: AcademyViewModel = viewModel(
+                factory = AcademyViewModelFactory(repository)
+            )
+            BHAcademyApp(academyViewModel, preferences, database.academyDao())
+        }
     }
 }
 
 @Composable
-private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
-    val profile by preferences.profile.collectAsStateWithLifecycle(initialValue = UserProfile())
-    val wallet by dao.observeWallet().collectAsStateWithLifecycle(initialValue = null)
-    val lessons by dao.observeLessonProgress().collectAsStateWithLifecycle(initialValue = emptyList())
-    val attempts by dao.observeQuizAttempts().collectAsStateWithLifecycle(initialValue = emptyList())
-    val gameAttempts by dao.observeGameAttempts().collectAsStateWithLifecycle(initialValue = emptyList())
+private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPreferences, dao: AcademyDao) {
+    val profile by viewModel.profile.collectAsStateWithLifecycle()
+    val wallet by viewModel.wallet.collectAsStateWithLifecycle()
+    val lessons by viewModel.lessonProgress.collectAsStateWithLifecycle()
+    val attempts by viewModel.quizAttempts.collectAsStateWithLifecycle()
+    val gameAttempts by viewModel.gameAttempts.collectAsStateWithLifecycle()
     val todayRange = remember { val start = Calendar.getInstance().apply { set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0) }; val end = (start.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, 1) }; start.timeInMillis to end.timeInMillis }
     val todayStudyMillis by dao.observeStudyMillis(todayRange.first, todayRange.second).collectAsStateWithLifecycle(initialValue = 0L)
     val todayLessonCount by dao.observeCompletedLessonCount(todayRange.first, todayRange.second).collectAsStateWithLifecycle(initialValue = 0)
@@ -109,10 +119,9 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
     val weekStudyDays = remember(weekSessionStarts) { weekSessionStarts.map { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(it)) }.toSet().size }
     val monthStudyDays = remember(monthSessionStarts) { monthSessionStarts.map { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(it)) }.toSet().size }
     val totalStudyMillis by dao.observeTotalStudyMillis().collectAsStateWithLifecycle(initialValue = 0L)
-    val scope = rememberCoroutineScope()
     var tab by remember { mutableStateOf(AcademyTab.HOME) }
     var band by remember { mutableStateOf<LearningBand?>(null) }
-    LaunchedEffect(Unit) { dao.insertWallet(WalletEntity(profileId = "primary", coins = 30)) }
+    LaunchedEffect(viewModel) { viewModel.initialize() }
     LaunchedEffect(todayIso, profile.dailyStudyGoalMinutes, profile.dailyGoalLessons, profile.dailyGoalWords, profile.dailyGoalQuizzes) {
         dao.saveDailyGoal(
             DailyGoalEntity(
@@ -196,31 +205,28 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
                         AcademyTab.LEARN -> LearnPage(profile.locale, band, lessons.map { it.lessonId }.toSet(),
                             { band = it },
                             { tab = AcademyTab.VOCABULARY },
-                            { id -> scope.launch {
-                                dao.recordLessonCompletion(lessonId = id, completedAt = System.currentTimeMillis(), score = 100)
-                                dao.applyRewardOnce(RewardEventEntity(UUID.randomUUID().toString(), source = "LESSON", sourceId = id,
-                                    xpDelta = 25, coinDelta = 5, createdAt = System.currentTimeMillis()))
+                            { id ->
+                                viewModel.completeLesson(id, 100)
                                 val activeBand = band
                                 if (activeBand != null) {
                                     val completedBefore = lessons.map { it.lessonId }.toSet()
                                     val bandFinished = AcademyLessonCatalog.forBand(activeBand).all { it.id == id || it.id in completedBefore }
                                     if (bandFinished) {
-                                        dao.applyRewardOnce(RewardEventEntity(UUID.randomUUID().toString(), source = "LEVEL_COMPLETION",
-                                            sourceId = activeBand.name, xpDelta = 100, coinDelta = 20, createdAt = System.currentTimeMillis()))
+                                        viewModel.rewardOnce(
+                                            RewardEventEntity(
+                                                eventId = UUID.randomUUID().toString(),
+                                                source = "LEVEL_COMPLETION",
+                                                sourceId = activeBand.name,
+                                                xpDelta = 100,
+                                                coinDelta = 20,
+                                                createdAt = System.currentTimeMillis()
+                                            )
+                                        )
                                     }
                                 }
-                            } },
+                            },
                             { lessonId, startedAt, duration ->
-                                scope.launch {
-                                    dao.insertStudySession(
-                                        StudySessionEntity(
-                                            sessionId = UUID.randomUUID().toString(),
-                                            lessonId = lessonId,
-                                            startedAt = startedAt,
-                                            durationMillis = duration
-                                        )
-                                    )
-                                }
+                                viewModel.saveStudySession(lessonId, startedAt, duration)
                             },
                             { tab = AcademyTab.QUIZ })
                         AcademyTab.QUIZ -> QuizPage(profile.locale, dao) { tab = AcademyTab.PROGRESS }
