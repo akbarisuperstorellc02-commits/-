@@ -58,7 +58,6 @@ fun HomeScreen(
     userProgressManager: UserProgressManager,
     ttsHelper: TextToSpeechHelper?,
     onNavigateToLevels: () -> Unit,
-    onNavigateToChat: () -> Unit,
     onNavigateToSpeakingDrill: () -> Unit,
     onNavigateToWordGame: () -> Unit,
     onNavigateToCalendar: () -> Unit,
@@ -386,16 +385,6 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    HomeFeatureCard(
-                        title = "معلم هوش مصنوعی",
-                        subtitle = "صبور و مهربان از سطح صفر",
-                        emoji = "🎙️",
-                        badge = "اختصاصی",
-                        color = theme.secondaryColor,
-                        modifier = Modifier.weight(1f),
-                        onClick = onNavigateToChat
-                    )
-
                     HomeFeatureCard(
                         title = "تقویم و خاطرات",
                         subtitle = "ثبت روزانه و برنامه مطالعه",
