@@ -229,6 +229,29 @@ abstract class AcademyDao {
     @Query("DELETE FROM daily_goals") protected abstract suspend fun clearDailyGoals()
     @Query("DELETE FROM reminders") protected abstract suspend fun clearReminders()
 
+    @Query("DELETE FROM lesson_progress WHERE profileId = :profileId") protected abstract suspend fun clearProfileLessonProgress(profileId: String)
+    @Query("DELETE FROM quiz_attempts WHERE profileId = :profileId") protected abstract suspend fun clearProfileQuizAttempts(profileId: String)
+    @Query("DELETE FROM game_attempts WHERE profileId = :profileId") protected abstract suspend fun clearProfileGameAttempts(profileId: String)
+    @Query("DELETE FROM study_sessions WHERE profileId = :profileId") protected abstract suspend fun clearProfileStudySessions(profileId: String)
+    @Query("DELETE FROM wallets WHERE profileId = :profileId") protected abstract suspend fun clearProfileWallet(profileId: String)
+    @Query("DELETE FROM reward_events WHERE profileId = :profileId") protected abstract suspend fun clearProfileRewardEvents(profileId: String)
+    @Query("DELETE FROM vocabulary WHERE profileId = :profileId") protected abstract suspend fun clearProfileVocabulary(profileId: String)
+    @Query("DELETE FROM daily_goals WHERE profileId = :profileId") protected abstract suspend fun clearProfileDailyGoals(profileId: String)
+    @Query("DELETE FROM reminders WHERE profileId = :profileId") protected abstract suspend fun clearProfileReminders(profileId: String)
+
+    @Transaction
+    open suspend fun clearProfileLearningData(profileId: String) {
+        clearProfileLessonProgress(profileId)
+        clearProfileQuizAttempts(profileId)
+        clearProfileGameAttempts(profileId)
+        clearProfileStudySessions(profileId)
+        clearProfileWallet(profileId)
+        clearProfileRewardEvents(profileId)
+        clearProfileVocabulary(profileId)
+        clearProfileDailyGoals(profileId)
+        clearProfileReminders(profileId)
+    }
+
     @Transaction
     open suspend fun clearAllLearningData() {
         clearLessonProgress()
