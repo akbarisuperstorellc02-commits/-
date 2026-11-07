@@ -118,7 +118,7 @@ fun MasterGohariChatScreen(
                 com.example.data.GemmaModelDownloader.status(context)
             }
             downloadStatus = current
-            if (current.state == com.example.data.GemmaModelDownloadProgress.State.VERIFYING) {
+            if (current.state == com.example.data.GemmaDownloadProgress.State.VERIFYING) {
                 val verified = withContext(Dispatchers.IO) {
                     com.example.data.GemmaModelDownloader.verifyCompleted(context)
                 }
