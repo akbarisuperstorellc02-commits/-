@@ -1,8 +1,14 @@
 package com.bh.personalacademy
 
 import android.os.Bundle
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,21 +21,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.core.content.ContextCompat
 import com.bh.personalacademy.data.local.*
 import com.bh.personalacademy.content.AcademyLessonCatalog
 import com.bh.personalacademy.data.preferences.AcademyPreferences
 import com.example.academy.core.AsciiDigits
 import com.example.academy.domain.model.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import com.bh.personalacademy.reminders.ReminderScheduler
 import java.util.UUID
 
-private enum class AcademyTab { HOME, LEARN, QUIZ, GAMES, PROGRESS, PROFILE }
+private enum class AcademyTab { HOME, LEARN, QUIZ, GAMES, PROGRESS, PROFILE, TOOLS }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,7 +89,7 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
                 Box(Modifier.fillMaxSize().padding(padding)) {
                     when (tab) {
                         AcademyTab.HOME -> HomePage(profile, wallet, lessons.size, attempts.size,
-                            { tab = AcademyTab.LEARN }, { tab = AcademyTab.GAMES }, { tab = AcademyTab.PROFILE })
+                            { tab = AcademyTab.LEARN }, { tab = AcademyTab.GAMES }, { tab = AcademyTab.PROFILE }, { tab = AcademyTab.TOOLS })
                         AcademyTab.LEARN -> LearnPage(profile.locale, band, lessons.size,
                             { band = it },
                             { id -> scope.launch {
@@ -91,6 +101,7 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
                         AcademyTab.GAMES -> GamePage(profile.locale, wallet?.coins ?: 0, dao)
                         AcademyTab.PROGRESS -> ProgressPage(profile.locale, lessons.size, attempts, wallet?.xp ?: 0, wallet?.coins ?: 0)
                         AcademyTab.PROFILE -> ProfilePage(profile, preferences)
+                        AcademyTab.TOOLS -> ToolsPage(profile.locale, dao) { tab = AcademyTab.HOME }
                     }
                 }
             }
@@ -128,7 +139,7 @@ private fun AcademyCard(content: @Composable ColumnScope.() -> Unit) {
     }
 }
 @Composable
-private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, learn: () -> Unit, games: () -> Unit, profile: () -> Unit) {
+private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, learn: () -> Unit, games: () -> Unit, profile: () -> Unit, tools: () -> Unit) {
     Page {
         Text(tr(p.locale, "greeting", p.displayName), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Text(tr(p.locale, "welcome"), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .65f))
@@ -165,6 +176,7 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
             OutlinedButton(onClick = games, modifier = Modifier.weight(1f)) { Text(tr(p.locale, "games")) }
             OutlinedButton(onClick = profile, modifier = Modifier.weight(1f)) { Text(tr(p.locale, "myProfile")) }
         }
+        OutlinedButton(onClick = tools, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.Alarm, null); Spacer(Modifier.width(8.dp)); Text(tr(p.locale, "studyTools")) }
     }
 }
 @Composable private fun Stat(label: String, value: String) {
@@ -340,6 +352,121 @@ private fun ProgressPage(locale: AcademyLocale, lessons: Int, attempts: List<Qui
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text(label); Text(AsciiDigits.normalize(value), fontWeight = FontWeight.Bold) }
 }
 
+
+@Composable
+private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val reminders by dao.observeReminders().collectAsStateWithLifecycle(initialValue = emptyList())
+    var elapsedSeconds by remember { mutableLongStateOf(0L) }
+    var running by remember { mutableStateOf(false) }
+    var sessionStart by remember { mutableLongStateOf(0L) }
+    var sessionId by remember { mutableStateOf(UUID.randomUUID().toString()) }
+    var reminderTitle by remember { mutableStateOf("") }
+    var reminderTime by remember { mutableStateOf("19:00") }
+    var feedback by remember { mutableStateOf("") }
+
+    LaunchedEffect(running) {
+        while (running) {
+            delay(1000)
+            elapsedSeconds += 1
+            if (elapsedSeconds % 15L == 0L && sessionStart > 0L) {
+                dao.insertStudySession(StudySessionEntity(
+                    sessionId = sessionId, lessonId = "independent-study",
+                    startedAt = sessionStart, durationMillis = elapsedSeconds * 1000L
+                ))
+            }
+        }
+    }
+    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (!granted) Toast.makeText(context, tr(locale, "permissionNeeded"), Toast.LENGTH_LONG).show()
+    }
+
+    Page {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(tr(locale, "studyTools"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            TextButton(onClick = onBack) { Text(tr(locale, "home")) }
+        }
+        AcademyCard {
+            Text(tr(locale, "timer"), style = MaterialTheme.typography.titleLarge)
+            val hours = elapsedSeconds / 3600
+            val minutes = (elapsedSeconds % 3600) / 60
+            val seconds = elapsedSeconds % 60
+            val time = listOf(hours, minutes, seconds).joinToString(":") { it.toString().padStart(2, '0') }
+            Text(AsciiDigits.normalize(time), style = MaterialTheme.typography.displayMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = {
+                    if (!running) {
+                        if (sessionStart == 0L) sessionStart = System.currentTimeMillis()
+                        running = true
+                    }
+                }, enabled = !running, modifier = Modifier.weight(1f)) { Text(tr(locale, "startTimer")) }
+                OutlinedButton(onClick = { running = false }, enabled = running, modifier = Modifier.weight(1f)) { Text(tr(locale, "pauseTimer")) }
+            }
+            Button(onClick = {
+                running = false
+                if (elapsedSeconds > 0L && sessionStart > 0L) {
+                    scope.launch {
+                        dao.insertStudySession(StudySessionEntity(
+                            sessionId = sessionId, lessonId = "independent-study",
+                            startedAt = sessionStart, durationMillis = elapsedSeconds * 1000L,
+                            completedAt = System.currentTimeMillis()
+                        ))
+                    }
+                    feedback = tr(locale, "timerSaved")
+                }
+                elapsedSeconds = 0L
+                sessionStart = 0L
+                sessionId = UUID.randomUUID().toString()
+            }, enabled = elapsedSeconds > 0L, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "finishTimer")) }
+            if (feedback.isNotEmpty()) Text(feedback, color = MaterialTheme.colorScheme.primary)
+        }
+        AcademyCard {
+            Text(tr(locale, "reminders"), style = MaterialTheme.typography.titleLarge)
+            OutlinedTextField(reminderTitle, { reminderTitle = it }, modifier = Modifier.fillMaxWidth(), label = { Text(tr(locale, "reminderTitle")) }, singleLine = true)
+            OutlinedTextField(reminderTime, { reminderTime = it }, modifier = Modifier.fillMaxWidth(), label = { Text(tr(locale, "timeHHMM")) }, singleLine = true)
+            Text(tr(locale, "dailyReminder"), fontSize = 12.sp)
+            Button(onClick = {
+                val parts = reminderTime.trim().split(":")
+                val hour = parts.getOrNull(0)?.toIntOrNull()
+                val minute = parts.getOrNull(1)?.toIntOrNull()
+                if (reminderTitle.isBlank() || hour !in 0..23 || minute !in 0..59) {
+                    feedback = tr(locale, "invalidTime")
+                } else {
+                    val id = UUID.randomUUID().toString()
+                    val title = reminderTitle.trim()
+                    val schedule = {
+                        scope.launch {
+                            dao.saveReminder(ReminderEntity(reminderId = id, title = title, hour = hour!!, minute = minute!!, repeatDaysMask = 127, enabled = true))
+                        }
+                        ReminderScheduler.schedule(context, id, title, hour!!, minute!!, 127)
+                        feedback = tr(locale, "reminderSaved")
+                        reminderTitle = ""
+                    }
+                    if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                        notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        feedback = tr(locale, "permissionNeeded")
+                    } else schedule()
+                }
+            }, modifier = Modifier.fillMaxWidth()) { Text(tr(locale, "scheduleReminder")) }
+            if (reminders.isEmpty()) Text(tr(locale, "noReminders"))
+            reminders.forEach { reminder ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(reminder.title, fontWeight = FontWeight.SemiBold)
+                        Text(AsciiDigits.normalize("%02d:%02d".format(reminder.hour, reminder.minute)), fontSize = 12.sp)
+                    }
+                    IconButton(onClick = {
+                        scope.launch { dao.deleteReminder(reminder.reminderId) }
+                        ReminderScheduler.cancel(context, reminder.reminderId)
+                    }) { Icon(Icons.Default.Delete, contentDescription = "Delete reminder") }
+                }
+            }
+            if (feedback.isNotEmpty()) Text(feedback, color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
+        }
+    }
+}
+
 @Composable
 private fun ProfilePage(profile: UserProfile, prefs: AcademyPreferences) {
     val scope = rememberCoroutineScope()
@@ -407,7 +534,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "gameRoadmap" to "More vocabulary, spelling and memory games are planned for the next content phase.",
         "summary" to "Learning summary", "average" to "Average quiz score", "quizHistory" to "Quiz history", "noHistory" to "No quiz attempts yet.", "quizTitle" to "Quick mixed quiz", "quizComplete" to "Quiz completed!", "quizSaved" to "Your result has been saved to your learning history.", "seeProgress" to "View progress", "questionProgress" to "Question $arg",
         "displayName" to "Display name", "username" to "Username", "save" to "Save profile", "language" to "Language", "theme" to "Theme",
-        "font" to "Font", "minutes" to "minutes", "DARI_AF" to "Afghan Dari", "PASHTO_AF" to "Afghan Pashto", "ARABIC" to "Arabic", "ENGLISH_US" to "English",
+        "font" to "Font", "minutes" to "minutes", "studyTools" to "Study tools", "timer" to "Study timer", "startTimer" to "Start", "pauseTimer" to "Pause", "finishTimer" to "Finish session", "timerSaved" to "Study session saved.", "reminders" to "Reminders and alarms", "reminderTitle" to "Reminder title", "timeHHMM" to "Time (HH:MM)", "dailyReminder" to "Repeat every day", "scheduleReminder" to "Schedule reminder", "reminderSaved" to "Reminder scheduled.", "invalidTime" to "Enter a title and valid time such as 19:30.", "permissionNeeded" to "Allow notifications in Android settings to receive reminders.", "noReminders" to "No reminders scheduled yet.", "DARI_AF" to "Afghan Dari", "PASHTO_AF" to "Afghan Pashto", "ARABIC" to "Arabic", "ENGLISH_US" to "English",
         "SANS_SERIF" to "Sans Serif", "SERIF" to "Serif", "CURSIVE" to "Cursive"
     )
     val fa = mapOf(
@@ -427,7 +554,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "gameRoadmap" to "بازی‌های واژگان، املا و حافظه در مرحله بعدی محتوا اضافه می‌شوند.",
         "summary" to "خلاصه یادگیری تو", "average" to "میانگین نمره آزمون", "quizHistory" to "تاریخچه آزمون", "noHistory" to "هنوز آزمونی انجام نشده است.", "quizTitle" to "آزمون ترکیبی کوتاه", "quizComplete" to "آزمون تکمیل شد!", "quizSaved" to "نتیجه در تاریخچه یادگیری ذخیره شد.", "seeProgress" to "دیدن پیشرفت", "questionProgress" to "پرسش $arg",
         "displayName" to "نام نمایشی", "username" to "نام کاربری", "save" to "ذخیره پروفایل", "language" to "زبان", "theme" to "تم",
-        "font" to "فونت", "minutes" to "دقیقه", "DARI_AF" to "دری افغانستان", "PASHTO_AF" to "پشتو افغانستان", "ARABIC" to "عربی", "ENGLISH_US" to "انگلیسی",
+        "font" to "فونت", "minutes" to "دقیقه", "studyTools" to "ابزارهای مطالعه", "timer" to "تایمر مطالعه", "startTimer" to "شروع", "pauseTimer" to "مکث", "finishTimer" to "پایان جلسه", "timerSaved" to "جلسه مطالعه ذخیره شد.", "reminders" to "یادآوری و زنگ", "reminderTitle" to "عنوان یادآوری", "timeHHMM" to "زمان (ساعت:دقیقه)", "dailyReminder" to "تکرار هر روز", "scheduleReminder" to "تنظیم یادآوری", "reminderSaved" to "یادآوری تنظیم شد.", "invalidTime" to "عنوان و زمان درست مانند 19:30 وارد کن.", "permissionNeeded" to "برای دریافت یادآوری، اجازه اعلان‌ها را در اندروید فعال کن.", "noReminders" to "هنوز یادآوری تنظیم نشده است.", "DARI_AF" to "دری افغانستان", "PASHTO_AF" to "پشتو افغانستان", "ARABIC" to "عربی", "ENGLISH_US" to "انگلیسی",
         "SANS_SERIF" to "سن‌سریف", "SERIF" to "سریف", "CURSIVE" to "دست‌نویس"
     )
     val ps = mapOf("home" to "کور", "learn" to "زده کړه", "games" to "لوبې", "progress" to "پرمختګ", "profile" to "پروفایل",
@@ -436,7 +563,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "learningPath" to "د انګلیسي زده کړې لاره", "chooseLevel" to "خپله کچه وټاکئ", "viewLessons" to "درسونه وګورئ", "allLevels" to "ټولې کچې",
         "correct" to "ډېر ښه! ځواب سم دی.", "quizTitle" to "لنډه ګډه ازموینه", "quizComplete" to "ازموینه بشپړه شوه!", "quizSaved" to "ستاسو پایله د زده کړې په تاریخ کې خوندي شوه.", "seeProgress" to "پرمختګ وګورئ", "wrong" to "بیا هڅه وکړئ.", "hintButton" to "لارښوونه · 6 سکې", "hintPaid" to "لارښوونه فعاله شوه؛ 6 سکې ولګېدې.",
         "needCoins" to "لږ تر لږه 6 سکې پکار دي.", "displayName" to "ښکاره نوم", "username" to "کارن نوم", "save" to "پروفایل خوندي کړئ",
-        "language" to "ژبه", "theme" to "بڼه", "font" to "لیکبڼه", "minutes" to "دقیقې",
+        "language" to "ژبه", "theme" to "بڼه", "font" to "لیکبڼه", "minutes" to "دقیقې", "studyTools" to "د مطالعې وسایل", "timer" to "د مطالعې ټایمر", "startTimer" to "پیل", "pauseTimer" to "تم", "finishTimer" to "ناسته پای ته ورسوه", "timerSaved" to "د مطالعې ناسته خوندي شوه.", "reminders" to "یادونې او الارم", "reminderTitle" to "د یادونې سرلیک", "timeHHMM" to "وخت (HH:MM)", "dailyReminder" to "هره ورځ تکرار", "scheduleReminder" to "یادونه تنظیم کړه", "reminderSaved" to "یادونه تنظیم شوه.", "invalidTime" to "سرلیک او سم وخت ولیکئ، لکه 19:30.", "permissionNeeded" to "د یادونو ترلاسه کولو لپاره د Android خبرتیا اجازه ورکړئ.", "noReminders" to "تر اوسه یادونه نشته.",
         "DARI_AF" to "افغان دري", "PASHTO_AF" to "افغان پښتو", "ARABIC" to "عربي", "ENGLISH_US" to "انګلیسي",
         "SANS_SERIF" to "سن‌سریف", "SERIF" to "سریف", "CURSIVE" to "لاس لیک")
     val ar = mapOf("home" to "الرئيسية", "learn" to "التعلم", "games" to "الألعاب", "progress" to "التقدم", "profile" to "الملف الشخصي",
@@ -445,7 +572,7 @@ private fun tr(locale: AcademyLocale, key: String, arg: String = ""): String {
         "learningPath" to "مسار تعلم الإنجليزية", "chooseLevel" to "اختر مستواك", "viewLessons" to "عرض الدروس", "allLevels" to "كل المستويات",
         "correct" to "ممتاز! إجابة صحيحة.", "quizTitle" to "اختبار قصير متنوع", "quizComplete" to "اكتمل الاختبار!", "quizSaved" to "تم حفظ النتيجة في سجل التعلم.", "seeProgress" to "عرض التقدم", "wrong" to "حاول مرة أخرى.", "hintButton" to "تلميح · 6 عملات", "hintPaid" to "تم تفعيل التلميح؛ خُصمت 6 عملات.",
         "needCoins" to "تحتاج إلى 6 عملات على الأقل.", "displayName" to "الاسم الظاهر", "username" to "اسم المستخدم", "save" to "حفظ الملف",
-        "language" to "اللغة", "theme" to "السمة", "font" to "الخط", "minutes" to "دقيقة",
+        "language" to "اللغة", "theme" to "السمة", "font" to "الخط", "minutes" to "دقيقة", "studyTools" to "أدوات الدراسة", "timer" to "مؤقت الدراسة", "startTimer" to "ابدأ", "pauseTimer" to "إيقاف مؤقت", "finishTimer" to "إنهاء الجلسة", "timerSaved" to "تم حفظ جلسة الدراسة.", "reminders" to "التذكيرات والمنبهات", "reminderTitle" to "عنوان التذكير", "timeHHMM" to "الوقت (HH:MM)", "dailyReminder" to "التكرار يومياً", "scheduleReminder" to "جدولة التذكير", "reminderSaved" to "تمت جدولة التذكير.", "invalidTime" to "أدخل عنواناً ووقتاً صحيحاً مثل 19:30.", "permissionNeeded" to "اسمح بالإشعارات من إعدادات Android لاستلام التذكيرات.", "noReminders" to "لا توجد تذكيرات مجدولة بعد.",
         "DARI_AF" to "الداري الأفغانية", "PASHTO_AF" to "البشتوية الأفغانية", "ARABIC" to "العربية", "ENGLISH_US" to "الإنجليزية",
         "SANS_SERIF" to "Sans Serif", "SERIF" to "Serif", "CURSIVE" to "Cursive")
     val selected = when(locale) { AcademyLocale.ENGLISH_US -> en; AcademyLocale.DARI_AF -> fa; AcademyLocale.PASHTO_AF -> ps; AcademyLocale.ARABIC -> ar }
