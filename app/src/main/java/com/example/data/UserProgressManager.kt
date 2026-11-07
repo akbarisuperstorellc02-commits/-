@@ -1,8 +1,6 @@
 package com.example.data
 
 import android.content.Context
-import android.content.SharedPreferences
-import com.example.model.ChatMessage
 import com.example.model.DiaryNote
 import com.example.model.GameStage
 import com.example.model.GoldenMedal
@@ -14,7 +12,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.UUID
 
 data class ScoreReward(
     val points: Int,
@@ -22,203 +19,88 @@ data class ScoreReward(
     val timestamp: Long = System.currentTimeMillis()
 )
 
+/**
+ * Transitional UI-facing progress facade. Structured learning records are being moved
+ * to Room; profile and appearance preferences are kept separately from learning history.
+ */
 class UserProgressManager(context: Context) {
+    private val prefs = context.getSharedPreferences("bh_personal_academy_v1", Context.MODE_PRIVATE)
 
-    private val prefs: SharedPreferences = context.getSharedPreferences("zahra_self_dev_prefs", Context.MODE_PRIVATE)
-
-    private val _levelsState = MutableStateFlow<List<Level>>(CurriculumData.levels)
+    private val _levelsState = MutableStateFlow(
+        CurriculumData.levels.mapIndexed { index, level ->
+            level.copy(
+                isUnlocked = prefs.getBoolean("level_${level.id}_unlocked", index == 0),
+                bestScore = prefs.getInt("level_${level.id}_best", 0),
+                starsEarned = prefs.getInt("level_${level.id}_stars", 0),
+                isMastered = prefs.getBoolean("level_${level.id}_mastered", false)
+            )
+        }
+    )
     val levelsState: StateFlow<List<Level>> = _levelsState.asStateFlow()
 
-    private val _goldCoins = MutableStateFlow(prefs.getInt("gold_coins", 180))
+    private val _goldCoins = MutableStateFlow(prefs.getInt("gold_coins", 0))
     val goldCoins: StateFlow<Int> = _goldCoins.asStateFlow()
-
-    private val _totalStars = MutableStateFlow(prefs.getInt("total_stars", 8))
+    private val _totalStars = MutableStateFlow(prefs.getInt("total_stars", 0))
     val totalStars: StateFlow<Int> = _totalStars.asStateFlow()
-
-    private val _streakDays = MutableStateFlow(prefs.getInt("streak_days", 7))
+    private val _streakDays = MutableStateFlow(prefs.getInt("streak_days", 0))
     val streakDays: StateFlow<Int> = _streakDays.asStateFlow()
 
-    private val _todayStudyMinutes = MutableStateFlow(prefs.getInt("today_study_minutes", 25))
+    private val todayKey = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
+    private val savedStudyDate = prefs.getString("study_date", todayKey)
+    private val initialTodayMinutes = if (savedStudyDate == todayKey) prefs.getInt("today_study_minutes", 0) else 0
+    private val _todayStudyMinutes = MutableStateFlow(initialTodayMinutes)
     val todayStudyMinutes: StateFlow<Int> = _todayStudyMinutes.asStateFlow()
 
-    private val _dailyGoalMinutes = MutableStateFlow(prefs.getInt("daily_goal_minutes", 30))
+    private val _dailyGoalMinutes = MutableStateFlow(prefs.getInt("daily_goal_minutes", 20))
     val dailyGoalMinutes: StateFlow<Int> = _dailyGoalMinutes.asStateFlow()
-
-    private val _totalStudyHours = MutableStateFlow(prefs.getInt("total_study_hours", 14))
+    private val _totalStudyHours = MutableStateFlow(prefs.getLong("total_study_minutes", 0L).div(60).toInt())
     val totalStudyHours: StateFlow<Int> = _totalStudyHours.asStateFlow()
 
-    private val _currentTheme = MutableStateFlow(
-        try {
-            ZahraThemeMode.valueOf(prefs.getString("current_theme", ZahraThemeMode.SWEET_SAKURA_PUFFY.name) ?: ZahraThemeMode.SWEET_SAKURA_PUFFY.name)
-        } catch (e: Exception) {
-            ZahraThemeMode.SWEET_SAKURA_PUFFY
-        }
-    )
+    private val _currentTheme = MutableStateFlow(readEnum("current_theme", ZahraThemeMode.SWEET_SAKURA_PUFFY))
     val currentTheme: StateFlow<ZahraThemeMode> = _currentTheme.asStateFlow()
-
-    private val _fontStyle = MutableStateFlow(
-        try {
-            ZahraFontStyle.valueOf(prefs.getString("font_style", ZahraFontStyle.FANTASY_ROUND.name) ?: ZahraFontStyle.FANTASY_ROUND.name)
-        } catch (e: Exception) {
-            ZahraFontStyle.FANTASY_ROUND
-        }
-    )
+    private val _fontStyle = MutableStateFlow(readEnum("font_style", ZahraFontStyle.FANTASY_ROUND))
     val fontStyle: StateFlow<ZahraFontStyle> = _fontStyle.asStateFlow()
-
     private val _learnerName = MutableStateFlow(prefs.getString("learner_name", "زهرا") ?: "زهرا")
     val learnerName: StateFlow<String> = _learnerName.asStateFlow()
-
-    private val _totalScore = MutableStateFlow(prefs.getInt("total_score_xp", 280))
+    private val _totalScore = MutableStateFlow(prefs.getInt("total_score_xp", 0))
     val totalScore: StateFlow<Int> = _totalScore.asStateFlow()
-
     private val _recentReward = MutableStateFlow<ScoreReward?>(null)
     val recentReward: StateFlow<ScoreReward?> = _recentReward.asStateFlow()
-
-    private val _learnerAvatar = MutableStateFlow(prefs.getString("learner_avatar", "👑") ?: "👑")
+    private val _learnerAvatar = MutableStateFlow(prefs.getString("learner_avatar", "🌸") ?: "🌸")
     val learnerAvatar: StateFlow<String> = _learnerAvatar.asStateFlow()
 
-    private val _chatMessages = MutableStateFlow<List<ChatMessage>>(loadSavedMessages())
-    val chatMessages: StateFlow<List<ChatMessage>> = _chatMessages.asStateFlow()
-
-    private val _diaryNotes = MutableStateFlow<List<DiaryNote>>(loadSavedDiaryNotes())
+    private val _diaryNotes = MutableStateFlow(loadDiaryNotes())
     val diaryNotes: StateFlow<List<DiaryNote>> = _diaryNotes.asStateFlow()
-
-    private val _wordStages = MutableStateFlow<List<GameStage>>(CurriculumData.wordGameStages)
+    private val _wordStages = MutableStateFlow(
+        CurriculumData.wordGameStages.map { stage ->
+            stage.copy(isCompleted = prefs.getBoolean("word_stage_${stage.stageNumber}_completed", false))
+        }
+    )
     val wordStages: StateFlow<List<GameStage>> = _wordStages.asStateFlow()
-
-    private val _medals = MutableStateFlow<List<GoldenMedal>>(CurriculumData.goldenMedals)
+    private val _medals = MutableStateFlow(CurriculumData.goldenMedals.map { medal ->
+        medal.copy(isUnlocked = prefs.getBoolean("medal_${medal.id}_unlocked", false))
+    })
     val medals: StateFlow<List<GoldenMedal>> = _medals.asStateFlow()
 
     init {
-        // Load level unlocks from preferences
-        val currentLevels = _levelsState.value.mapIndexed { index, level ->
-            val unlocked = prefs.getBoolean("level_${level.id}_unlocked", index == 0)
-            val best = prefs.getInt("level_${level.id}_best", 0)
-            val stars = prefs.getInt("level_${level.id}_stars", 0)
-            val mastered = prefs.getBoolean("level_${level.id}_mastered", false)
-            level.copy(isUnlocked = unlocked, bestScore = best, starsEarned = stars, isMastered = mastered)
+        if (savedStudyDate != todayKey) {
+            prefs.edit().putString("study_date", todayKey).putInt("today_study_minutes", 0).apply()
         }
-        _levelsState.value = currentLevels
         checkMedalsUpdate()
     }
 
-    fun submitExamResult(levelId: Int, scorePercent: Int): Int {
-        val stars = when {
-            scorePercent >= 85 -> 3
-            scorePercent >= 70 -> 2
-            scorePercent >= 50 -> 1
-            else -> 0
-        }
-
-        val isPassed = scorePercent >= 60
-
-        val updatedLevels = _levelsState.value.map { level ->
-            if (level.id == levelId) {
-                val newBest = maxOf(level.bestScore, scorePercent)
-                val newStars = maxOf(level.starsEarned, stars)
-                prefs.edit()
-                    .putInt("level_${level.id}_best", newBest)
-                    .putInt("level_${level.id}_stars", newStars)
-                    .putBoolean("level_${level.id}_mastered", isPassed)
-                    .apply()
-                level.copy(bestScore = newBest, starsEarned = newStars, isMastered = isPassed)
-            } else if (level.id == levelId + 1 && isPassed) {
-                // Unlock next level ONLY when real mastery is achieved!
-                prefs.edit().putBoolean("level_${level.id}_unlocked", true).apply()
-                level.copy(isUnlocked = true)
-            } else {
-                level
-            }
-        }
-        _levelsState.value = updatedLevels
-
-        if (isPassed) {
-            val bonusGold = stars * 30
-            addGoldCoins(bonusGold)
-            addStars(stars)
-            addStudyMinutes(15)
-            val xpEarned = 70 + (stars * 20)
-            addScore(xpEarned, "قبولی در آزمون سطح $levelId")
-        }
-
-        checkMedalsUpdate()
-        return stars
-    }
+    private inline fun <reified T : Enum<T>> readEnum(key: String, fallback: T): T =
+        runCatching { enumValueOf<T>(prefs.getString(key, fallback.name) ?: fallback.name) }.getOrDefault(fallback)
 
     fun updateLearnerName(newName: String) {
-        val trimmed = newName.trim().ifBlank { "زهرا" }
-        _learnerName.value = trimmed
-        prefs.edit().putString("learner_name", trimmed).apply()
+        val clean = newName.trim().take(32).ifBlank { "زهرا" }
+        _learnerName.value = clean
+        prefs.edit().putString("learner_name", clean).apply()
     }
 
-    fun addScore(points: Int, reason: String) {
-        val newScore = _totalScore.value + points
-        _totalScore.value = newScore
-        prefs.edit().putInt("total_score_xp", newScore).apply()
-        _recentReward.value = ScoreReward(points, reason)
-    }
-
-    fun clearRecentReward() {
-        _recentReward.value = null
-    }
-
-    fun getLearnerRank(score: Int): Pair<String, String> {
-        return when {
-            score >= 2500 -> "پرنسس افسانه‌ای Z9 👑" to "نهایت تسلط طلایی و دیپلماتیک"
-            score >= 1500 -> "استاد سخنوری دخترانه ✨" to "تسلط بر مکالمات پیشرفته"
-            score >= 800 -> "ستاره درخشان زبان 🌟" to "گسترش دایره لغات و گرامر"
-            score >= 400 -> "قهرمان خودسازی 🌸" to "پیشرفت چشمگیر در اصطلاحات"
-            else -> "پرنسس نوآموز 💖" to "شروع باانگیزه از صفر مطلق"
-        }
-    }
-
-    fun recordSpeakingPractice(scorePercent: Int) {
-        val points = when {
-            scorePercent >= 85 -> 40
-            scorePercent >= 60 -> 25
-            else -> 10
-        }
-        addScore(points, "تمرین گویش صوتی ($scorePercent%)")
-        addStudyMinutes(3)
-        addGoldCoins(10)
-    }
-
-    fun addStudyMinutes(minutes: Int) {
-        val newToday = _todayStudyMinutes.value + minutes
-        _todayStudyMinutes.value = newToday
-        prefs.edit().putInt("today_study_minutes", newToday).apply()
-
-        val newTotalHours = _totalStudyHours.value + (minutes / 60)
-        if (minutes >= 60) {
-            _totalStudyHours.value = newTotalHours
-            prefs.edit().putInt("total_study_hours", newTotalHours).apply()
-        }
-    }
-
-    fun setDailyGoal(minutes: Int) {
-        _dailyGoalMinutes.value = minutes
-        prefs.edit().putInt("daily_goal_minutes", minutes).apply()
-    }
-
-    fun addGoldCoins(amount: Int) {
-        val newGold = _goldCoins.value + amount
-        _goldCoins.value = newGold
-        prefs.edit().putInt("gold_coins", newGold).apply()
-    }
-
-    fun addStars(amount: Int) {
-        val newStars = _totalStars.value + amount
-        _totalStars.value = newStars
-        prefs.edit().putInt("total_stars", newStars).apply()
-        checkMedalsUpdate()
-    }
-
-    private fun checkMedalsUpdate() {
-        val stars = _totalStars.value
-        val updated = _medals.value.map { medal ->
-            if (stars >= medal.requiredStars) medal.copy(isUnlocked = true) else medal
-        }
-        _medals.value = updated
+    fun setAvatar(avatar: String) {
+        _learnerAvatar.value = avatar
+        prefs.edit().putString("learner_avatar", avatar).apply()
     }
 
     fun setTheme(theme: ZahraThemeMode) {
@@ -231,166 +113,154 @@ class UserProgressManager(context: Context) {
         prefs.edit().putString("font_style", style.name).apply()
     }
 
-    fun setAvatar(avatar: String) {
-        _learnerAvatar.value = avatar
-        prefs.edit().putString("learner_avatar", avatar).apply()
+    fun setDailyGoal(minutes: Int) {
+        val safe = minutes.coerceIn(5, 600)
+        _dailyGoalMinutes.value = safe
+        prefs.edit().putInt("daily_goal_minutes", safe).apply()
     }
 
-    fun addCustomChatMessage(message: ChatMessage) {
-        val currentList = _chatMessages.value.toMutableList().apply { add(message) }
-        _chatMessages.value = currentList.toList()
-        saveMessages(currentList)
+    fun addStudyMinutes(minutes: Int) {
+        if (minutes <= 0) return
+        val today = _todayStudyMinutes.value + minutes
+        val total = prefs.getLong("total_study_minutes", 0L) + minutes
+        _todayStudyMinutes.value = today
+        _totalStudyHours.value = (total / 60L).toInt()
+        prefs.edit()
+            .putString("study_date", todayKey)
+            .putInt("today_study_minutes", today)
+            .putLong("total_study_minutes", total)
+            .apply()
     }
 
-    fun sendUserMessage(englishOrFa: String) {
-        val userMsg = ChatMessage(
-            id = UUID.randomUUID().toString(),
-            isFromTutor = false,
-            englishText = englishOrFa,
-            persianTranslation = null
-        )
-        val currentList = _chatMessages.value.toMutableList().apply { add(userMsg) }
-        _chatMessages.value = currentList
+    fun addScore(points: Int, reason: String) {
+        if (points <= 0) return
+        val total = (_totalScore.value + points).coerceAtMost(Int.MAX_VALUE)
+        _totalScore.value = total
+        prefs.edit().putInt("total_score_xp", total).apply()
+        _recentReward.value = ScoreReward(points, reason)
+    }
 
-        // Offline Private Tutor AI response
-        val tutorReply = MasterGohariAI.generateReply(englishOrFa)
-        currentList.add(tutorReply)
-        _chatMessages.value = currentList.toList()
-        saveMessages(currentList)
-        addStudyMinutes(3)
-        addScore(10, "مکالمه تمرینی با هوش مصنوعی")
+    fun clearRecentReward() { _recentReward.value = null }
+
+    fun addGoldCoins(amount: Int) {
+        if (amount <= 0) return
+        val total = (_goldCoins.value + amount).coerceAtMost(Int.MAX_VALUE)
+        _goldCoins.value = total
+        prefs.edit().putInt("gold_coins", total).apply()
+    }
+
+    fun addStars(amount: Int) {
+        if (amount <= 0) return
+        val total = (_totalStars.value + amount).coerceAtMost(Int.MAX_VALUE)
+        _totalStars.value = total
+        prefs.edit().putInt("total_stars", total).apply()
+        checkMedalsUpdate()
+    }
+
+    fun getLearnerRank(score: Int): Pair<String, String> = when {
+        score >= 2500 -> "استاد درخشان 👑" to "تسلط پیشرفته"
+        score >= 1500 -> "ستاره زبان 🌟" to "پیشرفت پیوسته"
+        score >= 800 -> "قهرمان یادگیری ✨" to "گسترش واژگان و گرامر"
+        score >= 400 -> "پژوهشگر پرتلاش 🌸" to "پایه‌های محکم"
+        else -> "نوآموز پرتلاش 💖" to "آغاز مسیر یادگیری"
+    }
+
+    fun submitExamResult(levelId: Int, scorePercent: Int): Int {
+        val score = scorePercent.coerceIn(0, 100)
+        val stars = when { score >= 85 -> 3; score >= 70 -> 2; score >= 50 -> 1; else -> 0 }
+        val passed = score >= 60
+        val old = _levelsState.value.firstOrNull { it.id == levelId } ?: return 0
+        val firstPass = passed && !old.isMastered
+        val updated = _levelsState.value.map { level ->
+            when {
+                level.id == levelId -> {
+                    val best = maxOf(level.bestScore, score)
+                    val earned = maxOf(level.starsEarned, stars)
+                    prefs.edit().putInt("level_${level.id}_best", best)
+                        .putInt("level_${level.id}_stars", earned)
+                        .putBoolean("level_${level.id}_mastered", level.isMastered || passed).apply()
+                    level.copy(bestScore = best, starsEarned = earned, isMastered = level.isMastered || passed)
+                }
+                level.id == levelId + 1 && passed -> {
+                    prefs.edit().putBoolean("level_${level.id}_unlocked", true).apply()
+                    level.copy(isUnlocked = true)
+                }
+                else -> level
+            }
+        }
+        _levelsState.value = updated
+        if (firstPass) {
+            addGoldCoins(stars * 30)
+            addStars(stars)
+            addScore(70 + stars * 20, "تکمیل آزمون سطح $levelId")
+        }
+        return stars
+    }
+
+    fun recordSpeakingPractice(scorePercent: Int) {
+        val score = scorePercent.coerceIn(0, 100)
+        addScore(if (score >= 85) 40 else if (score >= 60) 25 else 10, "تمرین تلفظ")
+        addGoldCoins(10)
     }
 
     fun addDiaryNote(note: DiaryNote) {
-        val updated = _diaryNotes.value.toMutableList().apply { add(0, note) }
+        if (_diaryNotes.value.any { it.id == note.id }) return
+        val updated = listOf(note) + _diaryNotes.value
         _diaryNotes.value = updated
         saveDiaryNotes(updated)
-        addGoldCoins(10)
-        addStudyMinutes(5)
-        addScore(20, "ثبت خاطره در تقویم روزانه")
     }
 
     fun completeWordStage(stageNumber: Int) {
-        val updated = _wordStages.value.map {
+        val stage = _wordStages.value.firstOrNull { it.stageNumber == stageNumber } ?: return
+        if (stage.isCompleted) return
+        _wordStages.value = _wordStages.value.map {
             if (it.stageNumber == stageNumber) it.copy(isCompleted = true) else it
         }
-        _wordStages.value = updated
-        addGoldCoins(25)
+        prefs.edit().putBoolean("word_stage_${stageNumber}_completed", true).apply()
+        addGoldCoins(stage.bonusGoldReward)
         addStars(1)
-        addStudyMinutes(5)
-        addScore(30, "فتح مرحله بازی کلمات")
+        addScore(30, "تکمیل مرحله بازی کلمات")
     }
 
-    private fun saveMessages(messages: List<ChatMessage>) {
-        val arr = JSONArray()
-        val trimmed = if (messages.size > 40) messages.takeLast(40) else messages
-        for (m in trimmed) {
-            val obj = JSONObject().apply {
-                put("id", m.id)
-                put("isTutor", m.isFromTutor)
-                put("en", m.englishText)
-                put("fa", m.persianTranslation ?: "")
-                put("tip", m.grammarTipFa ?: "")
-                put("weak", m.weaknessFlagged ?: "")
-            }
-            arr.put(obj)
-        }
-        prefs.edit().putString("saved_chat_json", arr.toString()).apply()
-    }
-
-    private fun loadSavedMessages(): List<ChatMessage> {
-        val jsonStr = prefs.getString("saved_chat_json", null)
-        if (jsonStr.isNullOrBlank()) {
-            return listOf(MasterGohariAI.getInitialGreeting())
-        }
-        return try {
-            val arr = JSONArray(jsonStr)
-            val list = mutableListOf<ChatMessage>()
-            for (i in 0 until arr.length()) {
-                val obj = arr.getJSONObject(i)
-                list.add(
-                    ChatMessage(
-                        id = obj.getString("id"),
-                        isFromTutor = obj.getBoolean("isTutor"),
-                        englishText = obj.getString("en"),
-                        persianTranslation = obj.optString("fa").ifEmpty { null },
-                        grammarTipFa = obj.optString("tip").ifEmpty { null },
-                        weaknessFlagged = obj.optString("weak").ifEmpty { null }
-                    )
-                )
-            }
-            if (list.isEmpty()) listOf(MasterGohariAI.getInitialGreeting()) else list
-        } catch (e: Exception) {
-            listOf(MasterGohariAI.getInitialGreeting())
+    private fun checkMedalsUpdate() {
+        val stars = _totalStars.value
+        _medals.value = _medals.value.map { medal ->
+            val unlocked = stars >= medal.requiredStars && medal.requiredStars > 0
+            if (unlocked && !medal.isUnlocked) prefs.edit().putBoolean("medal_${medal.id}_unlocked", true).apply()
+            medal.copy(isUnlocked = medal.isUnlocked || unlocked)
         }
     }
 
     private fun saveDiaryNotes(notes: List<DiaryNote>) {
-        val arr = JSONArray()
-        for (n in notes) {
-            val obj = JSONObject().apply {
-                put("id", n.id)
-                put("dateIso", n.dateIso)
-                put("dateDisplayFa", n.dateDisplayFa)
-                put("moodEmoji", n.moodEmoji)
-                put("moodTitleFa", n.moodTitleFa)
-                put("titleFa", n.titleFa)
-                put("content", n.content)
-                put("english", n.englishSentenceLearned)
-                put("color", n.colorTagHex)
-                put("stickers", JSONArray(n.attachedStickers))
-            }
-            arr.put(obj)
+        val array = JSONArray()
+        notes.forEach { note ->
+            array.put(JSONObject().apply {
+                put("id", note.id); put("dateIso", note.dateIso); put("dateDisplayFa", note.dateDisplayFa)
+                put("moodEmoji", note.moodEmoji); put("moodTitleFa", note.moodTitleFa)
+                put("titleFa", note.titleFa); put("content", note.content)
+                put("english", note.englishSentenceLearned); put("color", note.colorTagHex)
+                put("stickers", JSONArray(note.attachedStickers))
+            })
         }
-        prefs.edit().putString("saved_diary_json", arr.toString()).apply()
+        prefs.edit().putString("saved_diary_json", array.toString()).apply()
     }
 
-    private fun loadSavedDiaryNotes(): List<DiaryNote> {
-        val jsonStr = prefs.getString("saved_diary_json", null)
-        if (jsonStr.isNullOrBlank()) {
-            return listOf(
+    private fun loadDiaryNotes(): List<DiaryNote> {
+        val raw = prefs.getString("saved_diary_json", null) ?: return emptyList()
+        return runCatching {
+            val array = JSONArray(raw)
+            (0 until array.length()).map { i ->
+                val obj = array.getJSONObject(i)
+                val stickers = obj.optJSONArray("stickers")
                 DiaryNote(
-                    id = "init_zahra_1",
-                    dateIso = "2026-11-06",
-                    dateDisplayFa = "۱۶ آبان - جمعه طلایی",
-                    moodEmoji = "👑",
-                    moodTitleFa = "باانگیزه و مصمم",
-                    titleFa = "آغاز رسمی مسیر خودسازی زهرا",
-                    content = "امروز رسماً آکادمی زبان انگلیسی زهرا (Zahra English Academy) را با شعار «از صفر شروع کن، تا تسلط کامل ادامه بده!» آغاز کردم.",
-                    englishSentenceLearned = "Start from zero, continue until absolute mastery! 👑",
-                    attachedStickers = listOf("👑", "🥇", "✨"),
-                    colorTagHex = 0xFFD4AF37
-                )
-            )
-        }
-        return try {
-            val arr = JSONArray(jsonStr)
-            val list = mutableListOf<DiaryNote>()
-            for (i in 0 until arr.length()) {
-                val obj = arr.getJSONObject(i)
-                val stickArr = obj.optJSONArray("stickers")
-                val sticks = mutableListOf<String>()
-                if (stickArr != null) {
-                    for (j in 0 until stickArr.length()) sticks.add(stickArr.getString(j))
-                }
-                list.add(
-                    DiaryNote(
-                        id = obj.getString("id"),
-                        dateIso = obj.getString("dateIso"),
-                        dateDisplayFa = obj.getString("dateDisplayFa"),
-                        moodEmoji = obj.getString("moodEmoji"),
-                        moodTitleFa = obj.getString("moodTitleFa"),
-                        titleFa = obj.getString("titleFa"),
-                        content = obj.getString("content"),
-                        englishSentenceLearned = obj.optString("english", ""),
-                        attachedStickers = sticks,
-                        colorTagHex = obj.optLong("color", 0xFFD4AF37)
-                    )
+                    id = obj.getString("id"), dateIso = obj.getString("dateIso"),
+                    dateDisplayFa = obj.optString("dateDisplayFa"), moodEmoji = obj.optString("moodEmoji", "🌸"),
+                    moodTitleFa = obj.optString("moodTitleFa"), titleFa = obj.optString("titleFa"),
+                    content = obj.optString("content"), englishSentenceLearned = obj.optString("english"),
+                    attachedStickers = if (stickers == null) emptyList() else (0 until stickers.length()).map { stickers.getString(it) },
+                    colorTagHex = obj.optLong("color", 0xFFFF85A1)
                 )
             }
-            list
-        } catch (e: Exception) {
-            emptyList()
-        }
+        }.getOrDefault(emptyList())
     }
 }
