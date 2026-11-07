@@ -16,6 +16,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -55,9 +56,12 @@ import com.example.academy.domain.model.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.text.SimpleDateFormat
 import java.util.UUID
 
-private enum class AcademyTab { HOME, LEARN, QUIZ, GAMES, PROGRESS, PROFILE, TOOLS, VOCABULARY }
+private enum class AcademyTab { HOME, LEARN, QUIZ, GAMES, PROGRESS, PROFILE, TOOLS, VOCABULARY, CALENDAR }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -117,7 +121,7 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
                 Box(Modifier.fillMaxSize().padding(padding)) {
                     when (tab) {
                         AcademyTab.HOME -> HomePage(profile, wallet, lessons.size, attempts.size, (todayStudyMillis / 60000L).toInt(),
-                            { tab = AcademyTab.LEARN }, { tab = AcademyTab.GAMES }, { tab = AcademyTab.PROFILE }, { tab = AcademyTab.TOOLS })
+                            { tab = AcademyTab.LEARN }, { tab = AcademyTab.GAMES }, { tab = AcademyTab.PROFILE }, { tab = AcademyTab.TOOLS }, { tab = AcademyTab.CALENDAR })
                         AcademyTab.LEARN -> LearnPage(profile.locale, band, lessons.map { it.lessonId }.toSet(),
                             { band = it },
                             { tab = AcademyTab.VOCABULARY },
@@ -153,6 +157,7 @@ private fun BHAcademyApp(preferences: AcademyPreferences, dao: AcademyDao) {
                         AcademyTab.PROGRESS -> ProgressPage(profile.locale, lessons.size, attempts, gameAttempts.size, wallet?.xp ?: 0, wallet?.coins ?: 0)
                         AcademyTab.PROFILE -> ProfilePage(profile, preferences)
                         AcademyTab.TOOLS -> ToolsPage(profile.locale, dao) { tab = AcademyTab.HOME }
+                        AcademyTab.CALENDAR -> CalendarPage(profile.locale, dao) { tab = AcademyTab.HOME }
                         AcademyTab.VOCABULARY -> VocabularyPage(profile.locale, dao)
                     }
                 }
@@ -193,7 +198,7 @@ private fun AcademyCard(content: @Composable ColumnScope.() -> Unit) {
     }
 }
 @Composable
-private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, studyMinutes: Int, learn: () -> Unit, games: () -> Unit, profile: () -> Unit, tools: () -> Unit) {
+private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, studyMinutes: Int, learn: () -> Unit, games: () -> Unit, profile: () -> Unit, tools: () -> Unit, calendar: () -> Unit) {
     Page {
         Text(tr(p.locale, "greeting", p.displayName), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Text(tr(p.locale, "welcome"), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .65f))
@@ -232,7 +237,18 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
             OutlinedButton(onClick = games, modifier = Modifier.weight(1f)) { Text(tr(p.locale, "games")) }
             OutlinedButton(onClick = profile, modifier = Modifier.weight(1f)) { Text(tr(p.locale, "myProfile")) }
         }
-        OutlinedButton(onClick = tools, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.Alarm, null); Spacer(Modifier.width(8.dp)); Text(tr(p.locale, "studyTools")) }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = tools, modifier = Modifier.weight(1f)) { Icon(Icons.Default.Alarm, null); Spacer(Modifier.width(6.dp)); Text(tr(p.locale, "studyTools")) }
+            OutlinedButton(onClick = calendar, modifier = Modifier.weight(1f)) {
+                Icon(Icons.Default.CalendarMonth, null); Spacer(Modifier.width(6.dp))
+                Text(when (p.locale) {
+                    AcademyLocale.ENGLISH_US -> "Calendar"
+                    AcademyLocale.DARI_AF -> "تقویم"
+                    AcademyLocale.PASHTO_AF -> "کلیزه"
+                    AcademyLocale.ARABIC -> "التقويم"
+                })
+            }
+        }
     }
 }
 @Composable private fun Stat(label: String, value: String) {
@@ -713,6 +729,178 @@ private fun ProgressPage(locale: AcademyLocale, lessons: Int, attempts: List<Qui
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text(label); Text(AsciiDigits.normalize(value), fontWeight = FontWeight.Bold) }
 }
 
+
+@Composable
+private fun CalendarPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit) {
+    val sessions by dao.observeStudySessions().collectAsStateWithLifecycle(initialValue = emptyList())
+    val reminders by dao.observeReminders().collectAsStateWithLifecycle(initialValue = emptyList())
+    var monthOffset by remember { mutableIntStateOf(0) }
+    val month = remember(monthOffset) {
+        Calendar.getInstance().apply {
+            set(Calendar.DAY_OF_MONTH, 1)
+            add(Calendar.MONTH, monthOffset)
+        }
+    }
+    val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US) }
+    val studiedDates = remember(sessions) {
+        sessions.map { dateFormat.format(Date(it.startedAt)) }.toSet()
+    }
+    var selectedDate by remember { mutableStateOf(dateFormat.format(Date())) }
+    LaunchedEffect(monthOffset) {
+        selectedDate = dateFormat.format(month.time)
+    }
+    val firstOffset = (month.get(Calendar.DAY_OF_WEEK) + 5) % 7
+    val daysInMonth = month.getActualMaximum(Calendar.DAY_OF_MONTH)
+    val monthTitle = AsciiDigits.normalize(
+        SimpleDateFormat("MMMM yyyy", Locale.forLanguageTag(locale.languageTag)).format(month.time)
+    )
+    val dayHeaders = when (locale) {
+        AcademyLocale.ENGLISH_US -> listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+        AcademyLocale.DARI_AF -> listOf("دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه", "یکشنبه")
+        AcademyLocale.PASHTO_AF -> listOf("دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه", "یکشنبه")
+        AcademyLocale.ARABIC -> listOf("الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد")
+    }
+    val selectedSessions = sessions.filter { dateFormat.format(Date(it.startedAt)) == selectedDate }
+    val selectedMinutes = selectedSessions.sumOf { it.durationMillis } / 60_000L
+    val title = when (locale) {
+        AcademyLocale.ENGLISH_US -> "Study calendar"
+        AcademyLocale.DARI_AF -> "تقویم مطالعه"
+        AcademyLocale.PASHTO_AF -> "د مطالعې کلیزه"
+        AcademyLocale.ARABIC -> "تقويم الدراسة"
+    }
+    Page {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            TextButton(onClick = onBack) { Text(tr(locale, "home")) }
+        }
+        AcademyCard {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = { monthOffset -= 1 }) { Icon(Icons.Default.ChevronLeft, contentDescription = "Previous month") }
+                Text(monthTitle, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                IconButton(onClick = { monthOffset += 1 }) { Icon(Icons.Default.ChevronRight, contentDescription = "Next month") }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                dayHeaders.forEach { day ->
+                    Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                        Text(day, fontSize = 9.sp, maxLines = 1)
+                    }
+                }
+            }
+            val weekCount = (firstOffset + daysInMonth + 6) / 7
+            repeat(weekCount) { week ->
+                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                    repeat(7) { column ->
+                        val day = week * 7 + column - firstOffset + 1
+                        if (day in 1..daysInMonth) {
+                            val date = Calendar.getInstance().apply {
+                                set(Calendar.YEAR, month.get(Calendar.YEAR))
+                                set(Calendar.MONTH, month.get(Calendar.MONTH))
+                                set(Calendar.DAY_OF_MONTH, day)
+                            }
+                            val iso = dateFormat.format(date.time)
+                            val studied = iso in studiedDates
+                            val selected = iso == selectedDate
+                            Box(
+                                modifier = Modifier.weight(1f).aspectRatio(1f).padding(2.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        when {
+                                            selected -> MaterialTheme.colorScheme.primary
+                                            studied -> MaterialTheme.colorScheme.secondaryContainer
+                                            else -> MaterialTheme.colorScheme.surfaceVariant
+                                        }
+                                    )
+                                    .clickable { selectedDate = iso },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                                    Text(
+                                        AsciiDigits.normalize(day.toString()),
+                                        color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                    if (studied) Text("•", color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary, fontSize = 10.sp)
+                                }
+                            }
+                        } else {
+                            Spacer(Modifier.weight(1f))
+                        }
+                    }
+                }
+            }
+            Text(
+                when (locale) {
+                    AcademyLocale.ENGLISH_US -> "Marked days show saved study sessions."
+                    AcademyLocale.DARI_AF -> "روزهای نشان‌شده دارای جلسه مطالعه ثبت‌شده هستند."
+                    AcademyLocale.PASHTO_AF -> "نښه شوې ورځې د مطالعې ثبت شوې ناستې لري."
+                    AcademyLocale.ARABIC -> "الأيام المميزة تحتوي على جلسات دراسة محفوظة."
+                },
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        AcademyCard {
+            Text(
+                when (locale) {
+                    AcademyLocale.ENGLISH_US -> "Activity on $selectedDate"
+                    AcademyLocale.DARI_AF -> "فعالیت در تاریخ $selectedDate"
+                    AcademyLocale.PASHTO_AF -> "په $selectedDate کې فعالیت"
+                    AcademyLocale.ARABIC -> "النشاط في $selectedDate"
+                },
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                when (locale) {
+                    AcademyLocale.ENGLISH_US -> "Study time: $selectedMinutes minutes"
+                    AcademyLocale.DARI_AF -> "زمان مطالعه: $selectedMinutes دقیقه"
+                    AcademyLocale.PASHTO_AF -> "د مطالعې وخت: $selectedMinutes دقیقې"
+                    AcademyLocale.ARABIC -> "وقت الدراسة: $selectedMinutes دقيقة"
+                }
+            )
+            if (selectedSessions.isEmpty()) {
+                Text(
+                    when (locale) {
+                        AcademyLocale.ENGLISH_US -> "No study sessions saved for this day."
+                        AcademyLocale.DARI_AF -> "برای این روز جلسه مطالعه ثبت نشده است."
+                        AcademyLocale.PASHTO_AF -> "په دې ورځ د مطالعې ناسته نه ده ثبت شوې."
+                        AcademyLocale.ARABIC -> "لا توجد جلسات دراسة محفوظة لهذا اليوم."
+                    },
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                selectedSessions.forEach { session ->
+                    Text(
+                        "${session.lessonId} · ${AsciiDigits.normalize((session.durationMillis / 60_000L).toString())} min",
+                        fontSize = 12.sp
+                    )
+                }
+            }
+        }
+        AcademyCard {
+            Text(
+                when (locale) {
+                    AcademyLocale.ENGLISH_US -> "Scheduled reminders"
+                    AcademyLocale.DARI_AF -> "یادآوری‌های تنظیم‌شده"
+                    AcademyLocale.PASHTO_AF -> "ټاکل شوې یادونې"
+                    AcademyLocale.ARABIC -> "التذكيرات المجدولة"
+                },
+                style = MaterialTheme.typography.titleMedium
+            )
+            if (reminders.isEmpty()) {
+                Text(
+                    when (locale) {
+                        AcademyLocale.ENGLISH_US -> "No reminders yet."
+                        AcademyLocale.DARI_AF -> "هنوز یادآوری تنظیم نشده است."
+                        AcademyLocale.PASHTO_AF -> "تر اوسه یادونې نشته."
+                        AcademyLocale.ARABIC -> "لا توجد تذكيرات بعد."
+                    }
+                )
+            } else reminders.forEach { reminder ->
+                Text("${reminder.title} · ${AsciiDigits.normalize("%02d:%02d".format(reminder.hour, reminder.minute))}")
+            }
+        }
+    }
+}
 
 @Composable
 private fun ToolsPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> Unit) {
