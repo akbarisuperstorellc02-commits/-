@@ -121,7 +121,6 @@ object AcademyBackupManager {
                 profile.optInt("dailyGoalWords", 5).coerceIn(1, 100),
                 profile.optInt("dailyGoalQuizzes", 1).coerceIn(1, 10)
             )
-            preferences.updateDailyTargets(profile.optInt("dailyGoalLessons", 1), profile.optInt("dailyGoalWords", 5), profile.optInt("dailyGoalQuizzes", 1))
             preferences.updateAvatar(if (profile.isNull("avatarUri")) null else profile.optString("avatarUri"))
 
             root.array("lessonProgress").forEachObject { o ->
