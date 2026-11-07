@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bh.personalacademy.data.local.*
-import com.bh.personalacademy.content.AcademyLessonCatalog
+import com.example.academy.data.AcademyCurriculum
 import com.bh.personalacademy.data.preferences.AcademyPreferences
 import com.example.academy.core.AsciiDigits
 import com.example.academy.domain.model.*
@@ -179,7 +179,7 @@ private fun HomePage(p: UserProfile, w: WalletEntity?, done: Int, quizzes: Int, 
 @Composable
 private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completed: Int, select: (LearningBand?) -> Unit, complete: (String) -> Unit, quiz: () -> Unit) {
     val names = listOf("Pre-A1", "A1", "A2", "B1", "B2", "C1")
-    val lessons = selected?.let { AcademyLessonCatalog.forBand(it) }.orEmpty()
+    val lessons = selected?.let { AcademyCurriculum.forBand(it) }.orEmpty()
     Page {
         Text(tr(locale, "learningPath"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         if (selected == null) {
@@ -199,13 +199,13 @@ private fun LearnPage(locale: AcademyLocale, selected: LearningBand?, completed:
             lessons.forEachIndexed { index, lesson ->
                 var expanded by remember(lesson.id) { mutableStateOf(false) }
                 AcademyCard {
-                    Text("${index + 1}. ${lesson.title}", style = MaterialTheme.typography.titleMedium)
-                    Text(lesson.objective, fontSize = 13.sp)
+                    Text(AsciiDigits.normalize("${index + 1}. ${lesson.title.forLocale(locale)}"), style = MaterialTheme.typography.titleMedium)
+                    Text(AsciiDigits.normalize(lesson.objective.forLocale(locale)), fontSize = 13.sp)
                     TextButton(onClick = { expanded = !expanded }) {
                         Text(if (expanded) tr(locale, "hideDetails") else tr(locale, "lessonDetails"))
                     }
                     if (expanded) {
-                        Text(lesson.explanation)
+                        Text(AsciiDigits.normalize(lesson.explanationDari))
                         Text(tr(locale, "newWords"), fontWeight = FontWeight.Bold)
                         lesson.words.forEach { word ->
                             Text("${word.english} — ${word.dari}  (${word.pronunciation})", fontSize = 13.sp)
