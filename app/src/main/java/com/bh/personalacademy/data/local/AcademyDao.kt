@@ -171,12 +171,12 @@ abstract class AcademyDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun saveVocabulary(word: VocabularyEntity)
 
-    @Query("SELECT * FROM vocabulary WHERE wordId = :wordId LIMIT 1")
-    abstract suspend fun getVocabularyOnce(wordId: String): VocabularyEntity?
+    @Query("SELECT * FROM vocabulary WHERE profileId = :profileId AND wordId = :wordId LIMIT 1")
+    abstract suspend fun getVocabularyOnce(wordId: String, profileId: String): VocabularyEntity?
 
     @Transaction
     open suspend fun mergeVocabulary(incoming: VocabularyEntity) {
-        val existing = getVocabularyOnce(incoming.wordId)
+        val existing = getVocabularyOnce(incoming.wordId, incoming.profileId)
         saveVocabulary(
             if (existing == null) incoming else incoming.copy(
                 favourite = existing.favourite || incoming.favourite,
