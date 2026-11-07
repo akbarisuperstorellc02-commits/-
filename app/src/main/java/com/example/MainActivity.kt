@@ -749,8 +749,12 @@ private fun CalendarPage(locale: AcademyLocale, dao: AcademyDao, onBack: () -> U
         sessions.map { dateFormat.format(Date(it.startedAt)) }.toSet()
     }
     var selectedDate by remember { mutableStateOf(dateFormat.format(Date())) }
+    var lastMonthOffset by remember { mutableIntStateOf(0) }
     LaunchedEffect(monthOffset) {
-        selectedDate = dateFormat.format(month.time)
+        if (monthOffset != lastMonthOffset) {
+            selectedDate = dateFormat.format(month.time)
+            lastMonthOffset = monthOffset
+        }
     }
     val firstOffset = (month.get(Calendar.DAY_OF_WEEK) + 5) % 7
     val daysInMonth = month.getActualMaximum(Calendar.DAY_OF_MONTH)
