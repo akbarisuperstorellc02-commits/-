@@ -183,7 +183,12 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
             colorScheme = appColorScheme,
             typography = Typography(bodyLarge = MaterialTheme.typography.bodyLarge.copy(fontFamily = fontFor(profile.font)),
                 bodyMedium = MaterialTheme.typography.bodyMedium.copy(fontFamily = fontFor(profile.font)),
-                titleLarge = MaterialTheme.typography.titleLarge.copy(fontFamily = fontFor(profile.font), fontWeight = FontWeight.Bold))
+                titleLarge = MaterialTheme.typography.titleLarge.copy(fontFamily = fontFor(profile.font), fontWeight = FontWeight.Bold)),
+            shapes = Shapes(
+                small = RoundedCornerShape(20.dp),
+                medium = RoundedCornerShape(28.dp),
+                large = RoundedCornerShape(34.dp)
+            )
         ) {
             Scaffold(containerColor = palette.background, bottomBar = {
                 NavigationBar(containerColor = palette.surface) {
