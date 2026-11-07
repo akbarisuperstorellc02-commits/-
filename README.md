@@ -27,7 +27,7 @@ Offline-first Android app for English learning and personal growth.
 
 - Compose app shell with home, learning, games, progress and profile navigation, plus study tools, vocabulary and calendar pages.
 - Editable profile details, avatar selection, locale, font and sixteen theme choices.
-- Seven learning bands from Pre-A1 through C2; current lesson catalog contains 56 lesson entries.
+- Eight learning stages from Pre-A1 through C2, followed by a Specialized English track; current lesson catalog contains 62 lesson entries across general and professional English.
 - Lesson completion, level unlock rules and one-time reward ledger.
 - 26 educational game modes in the current game catalog. Regression checks now cover hidden missing-word answers and valid letter scrambling; several named modes still need dedicated mechanics and full manual QA.
 - Mixed quiz formats, saved quiz attempts and incorrect-question history.
@@ -45,7 +45,7 @@ Offline-first Android app for English learning and personal growth.
 - Room database with explicit migrations
 - Preferences DataStore
 - Android AlarmManager and Notification APIs
-- Localized lesson and game catalogs
+- Localized lesson and game catalogs, including specialized business, technology, academic, healthcare, job-interview and travel English
 - Unit tests for domain rules, content catalogs, digit formatting and reminder scheduling
 
 ## Build and test
