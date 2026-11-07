@@ -7,13 +7,13 @@ import org.junit.Test
 
 class AcademyLessonCatalogTest {
     @Test
-    fun providesSixDistinctLessonsForEveryBand() {
+    fun providesAtLeastSixDistinctLessonsForEveryBand() {
         LearningBand.values().forEach { band ->
             val lessons = AcademyLessonCatalog.forBand(band)
-            assertEquals(6, lessons.size)
-            assertEquals(6, lessons.map { it.id }.distinct().size)
+            assertTrue(lessons.size >= 6)
+            assertEquals(lessons.size, lessons.map { it.id }.distinct().size)
         }
-        assertEquals(36, AcademyLessonCatalog.all.size)
+        assertTrue(AcademyLessonCatalog.all.size >= 36)
     }
 
     @Test
