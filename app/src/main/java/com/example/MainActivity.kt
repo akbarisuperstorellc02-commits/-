@@ -131,7 +131,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
     val totalStudyMillis by dao.observeTotalStudyMillis(profile.profileId).collectAsStateWithLifecycle(initialValue = 0L)
     var tab by remember { mutableStateOf(AcademyTab.HOME) }
     var band by remember { mutableStateOf<LearningBand?>(null) }
-    LaunchedEffect(viewModel) { viewModel.initialize() }
+    LaunchedEffect(profile.profileId) { viewModel.initialize() }
     LaunchedEffect(todayIso, profile.dailyStudyGoalMinutes, profile.dailyGoalLessons, profile.dailyGoalWords, profile.dailyGoalQuizzes) {
         dao.saveDailyGoal(
             DailyGoalEntity(
@@ -642,6 +642,7 @@ private fun VocabularyPage(locale: AcademyLocale, profileId: String, dao: Academ
         AcademyLessonCatalog.all.forEach { lesson ->
             lesson.words.forEach { word ->
                 dao.insertVocabularyIfMissing(VocabularyEntity(
+                    profileId = profileId,
                     wordId = "${lesson.id}_${word.english.lowercase().replace(" ", "_")}",
                     english = word.english,
                     dariMeaning = word.dari,
@@ -1398,7 +1399,7 @@ private fun CalendarPage(locale: AcademyLocale, profileId: String, dao: AcademyD
 private fun ToolsPage(locale: AcademyLocale, profileId: String, dao: AcademyDao, onBack: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val reminders by dao.observeReminders().collectAsStateWithLifecycle(initialValue = emptyList())
+    val reminders by dao.observeReminders(profileId).collectAsStateWithLifecycle(initialValue = emptyList())
     var elapsedSeconds by remember { mutableLongStateOf(0L) }
     var running by remember { mutableStateOf(false) }
     var sessionStart by remember { mutableLongStateOf(0L) }
@@ -1869,10 +1870,10 @@ private fun ProfilePage(profile: UserProfile, profiles: List<UserProfile>, prefs
                     resetStep = 0
                     scope.launch {
                         runCatching {
-                            dao.observeReminders().first().forEach { ReminderScheduler.cancel(context, it.reminderId) }
-                            dao.clearAllLearningData()
+                            dao.observeReminders(profile.profileId).first().forEach { ReminderScheduler.cancel(context, it.reminderId) }
+                            dao.clearProfileLearningData(profile.profileId)
                             prefs.resetProfile()
-                            dao.insertWallet(WalletEntity(profileId = "primary", coins = 30))
+                            dao.insertWallet(WalletEntity(profileId = profile.profileId, coins = 30))
                         }.onSuccess {
                             Toast.makeText(context, tr(profile.locale, "resetSuccess"), Toast.LENGTH_LONG).show()
                         }.onFailure {
