@@ -1,4 +1,4 @@
-# Self-Growth Academy — QA checklist
+# Self-Growth Learning Academy — QA checklist
 
 ## Automated checks
 - [x] `gradle testDebugUnitTest` passes (CI run 42395604417).
@@ -23,6 +23,9 @@
 
 ## Learning and rewards
 - [ ] Pre-A1 lessons are available on first launch.
+- [ ] Animal lesson displays 15 animal names, emoji clues, IPA pronunciation and Dari/Pashto/Arabic meanings.
+- [ ] Animal vocabulary is added to each learner's notebook without overwriting favourites.
+- [ ] Speaking practice opens Android system speech input when the direct recognition service fails.
 - [ ] Completing all lessons in a band unlocks the next band.
 - [ ] Re-completing a lesson does not duplicate its reward.
 - [ ] Completing a band awards its one-time level reward.
