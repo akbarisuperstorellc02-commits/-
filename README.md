@@ -27,9 +27,9 @@ Offline-first Android app for English learning and personal growth.
 
 - Compose app shell with home, learning, games, progress and profile navigation, plus study tools, vocabulary and calendar pages.
 - Editable profile details, avatar selection, locale, font and sixteen theme choices.
-- Six learning bands from Pre-A1 through C1; current lesson catalog contains 50 lesson entries.
+- Seven learning bands from Pre-A1 through C2; current lesson catalog contains 56 lesson entries.
 - Lesson completion, level unlock rules and one-time reward ledger.
-- 26 educational game modes in the current game catalog; individual gameplay still requires full manual QA.
+- 26 educational game modes in the current game catalog. Regression checks now cover hidden missing-word answers and valid letter scrambling; several named modes still need dedicated mechanics and full manual QA.
 - Mixed quiz formats, saved quiz attempts and incorrect-question history.
 - Searchable vocabulary notebook with persisted favourites and practice tracking.
 - Lesson study timer and daily/weekly/monthly study statistics.
@@ -70,7 +70,7 @@ GitHub Actions uploads the debug APK as the `bh-personal-academy-debug-apk` arti
 - GitHub Actions run #213 completed successfully for commit `39bd8030d976ad67ca7f4b3aca924dadbb60397c`.
 - Unit tests, debug APK build and artifact upload all passed in that run.
 - The uploaded artifact contains `app-debug.apk` (20,878,505 bytes).
-- Automated CI does not prove physical-device behavior or release readiness.
+- Speaking practice includes Android speech recognition, text-to-speech prompts, word-level transcript similarity scoring, saved attempts and one-time rewards. It is not phoneme-level pronunciation assessment, and recognition availability/offline support depends on the Android speech service and installed language pack. Automated CI does not prove physical-device behavior or release readiness.
 
 ## Known incomplete work before release
 
