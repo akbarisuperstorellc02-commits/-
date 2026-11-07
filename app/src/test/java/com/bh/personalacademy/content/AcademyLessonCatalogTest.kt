@@ -13,7 +13,23 @@ class AcademyLessonCatalogTest {
             assertTrue(lessons.size >= 6)
             assertEquals(lessons.size, lessons.map { it.id }.distinct().size)
         }
-        assertTrue(AcademyLessonCatalog.all.size >= 50)
+        assertTrue(AcademyLessonCatalog.all.size >= 70)
+    }
+
+    @Test
+    fun nextLessonUnlocksWhenImmediatelyPreviousLessonIsCompleted() {
+        val band = LearningBand.PRE_A1
+        val lessons = AcademyLessonCatalog.forBand(band)
+        assertTrue(!AcademyLessonCatalog.isLessonUnlocked(band, 1, emptySet()))
+        assertTrue(AcademyLessonCatalog.isLessonUnlocked(band, 1, setOf(lessons[0].id)))
+        assertTrue(AcademyLessonCatalog.isLessonUnlocked(band, 2, setOf(lessons[1].id)))
+    }
+
+    @Test
+    fun nextBandUnlocksWhenPreviousBandFinalLessonIsCompleted() {
+        val finalLesson = AcademyLessonCatalog.forBand(LearningBand.PRE_A1).last()
+        assertTrue(!AcademyLessonCatalog.isBandUnlocked(LearningBand.A1, emptySet()))
+        assertTrue(AcademyLessonCatalog.isBandUnlocked(LearningBand.A1, setOf(finalLesson.id)))
     }
 
     @Test
