@@ -1,4 +1,4 @@
-name: Build Zahra offline AI bundle
+name: Build Zahra app with in-app offline AI download
 
 on:
   workflow_dispatch:
@@ -7,7 +7,6 @@ on:
       - work/zahra-hybrid-foundation
     paths:
       - 'app/**'
-      - 'gemma_ai_pack_*/**'
       - 'gradle/**'
       - '*.gradle'
       - '*.gradle.kts'
@@ -19,7 +18,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: zahra-offline-ai-bundle-${{ github.ref }}
+  group: zahra-in-app-ai-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -43,24 +42,19 @@ jobs:
           if [ -z "$SDKMANAGER" ]; then echo "sdkmanager not found"; exit 1; fi
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
-      - name: Prepare bundled Gemma 4 E2B model
+      - name: Prepare trusted model manifest (model is NOT bundled in the app)
         shell: bash
         run: |
           set -euo pipefail
           MODEL_URL="https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm"
-          mkdir -p gemma_ai_pack_1/src/main/assets gemma_ai_pack_2/src/main/assets gemma_ai_pack_3/src/main/assets
-          curl --fail --location --retry 4 --retry-delay 3 "$MODEL_URL" -o /tmp/gemma-4-E2B-it.litertlm
+          mkdir -p app/src/main/assets
+          curl --fail --location --retry 5 --retry-delay 4 "$MODEL_URL" -o /tmp/gemma-4-E2B-it.litertlm
           MODEL_BYTES="$(stat -c%s /tmp/gemma-4-E2B-it.litertlm)"
           MODEL_SHA="$(sha256sum /tmp/gemma-4-E2B-it.litertlm | cut -d ' ' -f1)"
-          printf '%s\n%s\n' "$MODEL_SHA" "$MODEL_BYTES" > gemma_ai_pack_1/src/main/assets/gemma4.manifest
-          split -b 900M -d -a 2 /tmp/gemma-4-E2B-it.litertlm /tmp/gemma4.part
-          test -s /tmp/gemma4.part00 && test -s /tmp/gemma4.part01 && test -s /tmp/gemma4.part02
-          cp /tmp/gemma4.part00 gemma_ai_pack_1/src/main/assets/gemma4.part00
-          cp /tmp/gemma4.part01 gemma_ai_pack_2/src/main/assets/gemma4.part01
-          cp /tmp/gemma4.part02 gemma_ai_pack_3/src/main/assets/gemma4.part02
-          echo "Bundled model bytes: $MODEL_BYTES"
-          echo "Bundled model SHA-256: $MODEL_SHA"
-          rm -f /tmp/gemma-4-E2B-it.litertlm /tmp/gemma4.part00 /tmp/gemma4.part01 /tmp/gemma4.part02
+          test "$MODEL_BYTES" -gt 2000000000
+          printf '%s\n%s\n' "$MODEL_SHA" "$MODEL_BYTES" > app/src/main/assets/gemma4.manifest
+          echo "Model manifest prepared: bytes=$MODEL_BYTES sha256=$MODEL_SHA"
+          rm -f /tmp/gemma-4-E2B-it.litertlm
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -69,113 +63,19 @@ jobs:
         shell: bash
         run: |
           keytool -genkeypair -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-      - name: Build offline AI Android App Bundle
-        run: gradle :app:bundleDebug --stacktrace
-      - name: Build sideloadable APK set with bundled AI model
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl --fail --location --retry 3 \
-            https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar \
-            -o bundletool-all-1.18.3.jar
-          mkdir -p app/build/outputs/apkset
-          java -jar bundletool-all-1.18.3.jar build-apks \
-            --bundle=app/build/outputs/bundle/debug/app-debug.aab \
-            --output=app/build/outputs/apkset/zahra-offline-ai.apks \
-            --local-testing \
-            --ks=debug.keystore \
-            --ks-key-alias=androiddebugkey \
-            --ks-pass=pass:android \
-            --key-pass=pass:android
-
-      - name: Split phone-installable APK set into resumable parts
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p app/build/outputs/apkset/phone-parts
-          APKSET="app/build/outputs/apkset/zahra-offline-ai.apks"
-          PART_DIR="app/build/outputs/apkset/phone-parts"
-          split -b 700M -d -a 2 "$APKSET" "$PART_DIR/zahra-apks.part"
-          sha256sum "$APKSET" > "$PART_DIR/SHA256SUMS.txt"
-          stat -c 'APKS_BYTES=%s' "$APKSET" > "$PART_DIR/INFO.txt"
-          ls -lh "$PART_DIR"
-      - name: Upload APKS part 01
-        if: hashFiles('app/build/outputs/apkset/phone-parts/zahra-apks.part00') != ''
+      - name: Build Android APK and App Bundle
+        run: gradle :app:assembleDebug :app:bundleDebug --stacktrace
+      - name: Upload phone-installable APK
         uses: actions/upload-artifact@v4
         with:
-          name: zahra-apks-part-01
-          path: app/build/outputs/apkset/phone-parts/zahra-apks.part00
+          name: zahra-app-apk-in-app-ai
+          path: app/build/outputs/apk/debug/app-debug.apk
           compression-level: 0
           retention-days: 7
-      - name: Upload APKS part 02
-        if: hashFiles('app/build/outputs/apkset/phone-parts/zahra-apks.part01') != ''
+      - name: Upload Google Play App Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: zahra-apks-part-02
-          path: app/build/outputs/apkset/phone-parts/zahra-apks.part01
-          compression-level: 0
-          retention-days: 7
-      - name: Upload APKS part 03
-        if: hashFiles('app/build/outputs/apkset/phone-parts/zahra-apks.part02') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: zahra-apks-part-03
-          path: app/build/outputs/apkset/phone-parts/zahra-apks.part02
-          compression-level: 0
-          retention-days: 7
-      - name: Upload APKS part 04
-        if: hashFiles('app/build/outputs/apkset/phone-parts/zahra-apks.part03') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: zahra-apks-part-04
-          path: app/build/outputs/apkset/phone-parts/zahra-apks.part03
-          compression-level: 0
-          retention-days: 7
-      - name: Upload APKS part 05
-        if: hashFiles('app/build/outputs/apkset/phone-parts/zahra-apks.part04') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: zahra-apks-part-05
-          path: app/build/outputs/apkset/phone-parts/zahra-apks.part04
-          compression-level: 0
-          retention-days: 7
-      - name: Upload APKS part 06
-        if: hashFiles('app/build/outputs/apkset/phone-parts/zahra-apks.part05') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: zahra-apks-part-06
-          path: app/build/outputs/apkset/phone-parts/zahra-apks.part05
-          compression-level: 0
-          retention-days: 7
-      - name: Upload APKS part 07
-        if: hashFiles('app/build/outputs/apkset/phone-parts/zahra-apks.part06') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: zahra-apks-part-07
-          path: app/build/outputs/apkset/phone-parts/zahra-apks.part06
-          compression-level: 0
-          retention-days: 7
-      - name: Upload APKS part 08
-        if: hashFiles('app/build/outputs/apkset/phone-parts/zahra-apks.part07') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: zahra-apks-part-08
-          path: app/build/outputs/apkset/phone-parts/zahra-apks.part07
-          compression-level: 0
-          retention-days: 7
-      - name: Upload APKS reconstruction instructions
-        uses: actions/upload-artifact@v4
-        with:
-          name: zahra-apks-checksums-and-info
-          path: |
-            app/build/outputs/apkset/phone-parts/SHA256SUMS.txt
-            app/build/outputs/apkset/phone-parts/INFO.txt
-          compression-level: 0
-          retention-days: 7
-      - name: Upload Google Play App Bundle separately
-        uses: actions/upload-artifact@v4
-        with:
-          name: zahra-google-play-aab
+          name: zahra-google-play-aab-in-app-ai
           path: app/build/outputs/bundle/debug/app-debug.aab
           compression-level: 0
           retention-days: 7
