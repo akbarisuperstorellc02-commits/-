@@ -263,7 +263,7 @@ private fun BHAcademyApp(viewModel: AcademyViewModel, preferences: AcademyPrefer
                                 }
                             },
                             { lessonId, startedAt, duration ->
-                                viewModel.saveStudySession(lessonId, startedAt, duration)
+                                viewModel.saveStudySession(lessonId, startedAt, duration, profile.profileId)
                             },
                             { tab = AcademyTab.QUIZ })
                         AcademyTab.QUIZ -> QuizPage(profile.locale, profile.profileId, dao) { tab = AcademyTab.PROGRESS }
@@ -744,6 +744,7 @@ private fun GamePage(locale: AcademyLocale, profileId: String, coins: Long, dao:
             dao.insertGameAttempt(
                 GameAttemptEntity(
                     attemptId = UUID.randomUUID().toString(),
+                    profileId = profileId,
                     gameId = mode.id,
                     score = score,
                     totalQuestions = 5,
@@ -880,7 +881,8 @@ private fun GamePage(locale: AcademyLocale, profileId: String, coins: Long, dao:
                                     scope.launch {
                                         dao.applyRewardOnce(
                                             RewardEventEntity(
-                                                eventId = UUID.randomUUID().toString(),
+                                                eventId = "game_${profileId}_${selectedMode.id}_$round",
+                                                profileId = profileId,
                                                 source = "GAME",
                                                 sourceId = "${selectedMode.id}_round_${round}",
                                                 xpDelta = 10,
@@ -929,7 +931,8 @@ private fun GamePage(locale: AcademyLocale, profileId: String, coins: Long, dao:
                                     feedback = question.explanation.forLocale(locale)
                                     scope.launch {
                                         dao.applyRewardOnce(RewardEventEntity(
-                                            eventId = UUID.randomUUID().toString(),
+                                            eventId = "game_${profileId}_${selectedMode.id}_$round",
+                                            profileId = profileId,
                                             source = "GAME",
                                             sourceId = selectedMode.id + "_round_" + round,
                                             xpDelta = 10,
@@ -1105,6 +1108,7 @@ private fun QuizPage(locale: AcademyLocale, profileId: String, dao: AcademyDao, 
             val attemptId = UUID.randomUUID().toString()
             dao.insertQuizAttempt(QuizAttemptEntity(
                 attemptId = attemptId,
+                profileId = profileId,
                 quizId = "starter_mixed_quiz",
                 score = score,
                 totalQuestions = quizQuestions.size,
@@ -1114,7 +1118,8 @@ private fun QuizPage(locale: AcademyLocale, profileId: String, dao: AcademyDao, 
             if (score >= 3) {
                 val rewardDate = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
                 dao.applyRewardOnce(RewardEventEntity(
-                    eventId = UUID.randomUUID().toString(),
+                    eventId = "quiz_${profileId}_starter_mixed_quiz_$rewardDate",
+                    profileId = profileId,
                     source = "QUIZ",
                     sourceId = "starter_mixed_quiz_$rewardDate",
                     xpDelta = 30,
@@ -1421,7 +1426,7 @@ private fun ToolsPage(locale: AcademyLocale, profileId: String, dao: AcademyDao,
             elapsedSeconds += 1
             if (elapsedSeconds % 15L == 0L && sessionStart > 0L) {
                 dao.insertStudySession(StudySessionEntity(
-                    sessionId = sessionId, lessonId = "independent-study",
+                    sessionId = sessionId, profileId = profileId, lessonId = "independent-study",
                     startedAt = sessionStart, durationMillis = elapsedSeconds * 1000L
                 ))
             }
@@ -1457,7 +1462,7 @@ private fun ToolsPage(locale: AcademyLocale, profileId: String, dao: AcademyDao,
                 if (elapsedSeconds > 0L && sessionStart > 0L) {
                     scope.launch {
                         dao.insertStudySession(StudySessionEntity(
-                            sessionId = sessionId, lessonId = "independent-study",
+                            sessionId = sessionId, profileId = profileId, lessonId = "independent-study",
                             startedAt = sessionStart, durationMillis = elapsedSeconds * 1000L,
                             completedAt = System.currentTimeMillis()
                         ))
