@@ -90,18 +90,30 @@ enum class ZahraThemeMode(
         gradientBrush = Brush.verticalGradient(
             listOf(Color(0xFFFFF8FA), Color(0xFFFFE4EE), Color(0xFFFFF0F6))
         )
-    )
+    ),
+    FLORAL_GARDEN("گل‌گلی لطیف", "🌷", Color(0xFFB85C8A), Color(0xFFE7A8C2), Color(0xFFFFF4F8), Color.White, Color(0xFF8E3B67), Color(0xFFE7C66B), Brush.verticalGradient(listOf(Color(0xFFFFF4F8), Color(0xFFFCE2EC)))),
+    NAVY_BLUE("آبی و سرمه‌ای", "🌌", Color(0xFF315B91), Color(0xFF6D93C4), Color(0xFFEAF1FA), Color.White, Color(0xFF24436B), Color(0xFFE5C56B), Brush.verticalGradient(listOf(Color(0xFFEAF1FA), Color(0xFFD8E5F5)))),
+    BLUE_GRAY("آبی و خاکستری", "🩵", Color(0xFF527A9A), Color(0xFF91AFC2), Color(0xFFF0F4F7), Color.White, Color(0xFF3E6079), Color(0xFFC6D4DE), Brush.verticalGradient(listOf(Color(0xFFF0F4F7), Color(0xFFDCE7EE)))),
+    GREEN_BLACK("سبز و مشکی", "🌿", Color(0xFF2F855A), Color(0xFF68B984), Color(0xFFEAF4ED), Color.White, Color(0xFF205B3D), Color(0xFFD2B66D), Brush.verticalGradient(listOf(Color(0xFFEAF4ED), Color(0xFFD5E9DB)))),
+    SPORT_MODERN("اسپرت مدرن", "⚡", Color(0xFF1769AA), Color(0xFFFF8A3D), Color(0xFFF0F5FA), Color.White, Color(0xFF104B7A), Color(0xFFFFB45B), Brush.verticalGradient(listOf(Color(0xFFF0F5FA), Color(0xFFDCEAF7)))),
+    SPACE_TECH("فضایی و تکنولوژی", "🚀", Color(0xFF6155A6), Color(0xFF31B7C8), Color(0xFFEEF0FA), Color.White, Color(0xFF3D347B), Color(0xFFFFD166), Brush.verticalGradient(listOf(Color(0xFFEEF0FA), Color(0xFFDADDF3)))),
+    BLACK_GOLD("سیاه و طلایی لوکس", "🖤", Color(0xFFD4AF37), Color(0xFFB9942E), Color(0xFF171717), Color(0xFF252525), Color(0xFF8F7424), Color(0xFFE7C65B), Brush.verticalGradient(listOf(Color(0xFF111111), Color(0xFF29251A)))),
+    WHITE_GOLD("سفید و طلایی", "✨", Color(0xFFB28A2E), Color(0xFFD6B65E), Color(0xFFFFFCF3), Color.White, Color(0xFF8B6A20), Color(0xFFE4C56A), Brush.verticalGradient(listOf(Color(0xFFFFFCF3), Color(0xFFF5EBD0)))),
+    ROYAL_PURPLE("بنفش سلطنتی", "💜", Color(0xFF6D3BA8), Color(0xFFA77AD1), Color(0xFFF5EFFB), Color.White, Color(0xFF4D287A), Color(0xFFE5C56B), Brush.verticalGradient(listOf(Color(0xFFF5EFFB), Color(0xFFE4D6F3)))),
+    NIGHT_MODE("شب آرام", "🌙", Color(0xFF8796D8), Color(0xFF6574B8), Color(0xFF171B2A), Color(0xFF242A3D), Color(0xFF4C5A9A), Color(0xFFE5C56B), Brush.verticalGradient(listOf(Color(0xFF171B2A), Color(0xFF252B40)))),
+    LIGHT_MODE("روشن", "☀️", Color(0xFF5576A8), Color(0xFF8EAAD0), Color(0xFFF6F8FC), Color.White, Color(0xFF3D5C8B), Color(0xFFE5C56B), Brush.verticalGradient(listOf(Color(0xFFF6F8FC), Color(0xFFEAF0F8)))),
+    DARK_MODE("تاریک", "🌑", Color(0xFF9A8BD0), Color(0xFF7465AA), Color(0xFF181818), Color(0xFF292929), Color(0xFF5A4D8C), Color(0xFFE5C56B), Brush.verticalGradient(listOf(Color(0xFF181818), Color(0xFF303030))))
 }
 
 enum class ZahraFontStyle(val titleFa: String, val sampleText: String) {
-    FANTASY_ROUND(titleFa = "گرد و فانتزی پفکی", sampleText = "Zahra Self Development 🌸"),
-    PRINCESS_CUTE(titleFa = "پرنسسی کیوت", sampleText = "Start From Zero to Z9 👑"),
-    CHIC_ELEGANT(titleFa = "شیک و مدرن دخترانه", sampleText = "Zahra English Academy ✨")
+    SYSTEM_SANS("Sans Serif — سیستمی", "BH Personal Academy"),
+    SERIF("Serif — کلاسیک", "BH Personal Academy"),
+    CURSIVE("Cursive — دست‌نویس", "BH Personal Academy")
 }
 
 data class ZahraThemeState(
     val currentTheme: ZahraThemeMode = ZahraThemeMode.SWEET_SAKURA_PUFFY,
-    val fontStyle: ZahraFontStyle = ZahraFontStyle.FANTASY_ROUND,
+    val fontStyle: ZahraFontStyle = ZahraFontStyle.SYSTEM_SANS,
     val learnerName: String = "زهرا",
     val learnerAvatar: String = "👑",
     val learnerBio: String = "پرنسس خودسازی و تسلط بر زبان انگلیسی 🌸",
