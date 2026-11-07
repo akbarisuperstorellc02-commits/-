@@ -16,6 +16,22 @@ abstract class AcademyDao {
     abstract suspend fun getLessonProgress(profileId: String, lessonId: String): LessonProgressEntity?
 
     @Transaction
+    open suspend fun mergeLessonProgress(incoming: LessonProgressEntity) {
+        val existing = getLessonProgress(incoming.profileId, incoming.lessonId)
+        if (existing == null) {
+            saveLessonProgress(incoming)
+        } else {
+            saveLessonProgress(
+                incoming.copy(
+                    completedAt = listOfNotNull(existing.completedAt, incoming.completedAt).maxOrNull(),
+                    bestScore = maxOf(existing.bestScore, incoming.bestScore),
+                    attempts = maxOf(existing.attempts, incoming.attempts)
+                )
+            )
+        }
+    }
+
+    @Transaction
     open suspend fun recordLessonCompletion(
         lessonId: String,
         completedAt: Long,
@@ -64,6 +80,24 @@ abstract class AcademyDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insertStudySession(session: StudySessionEntity)
 
+    @Query("SELECT * FROM study_sessions WHERE sessionId = :sessionId LIMIT 1")
+    abstract suspend fun getStudySession(sessionId: String): StudySessionEntity?
+
+    @Transaction
+    open suspend fun mergeStudySession(incoming: StudySessionEntity) {
+        val existing = getStudySession(incoming.sessionId)
+        if (existing == null) {
+            insertStudySession(incoming)
+        } else {
+            insertStudySession(
+                incoming.copy(
+                    durationMillis = maxOf(existing.durationMillis, incoming.durationMillis),
+                    completedAt = listOfNotNull(existing.completedAt, incoming.completedAt).maxOrNull()
+                )
+            )
+        }
+    }
+
     @Query("""
         SELECT COALESCE(SUM(durationMillis), 0)
         FROM study_sessions
@@ -96,6 +130,21 @@ abstract class AcademyDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun restoreWallet(wallet: WalletEntity)
 
+    @Query("SELECT * FROM wallets WHERE profileId = :profileId LIMIT 1")
+    abstract suspend fun getWalletOnce(profileId: String): WalletEntity?
+
+    @Transaction
+    open suspend fun mergeWallet(incoming: WalletEntity) {
+        val existing = getWalletOnce(incoming.profileId)
+        restoreWallet(
+            if (existing == null) incoming else existing.copy(
+                xp = maxOf(existing.xp, incoming.xp),
+                coins = maxOf(existing.coins, incoming.coins),
+                level = maxOf(existing.level, incoming.level)
+            )
+        )
+    }
+
     @Query("SELECT * FROM wallets WHERE profileId = :profileId")
     abstract fun observeWallet(profileId: String = "primary"): Flow<WalletEntity?>
 
@@ -121,6 +170,21 @@ abstract class AcademyDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun saveVocabulary(word: VocabularyEntity)
+
+    @Query("SELECT * FROM vocabulary WHERE wordId = :wordId LIMIT 1")
+    abstract suspend fun getVocabularyOnce(wordId: String): VocabularyEntity?
+
+    @Transaction
+    open suspend fun mergeVocabulary(incoming: VocabularyEntity) {
+        val existing = getVocabularyOnce(incoming.wordId)
+        saveVocabulary(
+            if (existing == null) incoming else incoming.copy(
+                favourite = existing.favourite || incoming.favourite,
+                mastery = maxOf(existing.mastery, incoming.mastery),
+                lastPractisedAt = maxOf(existing.lastPractisedAt, incoming.lastPractisedAt)
+            )
+        )
+    }
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun insertVocabularyIfMissing(word: VocabularyEntity)
