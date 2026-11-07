@@ -1,0 +1,62 @@
+# BH Personal Academy — QA checklist
+
+## Automated checks
+- [ ] `gradle testDebugUnitTest` passes.
+- [ ] `gradle assembleDebug` succeeds.
+- [ ] APK artifact is uploaded by GitHub Actions.
+- [ ] No AI/chatbot/model/API dependencies or source files remain.
+- [ ] Manifest has no INTERNET permission.
+
+## Profile and preferences
+- [ ] Fresh install shows the default profile name زهرا.
+- [ ] Changing display name updates the dashboard immediately.
+- [ ] Username, avatar URI, locale, theme, font and daily targets survive app restart.
+- [ ] Locale direction changes correctly between RTL and LTR.
+- [ ] All visible numeric values use ASCII digits 0-9.
+
+## Learning and rewards
+- [ ] Pre-A1 lessons are available on first launch.
+- [ ] Completing all lessons in a band unlocks the next band.
+- [ ] Re-completing a lesson does not duplicate its reward.
+- [ ] Completing a band awards its one-time level reward.
+- [ ] Lesson timer pauses when the app moves to the background.
+- [ ] Daily, weekly and monthly study totals reflect saved sessions.
+
+## Quizzes and games
+- [ ] Mixed quiz supports all five question formats.
+- [ ] Answer selection locks after one response.
+- [ ] Quiz results and incorrect question IDs persist.
+- [ ] All game modes can be opened and completed.
+- [ ] One hint deducts exactly 6 coins.
+- [ ] Double-tapping the hint control cannot charge twice for one request.
+- [ ] Insufficient balance prevents hint use.
+
+## Vocabulary and progress
+- [ ] Vocabulary seed is inserted without overwriting favourites.
+- [ ] Search works for English words and Dari meanings.
+- [ ] Favourite changes survive restart.
+- [ ] Progress totals are calculated from Room records.
+- [ ] Achievement badges reflect real recorded activity.
+
+## Reminders and calendar
+- [ ] Notification permission is requested on Android 13+.
+- [ ] Exact-alarm permission guidance is shown when needed.
+- [ ] Daily and selected-weekday reminders trigger as configured.
+- [ ] Editing, disabling and deleting reminders works.
+- [ ] Enabled reminders are restored after reboot and app replacement.
+- [ ] Calendar marks days with recorded study sessions.
+
+## Backup and reset
+- [ ] JSON backup exports profile and all learning records.
+- [ ] Restore validates backup format and version.
+- [ ] Restore merges by stable IDs and restores enabled reminders.
+- [ ] Reset requires two separate confirmations.
+- [ ] Reset cancels alarms, clears Room/DataStore and recreates the default wallet.
+
+## Physical-device checks
+- [ ] Install and launch on a real Android device.
+- [ ] Verify small and large screen layouts.
+- [ ] Verify Android back navigation and system insets.
+- [ ] Verify image picker permission persists after restart.
+- [ ] Verify reminder delivery with app closed and after reboot.
+- [ ] Verify backup export/import using actual files.
