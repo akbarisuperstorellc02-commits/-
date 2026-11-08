@@ -120,7 +120,7 @@ fun LearningLevelsScreen(
 
                 Column {
                     Text(
-                        text = selectedLevelForDetail?.titleFa ?: "نقشه جامع سطوح A1 تا Z9 زهرا",
+                        text = selectedLevelForDetail?.titleFa ?: "نقشه جامع سطوح A1 تا Z24 زهرا",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = theme.buttonBevel
@@ -134,7 +134,7 @@ fun LearningLevelsScreen(
             }
         }
 
-        // Tier Filter Bar (A1-Z9)
+        // Tier Filter Bar (A1-Z24)
         if (selectedLevelForDetail == null) {
             LazyRow(
                 modifier = Modifier
@@ -152,7 +152,7 @@ fun LearningLevelsScreen(
                             .padding(horizontal = 12.dp, vertical = 7.dp)
                     ) {
                         Text(
-                            text = "همه ۳۰ سطح (A1 تا Z9)",
+                            text = "همه ۴۵ سطح (A1 تا Z24)",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (selectedTierFilter == null) Color.White else theme.buttonBevel

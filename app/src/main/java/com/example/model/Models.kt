@@ -1,7 +1,7 @@
 package com.example.model
 
 /**
- * Standard or Progressive Tier Code (A1 to Z9)
+ * Standard or Progressive Tier Code (A1 to Z24)
  */
 enum class TierGroup(val titleFa: String, val emoji: String) {
     TIER_A("مقدمات و پایه‌ها (A1 - A3)", "🌱"),
@@ -11,7 +11,7 @@ enum class TierGroup(val titleFa: String, val emoji: String) {
     TIER_E("انگلیسی پیشرفته و شغلی (E1 - E3)", "🏛️"),
     TIER_F("اصطلاحات بومی و اسلنگ (F1 - F3)", "💎"),
     TIER_G("خودسازی و روانشناسی (G1 - G3)", "📖"),
-    TIER_Z("تسلط مطلق و تاج استادی (Z1 - Z9)", "👑")
+    TIER_Z("تسلط مطلق و تاج استادی (Z1 - Z24)", "👑")
 }
 
 enum class ClassroomType(val titleFa: String, val titleEn: String, val emoji: String) {
@@ -58,7 +58,7 @@ data class QuizQuestion(
 
 data class Level(
     val id: Int,
-    val levelCode: String, // e.g. "A1", "A2", ..., "Z9"
+    val levelCode: String, // e.g. "A1", "A2", ..., "Z24"
     val tierGroup: TierGroup,
     val titleFa: String,
     val titleEn: String,
@@ -71,17 +71,6 @@ data class Level(
     var bestScore: Int = 0,
     var starsEarned: Int = 0,
     var isMastered: Boolean = false
-)
-
-data class ChatMessage(
-    val id: String,
-    val isFromTutor: Boolean,
-    val englishText: String,
-    val persianTranslation: String? = null,
-    val grammarTipFa: String? = null,
-    val weaknessFlagged: String? = null,
-    val timestampMillis: Long = System.currentTimeMillis(),
-    val quickReplies: List<String> = emptyList()
 )
 
 data class GoldenMedal(
